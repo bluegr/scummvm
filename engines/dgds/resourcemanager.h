@@ -18,46 +18,47 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL: https://scummvm-dgds.googlecode.com/svn/trunk/dgds.h $
- * $Id: dgds.h 27 2010-03-31 10:03:41Z alexbevi $
+ * $URL: https://scummvm-dgds.googlecode.com/svn/trunk/resourcemanager.h $
+ * $Id: resourcemanager.h 12 2010-01-23 12:01:58Z alexbevi $
  *
  */
 
-#ifndef DGDS_H
-#define DGDS_H
+#ifndef DGDS_RESOURCEMANAGER_H
+#define DGDS_RESOURCEMANAGER_H
 
-#include "engines/engine.h"
-#include "common/debug.h"
-#include "common/random.h"
+#include "dgds/resource.h"
 
-#include "dgds/game.h"
-#include "dgds/resourcemanager.h"
+#include "common/file.h"
+#include "common/hash-str.h"
 
 namespace Dgds {
 
-enum kDebug {
-	kDebugResources = 1 << 0
+struct ResourceFileInfo : public ResourceInfo {
+	Common::String fileName;
+	uint32 hash;
 };
 
-class WillyBeamish;
+typedef Common::HashMap<Common::String, ResourceFileInfo, Common::IgnoreCase_Hash, Common::IgnoreCase_EqualTo> ResourceFiles;
 
-class DgdsEngine : public Engine {
+class ResourceManager {
 public:
-	DgdsEngine(OSystem *sys, Common::Language lang);
-	~DgdsEngine();
+	ResourceManager(Common::String indexFilename);
+	~ResourceManager();
 
-	Common::Error init();
-	virtual Common::Error run();
-	virtual bool hasFeature(EngineFeature f) const;
+	Resource *getResource(Common::String const &resourceName);
+
+
+	void dumpResources(Common::String const &path, bool subres);
+
+	ResourceFiles _resourceFiles; //XXX: make private
 
 private:
-	Common::Language     _language;
-	Common::RandomSource _rnd;
+	Resource *getResource(Common::String const &resourceName, ResourceFileInfo const &resourceFileInfo);
 
-	Game *_game;
-	ResourceManager *_resMgr;
+	Common::String _currentOpenFilename;
+	Common::File   _currentOpenFile;
 };
 
 } // End of namespace Dgds
 
-#endif // DGDS_H
+#endif // DGDS_RESOURCEMANAGER_H
