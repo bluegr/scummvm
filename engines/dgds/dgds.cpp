@@ -36,6 +36,9 @@
 
 #include "dgds/resources/moviegroup.h"
 #include "dgds/resources/movie.h"
+#include "dgds/resources/bmp.h"
+#include "dgds/resources/palette.h"
+#include "dgds/resources/sound.h"
 
 namespace Dgds {
 
@@ -76,27 +79,37 @@ Common::Error DgdsEngine::run() {
 		error("DGDS Title %s currently not supported", gameName.c_str());
 	}
 
+	Palette *palette = new Palette(Resman.load("DYNAMIX.PAL"));
+	palette->apply();
+	delete palette;
+
+	Sound *testSnd = new Sound(Resman.load("WILLYSND.SX"));
+	delete testSnd;
+
+	Bmp *testBmp = new Bmp(Resman.load("TKGDNRCD.BMP"));
+	delete testBmp;
+
+	// TODO: This code creates a heap corruption when trying to load a movie
+#if 0
 	Resource *ttm = Resman.load("TITLE.TTM");
 	Movie *m = new Movie(ttm);
 	m->play();
-
-	delete ttm;
 	delete m;
+	delete ttm;
+#endif
 
-	/*
-	bool end = false;
 	Common::EventManager *em = _system->getEventManager();
-	while (!end) {
-		Common::Event ev;
+	Common::Event ev;
+
+	while (true) {
 		if (em->pollEvent(ev)) {
 			if (ev.type == Common::EVENT_KEYDOWN) {
-				if (ev.kbd.keycode == Common::KEYCODE_ESCAPE)
-					end = true;
+				if (ev.kbd.keycode == Common::KEYCODE_ESCAPE || ev.kbd.keycode == Common::KEYCODE_SPACE)
+					break;
 			}
 		}
 		_system->delayMillis(10);
 	}
-	*/
 
 	return Common::kNoError;
 }

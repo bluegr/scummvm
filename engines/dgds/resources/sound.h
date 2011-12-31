@@ -18,52 +18,40 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL: https://scummvm-dgds.googlecode.com/svn/trunk/resources/font.h $
- * $Id: font.h 19 2010-01-24 00:40:01Z alexbevi $
+ * $URL: http://scummvm-dgds.googlecode.com/svn/trunk/resources/Sound.h $
+ * $Id: Sound.h 24 2010-01-24 15:21:25Z alexbevi $
  *
  */
 
-#ifndef DGDS_FONT_H
-#define DGDS_FONT_H
+#ifndef DGDS_Sound_H_
+#define DGDS_Sound_H_
 
-#include "graphics/surface.h"
 #include "dgds/resource.h"
 
 namespace Dgds {
 
-class Font {
+// TODO: ResourceTags
+
+/**
+ * DGDS Sound Resources are contained in *.SX files.
+ * They are split into four (4) tag groups:
+ *   TAG_TAG
+ *   TAG_DAT
+ *   TAG_FNM
+ *   TAG_INF
+ */
+class Sound {
 public:
-	Font(Resource *res);
-	~Font();
-
-	bool drawChar(Graphics::Surface *surf, int screenx, int screeny, char c, int color);
-	bool drawString(Graphics::Surface *surf, int screenx, int screeny, const char *str, int color);
-
-	void show(Graphics::Surface *surf, int screenx, int screeny, int color);
+	Sound(Resource *res);
+	virtual ~Sound();
 
 private:
-	void empty();
-	void loadFNT(Resource *resFNT);
-
-	bool  hasChar(char c);
-	uint16 getCharOffset(char c);
-	uint8  getCharWidth(char c);
-	uint8  getLineHeight(void);
-
-	byte _sizex;
-	byte _sizey;
-	byte _firstChar;
-	byte _numChars;
-
-	uint8 _lineHeight;
-
-	uint16 *_offsets;
-	uint8 *_widths;
-	byte *_faces;
+	bool init();
+	//ResourceTags _tags;
 
 	Resource *_res;
-};
+}; // end of class Sound
 
-} // End of namespace Dgds
+} // end of namespace Dgds
 
-#endif // DGDS_FONT_H
+#endif /* DGDS_Sound_H_ */

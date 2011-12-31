@@ -30,7 +30,7 @@
 namespace Dgds {
 
 Font::Font(Resource *res) :
-	_offsets(NULL), _widths(NULL), _faces(NULL) {
+	_offsets(NULL), _widths(NULL), _faces(NULL), _res(res) {
 
 	Resource *fnt = res->getSubResource("FNT:");
 	if (fnt) {
@@ -43,6 +43,7 @@ Font::Font(Resource *res) :
 
 Font::~Font() {
 	empty();
+	delete _res;
 }
 
 void Font::empty() {
