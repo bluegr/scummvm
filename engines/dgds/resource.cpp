@@ -81,7 +81,7 @@ Resource::~Resource() {
 
 void Resource::listTags() {
 	for (uint32 i = 0; i < _subResources.size(); i++) {
-		debug("%s", _subResources[i].tag.c_str());
+		//debug("%s", _subResources[i].tag.c_str());
 		break;
 	}
 }
