@@ -82,6 +82,10 @@ bool SoundManager::playSample(int id, Audio::Mixer::SoundType type, Audio::Sound
 	if (!_vm->_mixer->isReady())
 		return false;
 
+	// TODO: Implement Saturn sound
+	if (TinselV1Saturn)
+		return false;
+
 	Channel &curChan = _channels[kChannelTinsel1];
 
 	// stop any currently playing sample

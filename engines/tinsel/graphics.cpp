@@ -829,6 +829,10 @@ void DrawObject(DRAWOBJECT *pObj) {
 		// Empty image, so return immediately
 		return;
 
+	// TODO: Unhandled Saturn images
+	if (TinselV1Saturn)
+		return;
+
 	// If writing constant data, don't bother locking the data pointer and reading src details
 	if ((pObj->flags & DMA_CONST) == 0) {
 		if (TinselV2) {

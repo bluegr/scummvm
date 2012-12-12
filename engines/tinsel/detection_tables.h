@@ -452,27 +452,37 @@ static const TinselGameDescription gameDescriptions[] = {
 		TINSEL_V1,
 	},
 
-#if 0
 	{	// English Saturn CD
 		{
 			"dw",
 			"CD",
-			{
-				{"dw.scn", 0, "6803f293c88758057cc685b9437f7637", 382248},
-				{"english.smp", 0, NULL, -1},
-				{NULL, 0, NULL, 0}
-			},
+			AD_ENTRY1s("dw.scn", "6803f293c88758057cc685b9437f7637", 382248),
 			Common::EN_ANY,
-			Common::kPlatformPC,
+			Common::kPlatformSaturn,
 			ADGF_CD,
 			GUIO0()
 		},
 		GID_DW1,
 		0,
-		GF_SCNFILES | GF_ENHANCED_AUDIO_SUPPORT,
+		GF_SCNFILES,
 		TINSEL_V1,
 	},
-#endif
+
+	{	// Japanese Saturn CD
+		{
+			"dw",
+			"",
+			AD_ENTRY1s("dw.scn", "23c8c0644d88f0a7d176173192907188", 445124),
+			Common::JA_JPN,
+			Common::kPlatformSaturn,
+			ADGF_CD,
+			GUIO0()
+		},
+		GID_DW1,
+		0,
+		GF_SCNFILES,
+		TINSEL_V1,
+	},
 
 	{	// Mac multilanguage CD
 		{

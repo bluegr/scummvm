@@ -793,7 +793,7 @@ const char *const TinselEngine::_sampleIndices[][3] = {
 	{ "english.idx", "english1.idx", "english2.idx" },	// Spanish
 	{ "english.idx", "english1.idx", "english2.idx" },	// Hebrew (FIXME: not sure if this is correct)
 	{ "english.idx", "english1.idx", "english2.idx" },	// Hungarian (FIXME: not sure if this is correct)
-	{ "english.idx", "english1.idx", "english2.idx" },	// Japanese (FIXME: not sure if this is correct)
+	{ "english.idx", "english1.idx", "english2.idx" },	// Japanese
 	{ "us.idx", "us1.idx", "us2.idx" }					// US English
 };
 const char *const TinselEngine::_sampleFiles[][3] = {
@@ -804,7 +804,7 @@ const char *const TinselEngine::_sampleFiles[][3] = {
 	{ "english.smp", "english1.smp", "english2.smp" },	// Spanish
 	{ "english.smp", "english1.smp", "english2.smp" },	// Hebrew (FIXME: not sure if this is correct)
 	{ "english.smp", "english1.smp", "english2.smp" },	// Hungarian (FIXME: not sure if this is correct)
-	{ "english.smp", "english1.smp", "english2.smp" },	// Japanese (FIXME: not sure if this is correct)
+	{ "english.smp", "english1.smp", "english2.smp" },	// Japanese
 	{ "us.smp", "us1.smp", "us2.smp" },					// US English
 };
 const char *const TinselEngine::_textFiles[][3] = {
@@ -815,7 +815,7 @@ const char *const TinselEngine::_textFiles[][3] = {
 	{ "spanish.txt", "spanish1.txt", "spanish2.txt" },	// Spanish
 	{ "english.txt", "english1.txt", "english2.txt" },	// Hebrew (FIXME: not sure if this is correct)
 	{ "english.txt", "english1.txt", "english2.txt" },	// Hungarian (FIXME: not sure if this is correct)
-	{ "english.txt", "english1.txt", "english2.txt" },	// Japanese (FIXME: not sure if this is correct)
+	{ "english.txt", "english1.txt", "english2.txt" },	// Japanese
 	{ "us.txt", "us1.txt", "us2.txt" }					// US English
 };
 
@@ -838,6 +838,13 @@ TinselEngine::TinselEngine(OSystem *syst, const TinselGameDescription *gameDesc)
 	// Add DW2 subfolder to search path in case user is running directly from the CDs
 	const Common::FSNode gameDataDir(ConfMan.get("path"));
 	SearchMan.addSubDirectoryMatching(gameDataDir, "dw2");
+
+	// Also add the Sega Saturn directories
+	if (TinselV1Saturn) {
+		SearchMan.addSubDirectoryMatching(gameDataDir, "AIDISC");
+		SearchMan.addSubDirectoryMatching(gameDataDir, "KZDISC");
+		SearchMan.addSubDirectoryMatching(gameDataDir, "SND");
+	}
 
 	// Add subfolders needed for psx versions of Discworld 1
 	if (TinselV1PSX)

@@ -71,6 +71,10 @@ bool TinselEngine::isCD() const {
 	return (bool)(_gameDescription->desc.flags & ADGF_CD);
 }
 
+bool TinselEngine::isBigEndian() const {
+	return getPlatform() == Common::kPlatformMacintosh || getPlatform() == Common::kPlatformSaturn;
+}
+
 } // End of namespace Tinsel
 
 static const PlainGameDescriptor tinselGames[] = {
@@ -82,10 +86,17 @@ static const PlainGameDescriptor tinselGames[] = {
 
 #include "tinsel/detection_tables.h"
 
+static const char *directoryGlobs[] = {
+	"AIDISC", // Needed for Sega Saturn detection
+	0
+};
+
 class TinselMetaEngine : public AdvancedMetaEngine {
 public:
 	TinselMetaEngine() : AdvancedMetaEngine(Tinsel::gameDescriptions, sizeof(Tinsel::TinselGameDescription), tinselGames) {
 		_singleid = "tinsel";
+		_maxScanDepth = 2;
+		_directoryGlobs = directoryGlobs;
 	}
 
 	virtual const char *getName() const {
