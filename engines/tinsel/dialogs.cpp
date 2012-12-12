@@ -441,13 +441,12 @@ static bool g_bMoveOnUnHide;	// Set before start of conversation
 #define COL_BOX		TBLUE1
 #define COL_HILIGHT	TBLUE4
 
-#ifdef JAPAN
-#define BOX_HEIGHT	17
-#define EDIT_BOX1_WIDTH	149
-#else
 #define BOX_HEIGHT	13
 #define EDIT_BOX1_WIDTH	145
-#endif
+
+#define BOX_HEIGHT_JAPAN	17
+#define EDIT_BOX1_WIDTH_JAPAN	149
+
 #define EDIT_BOX2_WIDTH	166
 
 #define T2_EDIT_BOX1_WIDTH 290
@@ -519,9 +518,7 @@ enum BFUNC {
 	OPENREST,
 	OPENSOUND,
 	OPENCONT,
-#ifndef JAPAN
 	OPENSUBT,
-#endif
 	OPENQUIT,
 	INITGAME,
 	MUSICVOL,
@@ -543,9 +540,7 @@ enum BFUNC {
 #define SIX_RESTART_OPTION	2
 #define SIX_SOUND_OPTION	3
 #define SIX_CONTROL_OPTION	4
-#ifndef JAPAN
 #define SIX_SUBTITLES_OPTION	5
-#endif
 #define SIX_QUIT_OPTION		6
 #define SIX_RESUME_OPTION	7
 #define SIX_LOAD_HEADING	8
@@ -596,13 +591,11 @@ struct CONFINIT {
 | This is the main menu (that comes up when you hit F1 on a PC)	|
 \*-------------------------------------------------------------*/
 
-#ifdef JAPAN
-#define FBY	11	// y-offset of first button
-#define FBX	13	// x-offset of first button
-#else
-#define FBY	20	// y-offset of first button
-#define FBX	15	// x-offset of first button
-#endif
+#define FBY	      20	// y-offset of first button
+#define FBX	      15	// x-offset of first button
+
+#define FBY_JAPAN 11	// y-offset of first button
+#define FBX_JAPAN 13	// x-offset of first button
 
 #define OPTX	33
 #define OPTY	30
@@ -622,19 +615,26 @@ static CONFBOX t1OptionBox[] = {
  { AATBUT, OPENREST, TM_NONE, NULL, SIX_RESTART_OPTION,	FBX, FBY + 2*(BOX_HEIGHT + 2),	EDIT_BOX1_WIDTH, BOX_HEIGHT, NULL, 0 },
  { AATBUT, OPENSOUND, TM_NONE, NULL, SIX_SOUND_OPTION,	FBX, FBY + 3*(BOX_HEIGHT + 2),	EDIT_BOX1_WIDTH, BOX_HEIGHT, NULL, 0 },
  { AATBUT, OPENCONT, TM_NONE, NULL, SIX_CONTROL_OPTION,	FBX, FBY + 4*(BOX_HEIGHT + 2),	EDIT_BOX1_WIDTH, BOX_HEIGHT, NULL, 0 },
-#ifdef JAPAN
-// TODO: If in JAPAN mode, simply disable the subtitles button?
- { AATBUT, OPENQUIT, NULL, SIX_QUIT_OPTION,	FBX, FBY + 5*(BOX_HEIGHT + 2),	EDIT_BOX1_WIDTH, BOX_HEIGHT, NULL, 0 },
- { AATBUT, CLOSEWIN, NULL, SIX_RESUME_OPTION,	FBX, FBY + 6*(BOX_HEIGHT + 2),	EDIT_BOX1_WIDTH, BOX_HEIGHT, NULL, 0 }
-#else
  { AATBUT, OPENSUBT, TM_NONE, NULL, SIX_SUBTITLES_OPTION,FBX, FBY + 5*(BOX_HEIGHT + 2),	EDIT_BOX1_WIDTH, BOX_HEIGHT, NULL, 0 },
  { AATBUT, OPENQUIT, TM_NONE, NULL, SIX_QUIT_OPTION,	FBX, FBY + 6*(BOX_HEIGHT + 2),	EDIT_BOX1_WIDTH, BOX_HEIGHT, NULL, 0 },
  { AATBUT, CLOSEWIN, TM_NONE, NULL, SIX_RESUME_OPTION,	FBX, FBY + 7*(BOX_HEIGHT + 2),	EDIT_BOX1_WIDTH, BOX_HEIGHT, NULL, 0 }
-#endif
 
 };
 
-static CONFINIT t1ciOption	= { 6, 5, 72, 23, false, t1OptionBox,	ARRAYSIZE(t1OptionBox),	NO_HEADING };
+static CONFBOX t1OptionBoxJapan[] = {
+
+ { AATBUT, OPENLOAD, TM_NONE, NULL, SIX_LOAD_OPTION,	FBX_JAPAN, FBY_JAPAN,			EDIT_BOX1_WIDTH_JAPAN, BOX_HEIGHT_JAPAN, NULL, 0 },
+ { AATBUT, OPENSAVE, TM_NONE, NULL, SIX_SAVE_OPTION,	FBX_JAPAN, FBY_JAPAN + (BOX_HEIGHT_JAPAN + 2),	EDIT_BOX1_WIDTH_JAPAN, BOX_HEIGHT_JAPAN, NULL, 0 },
+ { AATBUT, OPENREST, TM_NONE, NULL, SIX_RESTART_OPTION,	FBX_JAPAN, FBY_JAPAN + 2*(BOX_HEIGHT_JAPAN + 2),	EDIT_BOX1_WIDTH_JAPAN, BOX_HEIGHT_JAPAN, NULL, 0 },
+ { AATBUT, OPENSOUND, TM_NONE, NULL, SIX_SOUND_OPTION,	FBX_JAPAN, FBY_JAPAN + 3*(BOX_HEIGHT_JAPAN + 2),	EDIT_BOX1_WIDTH_JAPAN, BOX_HEIGHT_JAPAN, NULL, 0 },
+ { AATBUT, OPENCONT, TM_NONE, NULL, SIX_CONTROL_OPTION,	FBX_JAPAN, FBY_JAPAN + 4*(BOX_HEIGHT_JAPAN + 2),	EDIT_BOX1_WIDTH_JAPAN, BOX_HEIGHT_JAPAN, NULL, 0 },
+ { AATBUT, OPENQUIT, TM_NONE, NULL, SIX_QUIT_OPTION,	FBX_JAPAN, FBY_JAPAN + 5*(BOX_HEIGHT_JAPAN + 2),	EDIT_BOX1_WIDTH_JAPAN, BOX_HEIGHT_JAPAN, NULL, 0 },
+ { AATBUT, CLOSEWIN, TM_NONE, NULL, SIX_RESUME_OPTION,	FBX_JAPAN, FBY_JAPAN + 6*(BOX_HEIGHT_JAPAN + 2),	EDIT_BOX1_WIDTH_JAPAN, BOX_HEIGHT_JAPAN, NULL, 0 }
+
+};
+
+static CONFINIT t1ciOption      = { 6, 5, 72, 23, false, t1OptionBox,      ARRAYSIZE(t1OptionBox),      NO_HEADING };
+static CONFINIT t1ciOptionJapan = { 6, 5, 72, 23, false, t1OptionBoxJapan, ARRAYSIZE(t1OptionBoxJapan), NO_HEADING };
 
 static CONFBOX t2OptionBox[] = {
 
@@ -648,22 +648,20 @@ static CONFBOX t2OptionBox[] = {
 
 static CONFINIT t2ciOption = { 6, 4, 144, 60, false, t2OptionBox, sizeof(t2OptionBox)/sizeof(CONFBOX), NO_HEADING };
 
-#define ciOption (TinselV2 ? t2ciOption : t1ciOption)
-#define optionBox (TinselV2 ? t2OptionBox : t1OptionBox)
+#define ciOption (TinselV2 ? t2ciOption : (isJapanMode() ? t1ciOptionJapan : t1ciOption))
+#define optionBox (TinselV2 ? t2OptionBox : (isJapanMode() ? t1OptionBoxJapan : t1OptionBox))
 
 /*-------------------------------------------------------------*\
 | These are the load and save game menus.			|
 \*-------------------------------------------------------------*/
 
-#define NUM_RGROUP_BOXES	9
-
-#ifdef JAPAN
-#define NUM_RGROUP_BOXES	7	// number of visible slots
-#define SY		32	// y-position of first slot
-#else
 #define NUM_RGROUP_BOXES	9	// number of visible slots
 #define SY		31	// y-position of first slot
-#endif
+
+#define NUM_RGROUP_BOXES_JAPAN 7	// number of visible slots
+#define SY_JAPAN               32	// y-position of first slot
+
+#define rgroupBoxCount (isJapanMode() ? NUM_RGROUP_BOXES_JAPAN : NUM_RGROUP_BOXES)
 
 static CONFBOX t1LoadBox[NUM_RGROUP_BOXES+2] = {
 	{ RGROUP, LOADGAME, TM_NONE, NULL, USE_POINTER, 28, SY,				EDIT_BOX2_WIDTH, BOX_HEIGHT, NULL, 0 },
@@ -673,10 +671,20 @@ static CONFBOX t1LoadBox[NUM_RGROUP_BOXES+2] = {
 	{ RGROUP, LOADGAME, TM_NONE, NULL, USE_POINTER, 28, SY + 4*(BOX_HEIGHT + 2),	EDIT_BOX2_WIDTH, BOX_HEIGHT, NULL, 0 },
 	{ RGROUP, LOADGAME, TM_NONE, NULL, USE_POINTER, 28, SY + 5*(BOX_HEIGHT + 2),	EDIT_BOX2_WIDTH, BOX_HEIGHT, NULL, 0 },
 	{ RGROUP, LOADGAME, TM_NONE, NULL, USE_POINTER, 28, SY + 6*(BOX_HEIGHT + 2),	EDIT_BOX2_WIDTH, BOX_HEIGHT, NULL, 0 },
-#ifndef JAPAN
 	{ RGROUP, LOADGAME, TM_NONE, NULL, USE_POINTER, 28, SY + 7*(BOX_HEIGHT + 2),	EDIT_BOX2_WIDTH, BOX_HEIGHT, NULL, 0 },
 	{ RGROUP, LOADGAME, TM_NONE, NULL, USE_POINTER, 28, SY + 8*(BOX_HEIGHT + 2),	EDIT_BOX2_WIDTH, BOX_HEIGHT, NULL, 0 },
-#endif
+	{ ARSGBUT, LOADGAME, TM_NONE, NULL, USE_POINTER, 230, 44,	23, 19, NULL, IX1_TICK1 },
+	{ AAGBUT, CLOSEWIN, TM_NONE, NULL, USE_POINTER, 230, 44+47,	23, 19, NULL, IX1_CROSS1 }
+};
+
+static CONFBOX t1LoadBoxJapan[NUM_RGROUP_BOXES_JAPAN+2] = {
+	{ RGROUP, LOADGAME, TM_NONE, NULL, USE_POINTER, 28, SY_JAPAN,				EDIT_BOX2_WIDTH, BOX_HEIGHT_JAPAN, NULL, 0 },
+	{ RGROUP, LOADGAME, TM_NONE, NULL, USE_POINTER, 28, SY_JAPAN + (BOX_HEIGHT_JAPAN + 2),	EDIT_BOX2_WIDTH, BOX_HEIGHT_JAPAN, NULL, 0 },
+	{ RGROUP, LOADGAME, TM_NONE, NULL, USE_POINTER, 28, SY_JAPAN + 2*(BOX_HEIGHT_JAPAN + 2),	EDIT_BOX2_WIDTH, BOX_HEIGHT_JAPAN, NULL, 0 },
+	{ RGROUP, LOADGAME, TM_NONE, NULL, USE_POINTER, 28, SY_JAPAN + 3*(BOX_HEIGHT_JAPAN + 2),	EDIT_BOX2_WIDTH, BOX_HEIGHT_JAPAN, NULL, 0 },
+	{ RGROUP, LOADGAME, TM_NONE, NULL, USE_POINTER, 28, SY_JAPAN + 4*(BOX_HEIGHT_JAPAN + 2),	EDIT_BOX2_WIDTH, BOX_HEIGHT_JAPAN, NULL, 0 },
+	{ RGROUP, LOADGAME, TM_NONE, NULL, USE_POINTER, 28, SY_JAPAN + 5*(BOX_HEIGHT_JAPAN + 2),	EDIT_BOX2_WIDTH, BOX_HEIGHT_JAPAN, NULL, 0 },
+	{ RGROUP, LOADGAME, TM_NONE, NULL, USE_POINTER, 28, SY_JAPAN + 6*(BOX_HEIGHT_JAPAN + 2),	EDIT_BOX2_WIDTH, BOX_HEIGHT_JAPAN, NULL, 0 },
 	{ ARSGBUT, LOADGAME, TM_NONE, NULL, USE_POINTER, 230, 44,	23, 19, NULL, IX1_TICK1 },
 	{ AAGBUT, CLOSEWIN, TM_NONE, NULL, USE_POINTER, 230, 44+47,	23, 19, NULL, IX1_CROSS1 }
 };
@@ -696,8 +704,9 @@ static CONFBOX t2LoadBox[] = {
 	{ AAGBUT, CLOSEWIN,  TM_NONE, NULL, 0, 460, 100+100,	BW, BH, NULL, IX2_CROSS1 }
 };
 
-static CONFINIT t1ciLoad	= { 10, 6, 20, 16, true, t1LoadBox,	ARRAYSIZE(t1LoadBox), SIX_LOAD_HEADING };
-static CONFINIT t2ciLoad	= { 10, 6, 40, 16, true, t2LoadBox, sizeof(t2LoadBox)/sizeof(CONFBOX), SS_LOAD_HEADING };
+static CONFINIT t1ciLoad      = { 10, 6, 20, 16, true, t1LoadBox,      ARRAYSIZE(t1LoadBox),      SIX_LOAD_HEADING };
+static CONFINIT t1ciLoadJapan = { 10, 6, 20, 16, true, t1LoadBoxJapan, ARRAYSIZE(t1LoadBoxJapan), SIX_LOAD_HEADING };
+static CONFINIT t2ciLoad      = { 10, 6, 40, 16, true, t2LoadBox,      ARRAYSIZE(t2LoadBox),      SS_LOAD_HEADING };
 
 
 static CONFBOX t1SaveBox[NUM_RGROUP_BOXES+2] = {
@@ -708,10 +717,20 @@ static CONFBOX t1SaveBox[NUM_RGROUP_BOXES+2] = {
 	{ RGROUP, SAVEGAME, TM_NONE, NULL, USE_POINTER, 28,	SY + 4*(BOX_HEIGHT + 2),EDIT_BOX2_WIDTH, BOX_HEIGHT, NULL, 0 },
 	{ RGROUP, SAVEGAME, TM_NONE, NULL, USE_POINTER, 28,	SY + 5*(BOX_HEIGHT + 2),EDIT_BOX2_WIDTH, BOX_HEIGHT, NULL, 0 },
 	{ RGROUP, SAVEGAME, TM_NONE, NULL, USE_POINTER, 28,	SY + 6*(BOX_HEIGHT + 2),EDIT_BOX2_WIDTH, BOX_HEIGHT, NULL, 0 },
-#ifndef JAPAN
 	{ RGROUP, SAVEGAME, TM_NONE, NULL, USE_POINTER, 28,	SY + 7*(BOX_HEIGHT + 2),EDIT_BOX2_WIDTH, BOX_HEIGHT, NULL, 0 },
 	{ RGROUP, SAVEGAME, TM_NONE, NULL, USE_POINTER, 28,	SY + 8*(BOX_HEIGHT + 2),EDIT_BOX2_WIDTH, BOX_HEIGHT, NULL, 0 },
-#endif
+	{ ARSGBUT, SAVEGAME, TM_NONE, NULL,USE_POINTER, 230, 44,	23, 19, NULL, IX1_TICK1 },
+	{ AAGBUT, CLOSEWIN, TM_NONE, NULL, USE_POINTER, 230, 44+47,	23, 19, NULL, IX1_CROSS1 }
+};
+
+static CONFBOX t1SaveBoxJapan[NUM_RGROUP_BOXES_JAPAN+2] = {
+	{ RGROUP, SAVEGAME, TM_NONE, NULL, USE_POINTER, 28,	SY_JAPAN,			EDIT_BOX2_WIDTH, BOX_HEIGHT_JAPAN, NULL, 0 },
+	{ RGROUP, SAVEGAME, TM_NONE, NULL, USE_POINTER, 28,	SY_JAPAN + (BOX_HEIGHT_JAPAN + 2),	EDIT_BOX2_WIDTH, BOX_HEIGHT_JAPAN, NULL, 0 },
+	{ RGROUP, SAVEGAME, TM_NONE, NULL, USE_POINTER, 28,	SY_JAPAN + 2*(BOX_HEIGHT_JAPAN + 2),EDIT_BOX2_WIDTH, BOX_HEIGHT_JAPAN, NULL, 0 },
+	{ RGROUP, SAVEGAME, TM_NONE, NULL, USE_POINTER, 28,	SY_JAPAN + 3*(BOX_HEIGHT_JAPAN + 2),EDIT_BOX2_WIDTH, BOX_HEIGHT_JAPAN, NULL, 0 },
+	{ RGROUP, SAVEGAME, TM_NONE, NULL, USE_POINTER, 28,	SY_JAPAN + 4*(BOX_HEIGHT_JAPAN + 2),EDIT_BOX2_WIDTH, BOX_HEIGHT_JAPAN, NULL, 0 },
+	{ RGROUP, SAVEGAME, TM_NONE, NULL, USE_POINTER, 28,	SY_JAPAN + 5*(BOX_HEIGHT_JAPAN + 2),EDIT_BOX2_WIDTH, BOX_HEIGHT_JAPAN, NULL, 0 },
+	{ RGROUP, SAVEGAME, TM_NONE, NULL, USE_POINTER, 28,	SY_JAPAN + 6*(BOX_HEIGHT_JAPAN + 2),EDIT_BOX2_WIDTH, BOX_HEIGHT_JAPAN, NULL, 0 },
 	{ ARSGBUT, SAVEGAME, TM_NONE, NULL,USE_POINTER, 230, 44,	23, 19, NULL, IX1_TICK1 },
 	{ AAGBUT, CLOSEWIN, TM_NONE, NULL, USE_POINTER, 230, 44+47,	23, 19, NULL, IX1_CROSS1 }
 };
@@ -731,26 +750,27 @@ static CONFBOX t2SaveBox[] = {
  { AAGBUT, CLOSEWIN,  TM_NONE, NULL, 0, 460, 100+100,	BW, BH, NULL, IX2_CROSS1 }
 };
 
-static CONFINIT t1ciSave	= { 10, 6, 20, 16, true, t1SaveBox,	ARRAYSIZE(t1SaveBox),	SIX_SAVE_HEADING };
-static CONFINIT t2ciSave	= { 10, 6, 40, 16, true, t2SaveBox, sizeof(t2SaveBox)/sizeof(CONFBOX), SS_SAVE_HEADING };
+static CONFINIT t1ciSave      = { 10, 6, 20, 16, true, t1SaveBox,      ARRAYSIZE(t1SaveBox), SIX_SAVE_HEADING };
+static CONFINIT t1ciSaveJapan = { 10, 6, 20, 16, true, t1SaveBoxJapan, ARRAYSIZE(t1SaveBox), SIX_SAVE_HEADING };
+static CONFINIT t2ciSave      = { 10, 6, 40, 16, true, t2SaveBox,      ARRAYSIZE(t2SaveBox), SS_SAVE_HEADING };
 
-#define ciLoad (TinselV2 ? t2ciLoad : t1ciLoad)
-#define loadBox (TinselV2 ? t2LoadBox : t1LoadBox)
-#define ciSave (TinselV2 ? t2ciSave : t1ciSave)
-#define saveBox (TinselV2 ? t2SaveBox : t1SaveBox)
+#define ciLoad (TinselV2 ? t2ciLoad : (isJapanMode() ? t1ciLoadJapan : t1ciLoad))
+#define loadBox (TinselV2 ? t2LoadBox : (isJapanMode() ? t1LoadBoxJapan : t1LoadBox))
+#define ciSave (TinselV2 ? t2ciSave : (isJapanMode() ? t1ciSaveJapan : t1ciSave))
+#define saveBox (TinselV2 ? t2SaveBox : (isJapanMode() ? t1SaveBoxJapan : t1SaveBox))
 
 /*-------------------------------------------------------------*\
 | This is the restart confirmation 'menu'.			|
 \*-------------------------------------------------------------*/
 
 static CONFBOX t1RestartBox[] = {
-#ifdef JAPAN
-	{ AAGBUT, INITGAME, TM_NONE, NULL, USE_POINTER, 96, 44,	23, 19, NULL, IX_TICK1 },
-	{ AAGBUT, CLOSEWIN, TM_NONE, NULL, USE_POINTER, 56, 44,	23, 19, NULL, IX_CROSS1 }
-#else
 	{ AAGBUT, INITGAME, TM_NONE, NULL, USE_POINTER, 70, 28,	23, 19, NULL, IX1_TICK1 },
 	{ AAGBUT, CLOSEWIN, TM_NONE, NULL, USE_POINTER, 30, 28,	23, 19, NULL, IX1_CROSS1 }
-#endif
+};
+
+static CONFBOX t1RestartBoxJapan[] = {
+	{ AAGBUT, INITGAME, TM_NONE, NULL, USE_POINTER, 96, 44,	23, 19, NULL, IX1_TICK1 },
+	{ AAGBUT, CLOSEWIN, TM_NONE, NULL, USE_POINTER, 56, 44,	23, 19, NULL, IX1_CROSS1 }
 };
 
 static CONFBOX t1RestartBoxPSX[] = {
@@ -763,15 +783,13 @@ static CONFBOX t2RestartBox[] = {
 	{ AAGBUT, CLOSEWIN, TM_NONE, NULL, 0, 60, 78,  BW, BH, NULL, IX2_CROSS1 }
 };
 
-#ifdef JAPAN
-static CONFINIT t1ciRestart	= { 6, 2, 72, 53, false, t1RestartBox,	ARRAYSIZE(t1RestartBox),	SIX_RESTART_HEADING };
-#else
 static CONFINIT t1ciRestart	= { 4, 2, 98, 53, false, t1RestartBox,	ARRAYSIZE(t1RestartBox),	SIX_RESTART_HEADING };
-#endif
+static CONFINIT t1ciRestartJapan = { 6, 2, 72,  53, false, t1RestartBoxJapan, ARRAYSIZE(t1RestartBoxJapan), SIX_RESTART_HEADING };
 static CONFINIT t1ciRestartPSX	= { 8, 2, 46, 53, false, t1RestartBoxPSX,	ARRAYSIZE(t1RestartBoxPSX),	SIX_RESTART_HEADING };
-static CONFINIT t2ciRestart	= { 4, 2, 196, 53, false, t2RestartBox, sizeof(t2RestartBox)/sizeof(CONFBOX), SS_RESTART_HEADING };
+static CONFINIT t2ciRestart	= { 4, 2, 196, 53, false, t2RestartBox, ARRAYSIZE(t2RestartBox), SS_RESTART_HEADING };
 
-#define ciRestart (TinselV2 ? t2ciRestart : (TinselV1PSX ? t1ciRestartPSX : t1ciRestart))
+#define ciRestart (TinselV2 ? t2ciRestart : (isJapanMode() ? t1ciRestartJapan : (TinselV1PSX ? t1ciRestartPSX : t1ciRestart)))
+#define restartBox (TinselV2 ? t2RestartBox : (isJapanMode() ? t1RestartBoxJapan : t1RestartBox))
 
 /*-------------------------------------------------------------*\
 | This is the sound control 'menu'. In Discworld 2, it also		|
@@ -808,14 +826,17 @@ static int bFlipped;	// looks like this is just so the code has something to alt
 static CONFBOX controlBox[] = {
 	{ SLIDER, NOFUNC, TM_NONE, NULL, SIX_DCLICK_SLIDER,	142, 25,	3*DOUBLE_CLICK_TIME, 1, 0 /*&_vm->_config->_dclickSpeed*/, 0 },
 	{ FLIP, NOFUNC, TM_NONE, NULL, SIX_DCLICK_TEST,		142, 25+30,	23, 19, &bFlipped, IX1_CIRCLE1 },
-#ifdef JAPAN
-	{ TOGGLE, NOFUNC, TM_NONE, NULL, SIX_SWAP_TOGGLE,	205, 25+70,	23, 19, 0 /*&_vm->_config->_swapButtons*/, 0 }
-#else
 	{ TOGGLE, NOFUNC, TM_NONE, NULL, SIX_SWAP_TOGGLE,	155, 25+70,	23, 19, 0 /*&_vm->_config->_swapButtons*/, 0 }
-#endif
 };
 
-static CONFINIT ciControl	= { 10, 5, 20, 16, false, controlBox,	ARRAYSIZE(controlBox),	NO_HEADING };
+static CONFBOX controlBoxJapan[] = {
+	{ SLIDER, NOFUNC, TM_NONE, NULL, SIX_DCLICK_SLIDER,	142, 25,	3*DOUBLE_CLICK_TIME, 1, 0 /*&_vm->_config->_dclickSpeed*/, 0 },
+	{ FLIP, NOFUNC, TM_NONE, NULL, SIX_DCLICK_TEST,		142, 25+30,	23, 19, &bFlipped, IX1_CIRCLE1 },
+	{ TOGGLE, NOFUNC, TM_NONE, NULL, SIX_SWAP_TOGGLE,	205, 25+70,	23, 19, 0 /*&_vm->_config->_swapButtons*/, 0 }
+};
+
+static CONFINIT ciControl      = { 10, 5, 20, 16, false, controlBox,      ARRAYSIZE(controlBox),      NO_HEADING };
+static CONFINIT ciControlJapan = { 10, 5, 20, 16, false, controlBoxJapan, ARRAYSIZE(controlBoxJapan), NO_HEADING };
 
 /*-------------------------------------------------------------*\
 | This is the subtitles 'menu'.					|
@@ -872,13 +893,13 @@ static CONFBOX subtitlesBox5Flags[] =	{
 \*-------------------------------------------------------------*/
 
 static CONFBOX t1QuitBox[] = {
-#ifdef JAPAN
- { AAGBUT, IQUITGAME, TM_NONE, NULL, USE_POINTER,70, 44,	23, 19, NULL, IX_TICK1 },
- { AAGBUT, CLOSEWIN, TM_NONE, NULL, USE_POINTER,	30, 44,	23, 19, NULL, IX_CROSS1 }
-#else
  { AAGBUT, IQUITGAME, TM_NONE, NULL, USE_POINTER,70, 28,	23, 19, NULL, IX1_TICK1 },
  { AAGBUT, CLOSEWIN, TM_NONE, NULL, USE_POINTER,	30, 28,	23, 19, NULL, IX1_CROSS1 }
-#endif
+};
+
+static CONFBOX t1QuitBoxJapan[] = {
+ { AAGBUT, IQUITGAME, TM_NONE, NULL, USE_POINTER,70, 44,	23, 19, NULL, IX1_TICK1 },
+ { AAGBUT, CLOSEWIN, TM_NONE, NULL, USE_POINTER,	30, 44,	23, 19, NULL, IX1_CROSS1 }
 };
 
 static CONFBOX t2QuitBox[] = {
@@ -886,11 +907,12 @@ static CONFBOX t2QuitBox[] = {
 	{ AAGBUT, CLOSEWIN, TM_NONE, NULL, 0, 60, 78,  BW, BH, NULL, IX2_CROSS1 }
 };
 
-static CONFINIT t1ciQuit	= { 4, 2, 98, 53, false, t1QuitBox,	ARRAYSIZE(t1QuitBox),	SIX_QUIT_HEADING };
-static CONFINIT t2ciQuit	= { 4, 2, 196, 53, false, t2QuitBox, sizeof(t2QuitBox)/sizeof(CONFBOX), SS_QUIT_HEADING };
+static CONFINIT t1ciQuit      = { 4, 2, 98,  53, false, t1QuitBox,      ARRAYSIZE(t1QuitBox),      SIX_QUIT_HEADING };
+static CONFINIT t1ciQuitJapan = { 4, 2, 98,  53, false, t1QuitBoxJapan, ARRAYSIZE(t1QuitBoxJapan), SIX_QUIT_HEADING };
+static CONFINIT t2ciQuit      = { 4, 2, 196, 53, false, t2QuitBox,      ARRAYSIZE(t2QuitBox),      SS_QUIT_HEADING };
 
-#define quitBox (TinselV2 ? t2QuitBox : t1QuitBox)
-#define ciQuit (TinselV2 ? t2ciQuit : t1ciQuit)
+#define quitBox (TinselV2 ? t2QuitBox : (isJapanMode() ? t1QuitBoxJapan : t1QuitBox))
+#define ciQuit (TinselV2 ? t2ciQuit : (isJapanMode() ? t1ciQuitJapan : t1ciQuit))
 
 /***************************************************************************\
 |************************    Startup and shutdown    ***********************|
@@ -1013,24 +1035,14 @@ static bool RePosition();
 
 #define M_SW	5	// Side width
 #define M_TH	5	// Top height
-#ifdef JAPAN
-#define M_TOFF	6	// Title text Y offset from top
-#define M_TBB	20	// Title box bottom Y offset
-#else
-#define M_TOFF	4	// Title text Y offset from top
-#define M_TBB	14	// Title box bottom Y offset
-#endif
+#define M_TOFF	(isJapanMode() ? 6 : 4)	// Title text Y offset from top
+#define M_TBB	(isJapanMode() ? 20 : 14)	// Title box bottom Y offset
 #define M_SBL	26	// Scroll bar left X offset
 #define M_SH	5	// Slider height (*)
 #define M_SW	5	// Slider width (*)
 #define M_SXOFF	9	// Slider X offset from right-hand side
-#ifdef JAPAN
-#define M_IUT	22	// Y offset of top of up arrow
-#define M_IUB	30	// Y offset of bottom of up arrow
-#else
-#define M_IUT	16	// Y offset of top of up arrow
-#define M_IUB	24	// Y offset of bottom of up arrow
-#endif
+#define M_IUT	(isJapanMode() ? 22 : 16)	// Y offset of top of up arrow
+#define M_IUB	(isJapanMode() ? 30	: 24) // Y offset of bottom of up arrow
 #define M_IDT	10	// Y offset (from bottom) of top of down arrow
 #define M_IDB	3	// Y offset (from bottom) of bottom of down arrow
 
@@ -1135,18 +1147,18 @@ static void FirstScene(int first) {
 	}
 
 	// Force it to a sensible value
-	if (first > g_numScenes - NUM_RGROUP_BOXES)
-		first = g_numScenes - NUM_RGROUP_BOXES;
+	if (first > g_numScenes - rgroupBoxCount)
+		first = g_numScenes - rgroupBoxCount;
 	if (first < 0)
 		first = 0;
 
 	// Fill in the rest
-	for (i = 0; i < NUM_RGROUP_BOXES && i + first < g_numScenes; i++) {
+	for (i = 0; i < rgroupBoxCount && i + first < g_numScenes; i++) {
 		cd.box[i].textMethod = TM_STRINGNUM;
 		cd.box[i].ixText = FROM_32(g_pHopper[i + first].hSceneDesc);
 	}
 	// Blank out the spare ones (if any)
-	while (i < NUM_RGROUP_BOXES) {
+	while (i < rgroupBoxCount) {
 		cd.box[i].textMethod = TM_NONE;
 		cd.box[i++].ixText = 0;
 	}
@@ -1172,17 +1184,17 @@ static void FirstEntry(int first) {
 	g_numEntries = FROM_32(g_pChosenScene->numEntries);
 
 	// Force first to a sensible value
-	if (first > g_numEntries-NUM_RGROUP_BOXES)
-		first = g_numEntries-NUM_RGROUP_BOXES;
+	if (first > g_numEntries - rgroupBoxCount)
+		first = g_numEntries - rgroupBoxCount;
 	if (first < 0)
 		first = 0;
 
-	for (i = 0; i < NUM_RGROUP_BOXES && i < g_numEntries; i++) {
+	for (i = 0; i < rgroupBoxCount && i < g_numEntries; i++) {
 		cd.box[i].textMethod = TM_STRINGNUM;
 		cd.box[i].ixText = FROM_32(g_pEntries[FROM_32(g_pChosenScene->entryIndex) + i + first].hDesc);
 	}
 	// Blank out the spare ones (if any)
-	while (i < NUM_RGROUP_BOXES) {
+	while (i < rgroupBoxCount) {
 		cd.box[i].textMethod = TM_NONE;
 		cd.box[i++].ixText = 0;
 	}
@@ -1476,8 +1488,8 @@ static void FirstFile(int first) {
 
 	if (first < 0)
 		first = 0;
-	else if (first > MAX_SAVED_FILES - NUM_RGROUP_BOXES)
-		first = MAX_SAVED_FILES - NUM_RGROUP_BOXES;
+	else if (first > MAX_SAVED_FILES - rgroupBoxCount)
+		first = MAX_SAVED_FILES - rgroupBoxCount;
 
 	if (first == 0 && i < MAX_SAVED_FILES && cd.box == saveBox) {
 		// Blank first entry for new save
@@ -1487,7 +1499,7 @@ static void FirstFile(int first) {
 		cd.modifier = j = 0;
 	}
 
-	for (i = first; j < NUM_RGROUP_BOXES; j++, i++) {
+	for (i = first; j < rgroupBoxCount; j++, i++) {
 		cd.box[j].boxText = ListEntry(i, LE_DESC);
 	}
 
@@ -1500,9 +1512,9 @@ static void FirstFile(int first) {
 
 static void InvSaveGame() {
 	if (cd.selBox != NOBOX) {
-#ifndef JAPAN
-		g_sedit[strlen(g_sedit)-1] = 0;	// Don't include the cursor!
-#endif
+		if (!isJapanMode())
+			g_sedit[strlen(g_sedit) - 1] = 0; // Don't include the cursor!
+
 		SaveGame(ListEntry(cd.selBox-cd.modifier+cd.extraBase, LE_NAME), g_sedit);
 	}
 }
@@ -1536,7 +1548,6 @@ static void InvLoadGame() {
  * Edit the string in sedit[]
  * Returns true if the string was altered.
  */
-#ifndef JAPAN
 static bool UpdateString(const Common::KeyState &kbd) {
 	int	cpos;
 
@@ -1567,7 +1578,6 @@ static bool UpdateString(const Common::KeyState &kbd) {
 	}
 	return false;
 }
-#endif
 
 /**
  * Keystrokes get sent here when load/save screen is up.
@@ -1585,34 +1595,30 @@ static bool InvKeyIn(const Common::KeyState &kbd) {
 		return true;	// Key needs processing
 	} else if (kbd.keycode == Common::KEYCODE_ESCAPE) {
 		return true;	// Key needs processing
-	} else {
-#ifndef JAPAN
-		if (UpdateString(kbd)) {
-			/*
-			* Delete display of text currently being edited,
-			* and replace it with freshly edited text.
-			*/
-			if (g_iconArray[HL3] != NULL) {
-				MultiDeleteObject(GetPlayfieldList(FIELD_STATUS), g_iconArray[HL3]);
-				g_iconArray[HL3] = NULL;
-			}
+	} else if (!isJapanMode() && UpdateString(kbd)) {
+		/*
+		* Delete display of text currently being edited,
+		* and replace it with freshly edited text.
+		*/
+		if (g_iconArray[HL3] != NULL) {
+			MultiDeleteObject(GetPlayfieldList(FIELD_STATUS), g_iconArray[HL3]);
+			g_iconArray[HL3] = NULL;
+		}
+		g_iconArray[HL3] = ObjectTextOut(
+			GetPlayfieldList(FIELD_STATUS), g_sedit, 0,
+			g_InvD[g_ino].inventoryX + cd.box[cd.selBox].xpos + 2,
+			g_InvD[g_ino].inventoryY + cd.box[cd.selBox].ypos + TYOFF,
+			GetTagFontHandle(), 0);
+		if (MultiRightmost(g_iconArray[HL3]) > MAX_NAME_RIGHT) {
+			MultiDeleteObject(GetPlayfieldList(FIELD_STATUS), g_iconArray[HL3]);
+			UpdateString(Common::KeyState(Common::KEYCODE_BACKSPACE));
 			g_iconArray[HL3] = ObjectTextOut(
 				GetPlayfieldList(FIELD_STATUS), g_sedit, 0,
 				g_InvD[g_ino].inventoryX + cd.box[cd.selBox].xpos + 2,
 				g_InvD[g_ino].inventoryY + cd.box[cd.selBox].ypos + TYOFF,
 				GetTagFontHandle(), 0);
-			if (MultiRightmost(g_iconArray[HL3]) > MAX_NAME_RIGHT) {
-				MultiDeleteObject(GetPlayfieldList(FIELD_STATUS), g_iconArray[HL3]);
-				UpdateString(Common::KeyState(Common::KEYCODE_BACKSPACE));
-				g_iconArray[HL3] = ObjectTextOut(
-					GetPlayfieldList(FIELD_STATUS), g_sedit, 0,
-					g_InvD[g_ino].inventoryX + cd.box[cd.selBox].xpos + 2,
-					g_InvD[g_ino].inventoryY + cd.box[cd.selBox].ypos + TYOFF,
-					GetTagFontHandle(), 0);
-			}
-			MultiSetZPosition(g_iconArray[HL3], Z_INV_ITEXT + 2);
 		}
-#endif
+		MultiSetZPosition(g_iconArray[HL3], Z_INV_ITEXT + 2);
 	}
 	return false;
 }
@@ -1622,11 +1628,6 @@ static bool InvKeyIn(const Common::KeyState &kbd) {
  * If it's editable (save game), copy existing description and add a cursor.
  */
 static void Select(int i, bool force) {
-#ifdef JAPAN
-	time_t		secs_now;
-	struct tm	*time_now;
-#endif
-
 	i &= ~IS_MASK;
 
 	if (cd.selBox == i && !force)
@@ -1663,29 +1664,26 @@ static void Select(int i, bool force) {
 			} else {
 				assert(cd.box[i].ixText == USE_POINTER);
 			}
-#ifdef JAPAN
-			// Current date and time
-			time(&secs_now);
-			time_now = localtime(&secs_now);
-			strftime(g_sedit, SG_DESC_LEN, "%D %H:%M", time_now);
-#else
-			// Current description with cursor appended
-			if (cd.box[i].boxText != NULL) {
-				strcpy(g_sedit, cd.box[i].boxText);
-				strcat(g_sedit, sCursor);
+
+			if (isJapanMode()) {
+				// Current date and time
+				TimeDate time;
+				g_system->getTimeAndDate(time);
+				sprintf(g_sedit, "%d %d:%d", time.tm_mday, time.tm_hour, time.tm_min);
 			} else {
-				strcpy(g_sedit, sCursor);
+				// Current description with cursor appended
+				if (cd.box[i].boxText != NULL) {
+					strcpy(g_sedit, cd.box[i].boxText);
+					strcat(g_sedit, sCursor);
+				} else {
+					strcpy(g_sedit, sCursor);
+				}
 			}
-#endif
 
 			g_iconArray[HL3] = ObjectTextOut(
 				GetPlayfieldList(FIELD_STATUS), g_sedit, 0,
 				g_InvD[g_ino].inventoryX + cd.box[i].xpos + 2,
-#ifdef JAPAN
-				g_InvD[g_ino].inventoryY + cd.box[i].ypos + 2,
-#else
-				g_InvD[g_ino].inventoryY + cd.box[i].ypos + TYOFF,
-#endif
+				g_InvD[g_ino].inventoryY + cd.box[i].ypos + (isJapanMode() ? 2 : TYOFF),
 				GetTagFontHandle(), 0);
 			MultiSetZPosition(g_iconArray[HL3], Z_INV_ITEXT + 2);
 		} else {
@@ -2758,19 +2756,10 @@ static void AddBox(int *pi, const int i) {
 			if (cd.box[i].boxText != NULL) {
 				if (cd.box[i].boxType == RGROUP) {
 					g_iconArray[*pi] = ObjectTextOut(GetPlayfieldList(FIELD_STATUS), cd.box[i].boxText, 0,
-#ifdef JAPAN
-							x + 2, y+2, GetTagFontHandle(), 0);
-#else
-							x + 2, y + TYOFF, GetTagFontHandle(), 0);
-#endif
+							x + 2, y + (isJapanMode() ? 2 : TYOFF), GetTagFontHandle(), 0);
 				} else {
 					g_iconArray[*pi] = ObjectTextOut(GetPlayfieldList(FIELD_STATUS), cd.box[i].boxText, 0,
-#ifdef JAPAN
-// Note: it never seems to go here!
-							x + cd.box[i].w/2, y+2, GetTagFontHandle(), TXT_CENTER);
-#else
-							x + cd.box[i].w / 2, y + TYOFF, GetTagFontHandle(), TXT_CENTER);
-#endif
+							x + cd.box[i].w / 2, y + (isJapanMode() ? 2 : TYOFF), GetTagFontHandle(), TXT_CENTER);
 				}
 
 				MultiSetZPosition(g_iconArray[*pi], Z_INV_ITEXT);
@@ -2795,11 +2784,7 @@ static void AddBox(int *pi, const int i) {
 			else
 				g_iconArray[*pi] = ObjectTextOut(GetPlayfieldList(FIELD_STATUS),
 					TextBufferAddr(), 0,
-#ifdef JAPAN
-					x + cd.box[i].w/2, y+2, GetTagFontHandle(), TXT_CENTER);
-#else
-					x + cd.box[i].w / 2, y + TYOFF, GetTagFontHandle(), TXT_CENTER);
-#endif
+					x + cd.box[i].w / 2, y + (isJapanMode() ? 2 : TYOFF), GetTagFontHandle(), TXT_CENTER);
 			MultiSetZPosition(g_iconArray[*pi], Z_INV_ITEXT);
 			*pi += 1;
 		}
@@ -2983,25 +2968,25 @@ static void AddBoxes(bool bPosnSlide) {
 
 	if (cd.bExtraWin) {
 		if (bPosnSlide && !TinselV2)
-			g_sliderYpos = g_sliderYmin + (cd.extraBase*(g_sliderYmax-g_sliderYmin))/(MAX_SAVED_FILES-NUM_RGROUP_BOXES);
+			g_sliderYpos = g_sliderYmin + (cd.extraBase*(g_sliderYmax-g_sliderYmin))/(MAX_SAVED_FILES-rgroupBoxCount);
 		else if (bPosnSlide) {
 			// Tinsel 2 bPosnSlide code
 			int lastY = g_sliderYpos;
 
 			if (cd.box == loadBox || cd.box == saveBox)
 				g_sliderYpos = g_sliderYmin + (cd.extraBase * (sliderRange)) /
-				(MAX_SAVED_FILES - NUM_RGROUP_BOXES);
+				(MAX_SAVED_FILES - rgroupBoxCount);
 			else if (cd.box == hopperBox1) {
-				if (g_numScenes <= NUM_RGROUP_BOXES)
+				if (g_numScenes <= rgroupBoxCount)
 					g_sliderYpos = g_sliderYmin;
 				else
-					g_sliderYpos = g_sliderYmin + (cd.extraBase*(sliderRange))/(g_numScenes-NUM_RGROUP_BOXES);
+					g_sliderYpos = g_sliderYmin + (cd.extraBase*(sliderRange))/(g_numScenes-rgroupBoxCount);
 			} else if (cd.box == hopperBox2) {
-				if (g_numEntries <= NUM_RGROUP_BOXES)
+				if (g_numEntries <= rgroupBoxCount)
 					g_sliderYpos = g_sliderYmin;
 				else
 					g_sliderYpos = g_sliderYmin + (cd.extraBase * (sliderRange)) /
-					(g_numEntries-NUM_RGROUP_BOXES);
+					(g_numEntries-rgroupBoxCount);
 			}
 
 			MultiMoveRelXY(g_SlideObject, 0, g_sliderYpos - lastY);
@@ -3946,10 +3931,18 @@ extern void OpenMenu(CONFTYPE menuType) {
 	case CONTROLS_MENU:
 #if 1
 		// FIXME: Hack to setup CONFBOX pointer to data in the global Config object
-		controlBox[0].ival = &_vm->_config->_dclickSpeed;
-		controlBox[2].ival = &_vm->_config->_swapButtons;
+		if (isJapanMode()) {
+			controlBoxJapan[0].ival = &_vm->_config->_dclickSpeed;
+			controlBoxJapan[2].ival = &_vm->_config->_swapButtons;
+		} else {
+			controlBox[0].ival = &_vm->_config->_dclickSpeed;
+			controlBox[2].ival = &_vm->_config->_swapButtons;
+		}
 #endif
-		SetMenuGlobals(&ciControl);
+		if (isJapanMode())
+			SetMenuGlobals(&ciControlJapan);
+		else
+			SetMenuGlobals(&ciControl);
 		break;
 
 	case QUIT_MENU:
@@ -4215,12 +4208,10 @@ extern void InventoryProcess(CORO_PARAM, const void *) {
 					KillInventory();
 					OpenMenu(CONTROLS_MENU);
 					break;
-	#ifndef JAPAN
 				case OPENSUBT:
 					KillInventory();
 					OpenMenu(SUBTITLES_MENU);
 					break;
-	#endif
 				case OPENQUIT:
 					KillInventory();
 					OpenMenu(QUIT_MENU);
@@ -4372,12 +4363,12 @@ static void SlideCSlider(int y, SSFN fn) {
 		fc = cd.extraBase;
 
 		if ((cd.box == saveBox || cd.box == loadBox))
-			FirstFile((g_sliderYpos - g_sliderYmin) * (MAX_SAVED_FILES - NUM_RGROUP_BOXES) /
+			FirstFile((g_sliderYpos - g_sliderYmin) * (MAX_SAVED_FILES - rgroupBoxCount) /
 				(g_sliderYmax - g_sliderYmin));
 		else if (cd.box == hopperBox1)
-			FirstScene((g_sliderYpos - g_sliderYmin) * (g_numScenes - NUM_RGROUP_BOXES) / sliderRange);
+			FirstScene((g_sliderYpos - g_sliderYmin) * (g_numScenes - rgroupBoxCount) / sliderRange);
 		else if (cd.box == hopperBox2)
-			FirstEntry((g_sliderYpos - g_sliderYmin) * (g_numEntries - NUM_RGROUP_BOXES) / sliderRange);
+			FirstEntry((g_sliderYpos - g_sliderYmin) * (g_numEntries - rgroupBoxCount) / sliderRange);
 
 		// If extraBase has changed...
 		if (fc != cd.extraBase) {
@@ -4388,8 +4379,8 @@ static void SlideCSlider(int y, SSFN fn) {
 			// Ensure within legal limits
 			if (cd.selBox < 0)
 				cd.selBox = 0;
-			else if (cd.selBox >= NUM_RGROUP_BOXES)
-				cd.selBox = NUM_RGROUP_BOXES-1;
+			else if (cd.selBox >= rgroupBoxCount)
+				cd.selBox = rgroupBoxCount-1;
 
 			Select(cd.selBox, true);
 		}
@@ -4863,19 +4854,19 @@ static void InvDragEnd() {
 
 static bool MenuDown(int lines) {
 	if (cd.box == loadBox || cd.box == saveBox) {
-		if (cd.extraBase < MAX_SAVED_FILES - NUM_RGROUP_BOXES) {
+		if (cd.extraBase < MAX_SAVED_FILES - rgroupBoxCount) {
 			FirstFile(cd.extraBase + lines);
 			AddBoxes(true);
 			return true;
 		}
 	} else if (cd.box == hopperBox1) {
-		if (cd.extraBase < g_numScenes - NUM_RGROUP_BOXES) {
+		if (cd.extraBase < g_numScenes - rgroupBoxCount) {
 			FirstScene(cd.extraBase + lines);
 			AddBoxes(true);
 			return true;
 		}
 	} else if (cd.box == hopperBox2) {
-		if (cd.extraBase < g_numEntries - NUM_RGROUP_BOXES) {
+		if (cd.extraBase < g_numEntries - rgroupBoxCount) {
 			FirstEntry(cd.extraBase + lines);
 			AddBoxes(true);
 			return true;
@@ -4911,21 +4902,21 @@ static void MenuRollDown() {
 
 static void MenuRollUp() {
 	if (MenuUp(1)) {
-		if (cd.selBox < NUM_RGROUP_BOXES - 1)
+		if (cd.selBox < rgroupBoxCount - 1)
 			cd.selBox++;
 		Select(cd.selBox, true);
 	}
 }
 
 static void MenuPageDown() {
-	if (MenuDown(NUM_RGROUP_BOXES - 1)) {
-		cd.selBox = NUM_RGROUP_BOXES - 1;
+	if (MenuDown(rgroupBoxCount - 1)) {
+		cd.selBox = rgroupBoxCount - 1;
 		Select(cd.selBox, true);
 	}
 }
 
 static void MenuPageUp() {
-	if (MenuUp(NUM_RGROUP_BOXES - 1)) {
+	if (MenuUp(rgroupBoxCount - 1)) {
 		cd.selBox = 0;
 		Select(cd.selBox, true);
 	}
@@ -5056,14 +5047,14 @@ static void ConfActionSpecial(int i) {
 				FirstEntry(cd.extraBase - 1);
 
 			AddBoxes(true);
-			if (cd.selBox < NUM_RGROUP_BOXES - 1)
+			if (cd.selBox < rgroupBoxCount - 1)
 				cd.selBox += 1;
 			Select(cd.selBox, true);
 		}
 		break;
 	case IB_DOWN:	// Scroll down
 		if ((cd.box == loadBox) || (cd.box == saveBox)) {
-			if (cd.extraBase < MAX_SAVED_FILES - NUM_RGROUP_BOXES) {
+			if (cd.extraBase < MAX_SAVED_FILES - rgroupBoxCount) {
 				FirstFile(cd.extraBase + 1);
 				AddBoxes(true);
 				if (cd.selBox)
@@ -5071,7 +5062,7 @@ static void ConfActionSpecial(int i) {
 				Select(cd.selBox, true);
 			}
 		} else if (cd.box == hopperBox1) {
-			if (cd.extraBase < g_numScenes - NUM_RGROUP_BOXES) {
+			if (cd.extraBase < g_numScenes - rgroupBoxCount) {
 				FirstScene(cd.extraBase + 1);
 				AddBoxes(true);
 				if (cd.selBox)
@@ -5079,7 +5070,7 @@ static void ConfActionSpecial(int i) {
 				Select(cd.selBox, true);
 			}
 		} else if (cd.box == hopperBox2) {
-			if (cd.extraBase < g_numEntries - NUM_RGROUP_BOXES) {
+			if (cd.extraBase < g_numEntries - rgroupBoxCount) {
 				FirstEntry(cd.extraBase + 1);
 				AddBoxes(true);
 				if (cd.selBox)

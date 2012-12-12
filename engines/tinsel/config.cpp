@@ -111,8 +111,6 @@ void Config::readFromDisk() {
 	if (ConfMan.hasKey("subtitles"))
 		_useSubtitles = ConfMan.getBool("subtitles");
 
-	// FIXME: If JAPAN is set, subtitles are forced OFF in the original engine
-
 	//_swapButtons = ConfMan.getBool("swap_buttons") == 1 ? true : false;
 	//ConfigData.language = language;	// not necessary, as language has been set in the launcher
 	//ConfigData._isAmericanEnglishVersion = _isAmericanEnglishVersion;		// EN_USA / EN_GRB
@@ -138,20 +136,24 @@ void Config::readFromDisk() {
 	case Common::EN_USA:
 		_language = TXT_US;
 		break;
-	default:
-		_language = TXT_ENGLISH;
-	}
-
-	if (lang == Common::JA_JPN) {
-		// TODO: Add support for JAPAN version
-	} else if (lang == Common::HE_ISR) {
+	case Common::JA_JPN:
+		// Subtitles are forced off by default
+		_language = TXT_JAPANESE;
+		_useSubtitles = false;
+		break;
+	case Common::HE_ISR:
 		// TODO: Add support for HEBREW version
 
 		// The Hebrew version appears to the software as being English
 		// but it needs to have subtitles on...
 		_language = TXT_ENGLISH;
 		_useSubtitles = true;
-	} else if (_vm->getFeatures() & GF_USE_3FLAGS) {
+		break;
+	default:
+		_language = TXT_ENGLISH;
+	}
+
+	if (_vm->getFeatures() & GF_USE_3FLAGS) {
 		// 3 FLAGS version supports French, German, Spanish
 		// Fall back to German if necessary
 		if (_language != TXT_FRENCH && _language != TXT_GERMAN && _language != TXT_SPANISH) {
@@ -170,11 +172,7 @@ void Config::readFromDisk() {
 }
 
 bool isJapanMode() {
-#ifdef JAPAN
-	return true;
-#else
-	return false;
-#endif
+	return _vm->_config->_language == TXT_JAPANESE;
 }
 
 } // End of namespace Tinsel
