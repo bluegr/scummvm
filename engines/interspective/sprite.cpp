@@ -23,9 +23,9 @@
  *
  */
 
-#include "innocent/sprite.h"
-
 #include "common/endian.h"
+
+#include "interspective/sprite.h"
 
 namespace Interspective {
 //

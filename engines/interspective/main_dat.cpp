@@ -302,6 +302,8 @@ uint16 MainDat::getFrameId(FramePart part) const {
 	#undef PART
 	default: assert(false);
 	}
+
+	return 0;
 }
 
 uint16 MainDat::getBubbleId(SpeechBubblePart part) const {
@@ -324,6 +326,8 @@ uint16 MainDat::getBubbleId(SpeechBubblePart part) const {
 	#undef PART
 	default: assert(false);
 	}
+
+	return 0;
 }
 
 } // End of namespace Interspective

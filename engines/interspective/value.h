@@ -29,7 +29,6 @@
 #include <vector>
 
 #include "common/endian.h"
-#include "config.h"
 
 #include "interspective/debug.h"
 
@@ -56,10 +55,10 @@ public:
 	virtual ~Value() {}
 	virtual ValueType type() const { return kValueVoid; }
 
-	virtual operator uint16() const { assert(false); }
+	virtual operator uint16() const { return false; }
 	virtual int16 signd() const { const uint16 v = *this; return *reinterpret_cast<const int16 *>(&v); }
-	virtual Value &operator=(uint16 value) { assert(false); }
-	virtual Value &operator=(const Value &) { assert(false); }
+	virtual Value &operator=(uint16 value) { return *this; }
+	virtual Value &operator=(const Value &) { return *this; }
 	virtual bool operator==(const Value &other) { return uint16(*this) == other; }
 	virtual bool operator<(const Value &other) { return uint16(*this) < other; }
 	virtual bool operator>(const Value &other) { return other < *this; }
@@ -70,9 +69,9 @@ public:
 	template<typename T>
 	T operator-(T she) { T me = *this; return me - she; }
 
-	virtual bool holdsCode() const { assert(false); }
+	virtual bool holdsCode() const { return false; }
 
-	virtual operator byte *() { assert(false); }
+	virtual operator byte *() { return false; }
 	virtual operator const Common::String() {
 		byte *b(*this);
 		return Common::String(reinterpret_cast<const char *>(b));
