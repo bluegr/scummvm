@@ -26,8 +26,6 @@
 #ifndef INTERSPECTIVE_MAIN_DAT_H
 #define INTERSPECTIVE_MAIN_DAT_H
 
-#include <list>
-
 #include "common/endian.h"
 #include "common/hashmap.h"
 #include "common/list.h"
@@ -60,8 +58,8 @@ public:
 		Common::String filename;
 	};
 
-	std::list<struct GraphicFile> graphicFiles() const;
-	std::list<Common::String> musicFiles() const;
+	Common::List<struct GraphicFile> graphicFiles() const;
+	Common::List<Common::String> musicFiles() const;
 
 	uint16 progEntriesCount0() const;
 	uint16 progEntriesCount1() const;

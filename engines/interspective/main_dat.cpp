@@ -179,12 +179,12 @@ uint16 MainDat::fileIndexOfTune(uint16 index) const {
 	return READ_LE_UINT16(_tunesDirectory + offset);
 }
 
-list<MainDat::GraphicFile> MainDat::graphicFiles() const {
+Common::List<MainDat::GraphicFile> MainDat::graphicFiles() const {
 	uint16 file_count = READ_LE_UINT16(_footer + kGraphicFileCount);
 	uint16 names_offset = READ_LE_UINT16(_footer + kGraphicFileNames);
 
 	byte *data = _data + names_offset;
-	list<GraphicFile> files;
+	Common::List<GraphicFile> files;
 	for (; file_count > 0; file_count--) {
 		GraphicFile file;
 		file.data_set = READ_LE_UINT16(data);
@@ -200,12 +200,12 @@ list<MainDat::GraphicFile> MainDat::graphicFiles() const {
 	return files;
 }
 
-list<Common::String> MainDat::musicFiles() const {
+Common::List<Common::String> MainDat::musicFiles() const {
 	uint16 file_count = READ_LE_UINT16(_footer + kMusicFileCount);
 	uint16 names_offset = READ_LE_UINT16(_footer + kMusicFileNames);
 
 	byte *data = _data + names_offset;
-	list<Common::String> files;
+	Common::List<Common::String> files;
 	for (; file_count > 0; file_count--) {
 		data += 2; // data set id
 		byte type = *data++; // music type (1 - adlib, 4 - roland)
