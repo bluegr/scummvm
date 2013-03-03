@@ -25,12 +25,12 @@
 
 #include "interspective/graphics.h"
 
+#include "graphics/palette.h"
 
 #include "common/events.h"
 #include "common/system.h"
 #include "common/util.h"
 #include "graphics/cursorman.h"
-#include "graphics/palette.h"
 
 #include "interspective/animation.h"
 #include "interspective/debug.h"
@@ -105,7 +105,7 @@ void Graphics::loadInterface() {
 
 void Graphics::prepareInterfacePalette() {
 	debugC(1, kDebugLevelGraphics, "preparing interface palette");
-	_engine->_system->getPaletteManager()->setPalette(_interfacePalette + 160 * 4, 160, 96);
+	_engine->_system->getPaletteManager()->setPalette(_interfacePalette + 160 * 3, 160, 96);
 }
 
 void Graphics::paintInterface() {
@@ -115,7 +115,7 @@ void Graphics::paintInterface() {
 }
 
 void Graphics::setBackdrop(uint16 id) {
-	byte palette[0x400];
+	byte palette[0x300];
 	_backdrop = Common::SharedPtr<Surface>(_resources->loadBackdrop(id, palette));
 	setPalette(palette, 0, 256);
 	prepareInterfacePalette();
@@ -493,7 +493,7 @@ void Graphics::updateScreen() {
 	if (_willFadein && (_fadeFlags & kPartialFade)) {
 		debugC(3, kDebugLevelGraphics, "performing partial fade in");
 		_willFadein = false;
-		fadeIn(_interfacePalette + 160*4, 160, 96);
+		fadeIn(_interfacePalette + 160*3, 160, 96);
 	} else if (_willFadein && !(_fadeFlags & kPartialFade)) {
 		fadeIn();
 		_willFadein = false;
@@ -537,8 +537,8 @@ const char Graphics::_charwidths[] = {
 };
 
 void Graphics::clearPalette(int offset, int count) {
-	byte pal[0x400];
-	fill(pal, pal+0x400, 0);
+	byte pal[0x300];
+	Common::fill(pal, pal+0x300, 0);
 	_system->getPaletteManager()->setPalette(pal, offset, count);
 }
 
@@ -547,7 +547,7 @@ void Graphics::setPalette(const byte *colours, uint start, uint num) {
 
 	// calculate tinted palette
 	for (int i = 0; i < 256; ++i) {
-		const byte *colour = colours + i*4;
+		const byte *colour = colours + i*3;
 		const byte luma = (30 * colour[0] + 60 * colour[1] + 10 * colour[2])/100;
 
 		byte curr = 174;
@@ -556,7 +556,7 @@ void Graphics::setPalette(const byte *colours, uint start, uint num) {
 
 		for (int j = 0; j < 4; j++) {
 			for (int k = 0; k < 2; k++) {
-				int16 diff = _interfacePalette[(curr + k) * 4] - luma;
+				int16 diff = _interfacePalette[(curr + k) * 3] - luma;
 				if (diff < 0)
 					diff = -diff;
 				if (diff < best_diff) {
@@ -580,14 +580,14 @@ struct Tr : public unary_function<byte, byte> {
 };
 
 void Graphics::fadeIn(const byte *colours, uint start, uint num) {
-	byte buf[0x400];
+	byte buf[0x300];
 	if (!colours) {
 		_system->getPaletteManager()->grabPalette(buf, start, num);
 		colours = buf;
 	}
 
-	const int bytes = num * 4;
-	byte current[0x400];
+	const int bytes = num * 3;
+	byte current[0x300];
 
 	Common::fill(current, current + bytes, 0);
 
@@ -610,13 +610,13 @@ void Graphics::fadeIn(const byte *colours, uint start, uint num) {
 }
 
 bool Graphics::fadeOut(FadeFlags f) {
-	int bytes = 0x400;
+	int bytes = 0x300;
 	int offset = 0;
 	int colours = 256;
-	byte current[0x400];
+	byte current[0x300];
 
 	if (f == kPartialFade) {
-		bytes = 96 * 4;
+		bytes = 96 * 3;
 		offset = 160;
 		colours = 96;
 	}

@@ -45,7 +45,7 @@ protected:
 	virtual void delay();
 
 	Surface _s;
-	byte _pal[0x400];
+	byte _pal[0x300];
 private:
 	Movie();
 	Movie(Common::ReadStream *);

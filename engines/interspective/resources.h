@@ -83,7 +83,7 @@ public:
 	 * @param index image index,
 	 * @param target buffer,
 	 * @param size of the image,
-	 * @param palette optional buffer to read the palette to (size 0x400).
+	 * @param palette optional buffer to read the palette to (size 0x300).
 	 */
 	void loadImage(uint16 index, byte *target, uint16 size, byte *palette = 0) const;
 

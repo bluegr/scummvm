@@ -152,7 +152,7 @@ private:
 
 	bool _willFadein;
 	FadeFlags _fadeFlags;
-	byte _interfacePalette[0x400];
+	byte _interfacePalette[0x300];
 	byte _tintedPalette[256];
 
 	byte *_speech;
