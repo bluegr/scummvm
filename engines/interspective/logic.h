@@ -26,9 +26,6 @@
 #ifndef INTERSPECTIVE_LOGIC_H
 #define INTERSPECTIVE_LOGIC_H
 
-#include <memory>
-#include <utility>
-
 #include "common/list.h"
 #include "common/queue.h"
 #include "common/singleton.h"
@@ -104,15 +101,15 @@ private:
 
 	Engine *_engine;
 	Resources *_resources;
-	std::auto_ptr<Interpreter> _toplevelInterpreter, _blockInterpreter;
+	Common::SharedPtr<Interpreter> _toplevelInterpreter, _blockInterpreter;
 	Actor *_protagonist;
 	uint32 _nextRoom;
 	uint32 _currentRoom;
 	uint16 _currentBlock;
-	std::auto_ptr<Program> _blockProgram;
+	Common::SharedPtr<Program> _blockProgram;
 	Common::List<Animation *> _animations;
-	std::auto_ptr<CodePointer> _roomLoop;
-	std::auto_ptr<Room> _room;
+	Common::SharedPtr<CodePointer> _roomLoop;
+	Common::SharedPtr<Room> _room;
 	Music *_music;
 
 	struct DelayedRun {

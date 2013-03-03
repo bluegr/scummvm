@@ -26,10 +26,9 @@
 #ifndef INTERSPECTIVE_ANIMATION_H
 #define INTERSPECTIVE_ANIMATION_H
 
-#include <memory>
-
 #include "common/list.h"
 #include "common/rect.h"
+#include "common/ptr.h"
 
 #include "interspective/value.h"
 
@@ -96,7 +95,7 @@ protected:
 	uint16 _offset;
 	char _debugInfo[50];
 	Common::List<Sprite *> _sprites;
-	std::auto_ptr<Innocent::Sprite> _mainSprite;
+	Common::SharedPtr<Interspective::Sprite> _mainSprite;
 	int8 _counter;
 	uint16 _loopStart;
 	/** offset of the animation from the start of its codeblock */

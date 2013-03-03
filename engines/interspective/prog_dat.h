@@ -26,8 +26,7 @@
 #ifndef INTERSPECTIVE_PROG_DAT_H
 #define INTERSPECTIVE_PROG_DAT_H
 
-#include <memory>
-
+#include "common/ptr.h"
 #include "common/stream.h"
 
 #include "interspective/datafile.h"
@@ -51,7 +50,7 @@ public:
 
 private:
 	byte *_data;
-	std::auto_ptr<Common::SeekableReadStream> _file;
+	Common::SharedPtr<Common::SeekableReadStream> _file;
 };
 
 } // End of namespace Interspective

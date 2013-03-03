@@ -26,8 +26,7 @@
 #ifndef INTERSPECTIVE_EXIT_H
 #define INTERSPECTIVE_EXIT_H
 
-#include <memory>
-
+#include "common/ptr.h"
 #include "common/rect.h"
 
 #include "interspective/debug.h"
@@ -63,7 +62,7 @@ private:
 	Sprite *sprite() const { return _sprite.get(); }
 
 	byte _zIndex;
-	std::auto_ptr<Sprite> _sprite;
+	Common::SharedPtr<Sprite> _sprite;
 	Common::Point _position;
 	Common::Rect _rect;
 	uint16 _room;

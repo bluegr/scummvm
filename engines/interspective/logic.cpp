@@ -23,8 +23,6 @@
  *
  */
 
-#include <algorithm>
-
 #include "common/util.h"
 
 #include "interspective/logic.h"
@@ -57,7 +55,7 @@ void Logic::setEngine(Engine *e) {
 
 
 void Logic::init() {
-	_toplevelInterpreter.reset(new Interpreter(this, _resources->mainBase(), "main code"));
+	_toplevelInterpreter = Common::SharedPtr<Interpreter>(new Interpreter(this, _resources->mainBase(), "main code"));
 }
 
 void Logic::initCode() {
@@ -119,17 +117,17 @@ void Logic::doChangeRoom() {
 		return;
 	_currentRoom = _nextRoom;
 	_nextRoom = 0;
-	_roomLoop.reset(0);
+	_roomLoop.reset();
 	uint16 newBlock = _resources->blockOfRoom(_currentRoom);
 
 	if (newBlock != _currentBlock) {
 		_currentBlock = newBlock;
-		_blockProgram.reset(_resources->loadCodeBlock(newBlock));
+		_blockProgram = Common::SharedPtr<Program>(_resources->loadCodeBlock(newBlock));
 
 		char buf[100];
 		snprintf(buf, 100, "block %d code", newBlock);
 
-		_blockInterpreter.reset(new Interpreter(this, _blockProgram->base(), buf));
+		_blockInterpreter = Common::SharedPtr<Interpreter>(new Interpreter(this, _blockProgram->base(), buf));
 		_blockProgram->loadActors(_blockInterpreter.get());
 		_blockProgram->loadExits(_blockInterpreter.get());
 
@@ -138,7 +136,7 @@ void Logic::doChangeRoom() {
 		debugC(2, kDebugLevelScript, "<<<finished block entry code for block %d", newBlock);
 	}
 
-	_room.reset(new Room(this));
+	_room = Common::SharedPtr<Room>(new Room(this));
 	debugC(2, kDebugLevelScript, ">>>running room entry code for room %d", _currentRoom);
 	_blockInterpreter->run(_blockProgram->roomHandler(_currentRoom), kCodeNewRoom);
 	debugC(2, kDebugLevelScript, "<<<finished room entry code for room %d", _currentRoom);
@@ -186,7 +184,7 @@ void Logic::removeAnimation(Animation *anim) {
 }
 
 void Logic::setRoomLoop(const CodePointer &code) {
-	_roomLoop.reset(new CodePointer(code));
+	_roomLoop = Common::SharedPtr<CodePointer>(new CodePointer(code));
 }
 
 /* counting starts with 1 */

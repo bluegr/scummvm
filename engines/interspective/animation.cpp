@@ -61,7 +61,7 @@ public:
 		return _sprite.get();
 	}
 private:
-	std::auto_ptr<Innocent::Sprite> _sprite;
+	Common::SharedPtr<Interspective::Sprite> _sprite;
 	Common::Point _position;
 	bool _isRelative;
 };
@@ -146,11 +146,11 @@ void Animation::runOnNextFrame(const CodePointer &cp) {
 
 
 void Animation::setMainSprite(uint16 sprite) {
-	_mainSprite.reset(_resources->loadSprite(sprite));
+	_mainSprite = Common::SharedPtr<Interspective::Sprite>(_resources->loadSprite(sprite));
 }
 
 void Animation::clearMainSprite() {
-	_mainSprite.reset(0);
+	_mainSprite.reset();
 }
 
 void Animation::clearSprites() {

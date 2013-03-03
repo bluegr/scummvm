@@ -50,7 +50,7 @@ void ProgDat::load() {
 		error("could not open %s", filename());
 
 	readFile(*file);
-	_file.reset(file);
+	_file = Common::SharedPtr<SeekableReadStream>(file);
 }
 
 void ProgDat::readFile(Common::SeekableReadStream &stream) {
@@ -67,7 +67,7 @@ Program *ProgDat::getScript(uint16 id) {
 	if (!id) return 0;
 
 	uint32 offset = READ_LE_UINT32(_data + (id - 1) * 4);
-	_file->seek(offset);
+	_file.get()->seek(offset);
 
 	return new Program(*_file, id);
 }

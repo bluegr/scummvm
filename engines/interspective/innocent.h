@@ -26,8 +26,6 @@
 #ifndef INTERSPECTIVE_H
 #define INTERSPECTIVE_H
 
-#include <memory>
-
 #include "common/ptr.h"
 #include "common/random.h"
 #include "engines/engine.h"
@@ -77,7 +75,7 @@ private:
 	Resources *_resources;
 	Graphics *_graphics;
 	Debugger *_debugger;
-	std::auto_ptr<MidiDriver> _musicDriver;
+	Common::SharedPtr<MidiDriver> _musicDriver;
 
 	Common::RandomSource *_rnd;
 	mutable int _lastTicks, _startRoom;
