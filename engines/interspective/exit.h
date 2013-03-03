@@ -58,6 +58,7 @@ public:
 	friend class Program;
 private:
 	Exit(const CodePointer &code);
+	virtual ~Exit() {}
 
 	Sprite *sprite() const { return _sprite.get(); }
 
