@@ -23,8 +23,8 @@
  *
  */
 
-#ifndef INNOCENT_H
-#define INNOCENT_H
+#ifndef INTERSPECTIVE_H
+#define INTERSPECTIVE_H
 
 #include <memory>
 
@@ -40,7 +40,7 @@ class EventManager;
 
 }
 
-namespace Innocent {
+namespace Interspective {
 
 class Console;
 class Interpreter;
@@ -88,6 +88,6 @@ private:
 
 #define Eng Engine::instance()
 
-} // End of namespace Innocent
+} // End of namespace Interspective
 
-#endif // INNOCENT_H
+#endif // INTERSPECTIVE_H

@@ -23,17 +23,17 @@
  *
  */
 
-#ifndef INNOCENT_VARIABLES_H
-#define INNOCENT_VARIABLES_H
+#ifndef INTERSPECTIVE_VARIABLES_H
+#define INTERSPECTIVE_VARIABLES_H
 
 #include <vector>
 
 #include "common/endian.h"
 #include "config.h"
 
-#include "innocent/debug.h"
+#include "interspective/debug.h"
 
-namespace Innocent {
+namespace Interspective {
 //
 
 enum OpcodeMode {

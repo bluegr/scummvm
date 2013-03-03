@@ -23,16 +23,16 @@
  *
  */
 
-#ifndef INNOCENT_PROGRAM_H
-#define INNOCENT_PROGRAM_H
+#ifndef INTERSPECTIVE_PROGRAM_H
+#define INTERSPECTIVE_PROGRAM_H
 
 #include "common/list.h"
 #include "common/stream.h"
 
-#include "innocent/debug.h"
-#include "innocent/resources.h"
+#include "interspective/debug.h"
+#include "interspective/resources.h"
 
-namespace Innocent {
+namespace Interspective {
 //
 
 class Exit;
@@ -73,6 +73,6 @@ private:
 	uint16 _exitsCount;
 };
 
-} // End of namespace Innocent
+} // End of namespace Interspective
 
-#endif // INNOCENT_PROGRAM_H
+#endif // INTERSPECTIVE_PROGRAM_H

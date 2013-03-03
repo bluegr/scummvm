@@ -23,14 +23,14 @@
  *
  */
 
-#include "innocent/value.h"
+#include "interspective/value.h"
 
 #include "common/rect.h"
 
-#include "innocent/inter.h"
-#include "innocent/util.h"
+#include "interspective/inter.h"
+#include "interspective/util.h"
 
-namespace Innocent {
+namespace Interspective {
 //
 
 Value &WordVariable::operator=(uint16 value) {
@@ -114,4 +114,4 @@ typedef EnumPack<Foo_> Foo;
 
 Foo baz(Bar);
 
-} // of namespace Innocent
+} // of namespace Interspective

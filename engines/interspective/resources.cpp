@@ -34,23 +34,24 @@
 #include "graphics/surface.h"
 #include "graphics/pixelformat.h"
 
-#include "innocent/innocent.h"
-#include "innocent/inter.h"
-#include "innocent/logic.h"
-#include "innocent/main_dat.h"
-#include "innocent/mapfile.h"
-#include "innocent/prog_dat.h"
-#include "innocent/program.h"
-#include "innocent/sprite.h"
+#include "interspective/resources.h"
+#include "interspective/innocent.h"
+#include "interspective/inter.h"
+#include "interspective/logic.h"
+#include "interspective/main_dat.h"
+#include "interspective/mapfile.h"
+#include "interspective/prog_dat.h"
+#include "interspective/program.h"
+#include "interspective/sprite.h"
 
 using namespace Common;
 using namespace std;
 
 namespace Common {
-	DECLARE_SINGLETON(Innocent::Resources);
+	DECLARE_SINGLETON(Interspective::Resources);
 }
 
-namespace Innocent {
+namespace Interspective {
 //
 
 void Surface::blit(const Surface *s, Common::Rect r, int transparent, const byte (*tinted)[256]) {
@@ -372,4 +373,4 @@ Sprite *Resources::getCursor() const {
 	return loadSprite(_main->getCursorSpriteId());
 }
 
-} // End of namespace Innocent
+} // End of namespace Interspective

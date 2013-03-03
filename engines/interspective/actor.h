@@ -23,8 +23,8 @@
  *
  */
 
-#ifndef INNOCENT_ACTOR_H
-#define INNOCENT_ACTOR_H
+#ifndef INTERSPECTIVE_ACTOR_H
+#define INTERSPECTIVE_ACTOR_H
 
 #include <vector>
 
@@ -32,10 +32,10 @@
 #include "common/queue.h"
 #include "common/rect.h"
 
-#include "innocent/animation.h"
-#include "innocent/value.h"
+#include "interspective/animation.h"
+#include "interspective/value.h"
 
-namespace Innocent {
+namespace Interspective {
 //
 
 class MainDat;
@@ -135,7 +135,7 @@ public:
 		uint16 _ticksLeft;
 		Actor *_actor;
 		Common::Rect _rect;
-		Innocent::Sprite *_image;
+		Interspective::Sprite *_image;
 	};
 
 	friend class MainDat;

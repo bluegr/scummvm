@@ -23,16 +23,16 @@
  *
  */
 
-#ifndef INNOCENT_PROG_DAT_H
-#define INNOCENT_PROG_DAT_H
+#ifndef INTERSPECTIVE_PROG_DAT_H
+#define INTERSPECTIVE_PROG_DAT_H
 
 #include <memory>
 
 #include "common/stream.h"
 
-#include "innocent/datafile.h"
+#include "interspective/datafile.h"
 
-namespace Innocent {
+namespace Interspective {
 
 class Resources;
 class Program;
@@ -54,6 +54,6 @@ private:
 	std::auto_ptr<Common::SeekableReadStream> _file;
 };
 
-} // End of namespace Innocent
+} // End of namespace Interspective
 
-#endif // INNOCENT_PROG_DAT
+#endif // INTERSPECTIVE_PROG_DAT

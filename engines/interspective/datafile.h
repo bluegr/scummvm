@@ -23,12 +23,12 @@
  *
  */
 
-#ifndef INNOCENT_DATAFILE_H
-#define INNOCENT_DATAFILE_H
+#ifndef INTERSPECTIVE_DATAFILE_H
+#define INTERSPECTIVE_DATAFILE_H
 
 #include "common/stream.h"
 
-namespace Innocent {
+namespace Interspective {
 
 class Resources;
 
@@ -51,6 +51,6 @@ protected:
 	Resources *_resources;
 };
 
-} // End of namespace Innocent
+} // End of namespace Interspective
 
-#endif // INNOCENT_DATAFILE_H
+#endif // INTERSPECTIVE_DATAFILE_H

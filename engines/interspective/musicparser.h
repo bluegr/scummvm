@@ -23,8 +23,8 @@
  *
  */
 
-#ifndef INNOCENT_MUSIC_H
-#define INNOCENT_MUSIC_H
+#ifndef INTERSPECTIVE_MUSIC_H
+#define INTERSPECTIVE_MUSIC_H
 
 #include <memory>
 #include <vector>
@@ -35,9 +35,9 @@
 #include "audio/midiparser.h"
 #include "audio/mididrv.h"
 
-#include "innocent/value.h"
+#include "interspective/value.h"
 
-namespace Innocent {
+namespace Interspective {
 //
 
 class Note;

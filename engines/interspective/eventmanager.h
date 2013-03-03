@@ -23,16 +23,16 @@
  *
  */
 
-#ifndef INNOCENT_EVENTMANAGER_H
-#define INNOCENT_EVENTMANAGER_H
+#ifndef INTERSPECTIVE_EVENTMANAGER_H
+#define INTERSPECTIVE_EVENTMANAGER_H
 
 #include "common/list.h"
 #include "common/rect.h"
 #include "common/singleton.h"
 
-#include "innocent/types.h"
+#include "interspective/types.h"
 
-namespace Innocent {
+namespace Interspective {
 //
 
 class EventManager;

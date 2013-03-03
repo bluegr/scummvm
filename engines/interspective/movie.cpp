@@ -23,18 +23,18 @@
  *
  */
 
-#include "innocent/movie.h"
+#include "interspective/movie.h"
 
 #include "common/file.h"
 #include "common/system.h"
 
-#include "innocent/debug.h"
-#include "innocent/graphics.h"
-#include "innocent/logic.h"
-#include "innocent/innocent.h"
-#include "innocent/resources.h"
+#include "interspective/debug.h"
+#include "interspective/graphics.h"
+#include "interspective/logic.h"
+#include "interspective/innocent.h"
+#include "interspective/resources.h"
 
-namespace Innocent {
+namespace Interspective {
 //
 
 Movie *Movie::fromFile(const char *name) {
@@ -146,4 +146,4 @@ void Movie::delay() {
 	Engine::instance().delay(40 * (1+_delay));
 }
 
-} // end of namespace Innocent
+} // end of namespace Interspective

@@ -23,8 +23,8 @@
  *
  */
 
-#ifndef INNOCENT_LOGIC_H
-#define INNOCENT_LOGIC_H
+#ifndef INTERSPECTIVE_LOGIC_H
+#define INTERSPECTIVE_LOGIC_H
 
 #include <memory>
 #include <utility>
@@ -34,14 +34,14 @@
 #include "common/singleton.h"
 #include "config.h"
 
-#include "innocent/inter.h"
-#include "innocent/mapfile.h"
-#include "innocent/prog_dat.h"
-#include "innocent/program.h"
-#include "innocent/room.h"
-#include "innocent/value.h"
+#include "interspective/inter.h"
+#include "interspective/mapfile.h"
+#include "interspective/prog_dat.h"
+#include "interspective/program.h"
+#include "interspective/room.h"
+#include "interspective/value.h"
 
-namespace Innocent {
+namespace Interspective {
 //
 
 class Actor;
@@ -128,6 +128,6 @@ private:
 
 #define Log Logic::instance()
 
-} // End of namespace Innocent
+} // End of namespace Interspective
 
-#endif // INNOCENT_LOGIC_H
+#endif // INTERSPECTIVE_LOGIC_H

@@ -23,23 +23,23 @@
  *
  */
 
-#include "innocent/inter.h"
+#include "interspective/inter.h"
 
 #include "common/endian.h"
 #include "common/list.h"
 #include "common/util.h"
 
-#include "innocent/debugger.h"
-#include "innocent/innocent.h"
-#include "innocent/logic.h"
-#include "innocent/program.h"
-#include "innocent/resources.h"
+#include "interspective/debugger.h"
+#include "interspective/innocent.h"
+#include "interspective/logic.h"
+#include "interspective/program.h"
+#include "interspective/resources.h"
 
 // this has to be included here or else templates
 // would get instantiated to the generic handler
 #include "innocent/opcode_handlers.cpp"
 
-namespace Innocent {
+namespace Interspective {
 
 class Animation;
 
@@ -56,7 +56,7 @@ Interpreter::OpResult Interpreter::opcodeHandler(ValueVector args, CodePointer c
 
 template<int N>
 void Interpreter::init_opcodes() {
-	_handlers[N] = &Innocent::Interpreter::opcodeHandler<N>;
+	_handlers[N] = &Interspective::Interpreter::opcodeHandler<N>;
 	init_opcodes<N-1>();
 }
 
@@ -323,4 +323,4 @@ const uint8 Interpreter::_argumentsCounts[] = {
 	#include "opcodes_nargs.data"
 };
 
-} // End of namespace Innocent
+} // End of namespace Interspective

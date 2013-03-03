@@ -23,14 +23,14 @@
  *
  */
 
-#include "innocent/datafile.h"
+#include "interspective/datafile.h"
 
 #include "common/file.h"
 #include "common/util.h"
 
 using namespace Common;
 
-namespace Innocent {
+namespace Interspective {
 
 void Datafile::load() {
 	File file;
@@ -42,4 +42,4 @@ void Datafile::load() {
 	file.close();
 }
 
-} // End of namespace Innocent
+} // End of namespace Interspective

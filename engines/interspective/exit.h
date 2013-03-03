@@ -23,18 +23,18 @@
  *
  */
 
-#ifndef INNOCENT_EXIT_H
-#define INNOCENT_EXIT_H
+#ifndef INTERSPECTIVE_EXIT_H
+#define INTERSPECTIVE_EXIT_H
 
 #include <memory>
 
 #include "common/rect.h"
 
-#include "innocent/debug.h"
-#include "innocent/eventmanager.h"
-#include "innocent/value.h"
+#include "interspective/debug.h"
+#include "interspective/eventmanager.h"
+#include "interspective/value.h"
 
-namespace Innocent {
+namespace Interspective {
 //
 class Graphics;
 class Sprite;

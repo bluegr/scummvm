@@ -23,9 +23,9 @@
  *
  */
 
-#include "innocent/debug.h"
+#include "interspective/debug.h"
 
-namespace Innocent {
+namespace Interspective {
 
 const char *operator+(const Common::Rect &r) {
 	static char buf[20];

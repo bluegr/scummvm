@@ -23,26 +23,26 @@
  *
  */
 
-#include "innocent/debugger.h"
+#include "interspective/debugger.h"
 
 #include "common/endian.h"
 #include "common/rect.h"
 
-#include "innocent/actor.h"
-#include "innocent/exit.h"
-#include "innocent/eventmanager.h"
-#include "innocent/graphics.h"
-#include "innocent/innocent.h"
-#include "innocent/logic.h"
-#include "innocent/resources.h"
-#include "innocent/room.h"
-#include "innocent/util.h"
+#include "interspective/actor.h"
+#include "interspective/exit.h"
+#include "interspective/eventmanager.h"
+#include "interspective/graphics.h"
+#include "interspective/innocent.h"
+#include "interspective/logic.h"
+#include "interspective/resources.h"
+#include "interspective/room.h"
+#include "interspective/util.h"
 
 namespace Common {
-	DECLARE_SINGLETON(Innocent::Debugger);
+	DECLARE_SINGLETON(Interspective::Debugger);
 }
 
-namespace Innocent {
+namespace Interspective {
 //
 
 Debugger::Debugger()
@@ -179,4 +179,4 @@ bool Debugger::cmd_paintSprite(int argc, const char **argv) {
 	return true;
 }
 
-} // End of namespace Innocent
+} // End of namespace Interspective

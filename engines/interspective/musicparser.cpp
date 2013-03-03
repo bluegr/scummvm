@@ -23,20 +23,19 @@
  *
  */
 
-#include "innocent/musicparser.h"
+#include "interspective/musicparser.h"
 
 #include "common/endian.h"
 #include "audio/mididrv.h"
 
-#include "innocent/resources.h"
-#include "innocent/util.h"
+#include "interspective/resources.h"
+#include "interspective/util.h"
 
 namespace Common {
-	DECLARE_SINGLETON(Innocent::MusicParser);
+	DECLARE_SINGLETON(Interspective::MusicParser);
 }
 
-namespace Innocent {
-//
+namespace Interspective {
 
 MusicParser::MusicParser() : MidiParser(), _time(0), _lastTick(0), _tick(0) {
 	MidiDriver::DeviceHandle dev = MidiDriver::detectDevice(MDT_MIDI | MDT_ADLIB | MDT_PREFER_GM);

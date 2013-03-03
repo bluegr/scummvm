@@ -23,8 +23,8 @@
  *
  */
 
-#ifndef INNOCENT_MAIN_DAT_H
-#define INNOCENT_MAIN_DAT_H
+#ifndef INTERSPECTIVE_MAIN_DAT_H
+#define INTERSPECTIVE_MAIN_DAT_H
 
 #include <list>
 
@@ -33,12 +33,12 @@
 #include "common/list.h"
 #include "common/str.h"
 
-#include "innocent/actor.h"
-#include "innocent/datafile.h"
-#include "innocent/sprite.h"
-#include "innocent/types.h"
+#include "interspective/actor.h"
+#include "interspective/datafile.h"
+#include "interspective/sprite.h"
+#include "interspective/types.h"
 
-namespace Innocent {
+namespace Interspective {
 //
 
 class Actor;
@@ -117,6 +117,6 @@ private:
 	mutable Common::HashMap<uint16, Puppeteer> _puppeteers;
 };
 
-} // End of namespace Innocent
+} // End of namespace Interspective
 
 #endif

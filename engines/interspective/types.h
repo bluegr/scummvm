@@ -23,10 +23,10 @@
  *
  */
 
-#ifndef INNOCENT_TYPES_H
-#define INNOCENT_TYPES_H
+#ifndef INTERSPECTIVE_TYPES_H
+#define INTERSPECTIVE_TYPES_H
 
-namespace Innocent {
+namespace Interspective {
 //
 class Graphics;
 
@@ -81,6 +81,6 @@ enum SpeechBubblePart {
 	kBubbleTopRightPoint
 };
 
-} // end of namespace Innocent
+} // end of namespace Interspective
 
 #endif

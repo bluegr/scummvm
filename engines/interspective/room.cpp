@@ -23,12 +23,12 @@
  *
  */
 
-#include "innocent/room.h"
+#include "interspective/room.h"
 
-#include "innocent/logic.h"
-#include "innocent/program.h"
+#include "interspective/logic.h"
+#include "interspective/program.h"
 
-namespace Innocent {
+namespace Interspective {
 //
 
 Room::Room(Logic *l) : _logic(l) {

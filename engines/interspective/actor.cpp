@@ -23,19 +23,18 @@
  *
  */
 
-#include "innocent/actor.h"
-
 #include "common/rect.h"
 
-#include "innocent/graphics.h"
-#include "innocent/innocent.h"
-#include "innocent/inter.h"
-#include "innocent/logic.h"
-#include "innocent/resources.h"
-#include "innocent/room.h"
-#include "innocent/util.h"
+#include "interspective/actor.h"
+#include "interspective/graphics.h"
+#include "interspective/innocent.h"
+#include "interspective/inter.h"
+#include "interspective/logic.h"
+#include "interspective/resources.h"
+#include "interspective/room.h"
+#include "interspective/util.h"
 
-namespace Innocent {
+namespace Interspective {
 //
 
 Actor::Actor(const CodePointer &code) : Animation(code, Common::Point()) {
@@ -408,7 +407,7 @@ CodePointer Puppeteer::turnAnimator(Direction d) {
 Actor::Speech::Speech(Actor *parent, const Common::String &text) : _text(text), _ticksLeft(20), _actor(parent) {
 	const Common::Point &position = parent->getSpeechPosition();
 	debugC(1, kDebugLevelActor, "adding speech \"%s\" for %s at %d:%d", text.c_str(), parent->_debugInfo, position.x, position.y);
-	_image = new Innocent::Sprite;
+	_image = new Interspective::Sprite;
 	_rect = Graf.paintSpeechInBubble(position, 235, reinterpret_cast<const byte *>(text.c_str()), _image);
 }
 
@@ -479,7 +478,7 @@ Animation::Status Actor::opcodeHandler(){
 
 template<int N>
 void Actor::init_opcodes() {
-	_handlers[N] = &Innocent::Actor::opcodeHandler<N>;
+	_handlers[N] = &Interspective::Actor::opcodeHandler<N>;
 	init_opcodes<N-1>();
 }
 

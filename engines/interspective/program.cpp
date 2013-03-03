@@ -23,18 +23,18 @@
  *
  */
 
-#include "innocent/program.h"
+#include "interspective/program.h"
 
 #include "common/endian.h"
 #include "common/util.h"
 
-#include "innocent/actor.h"
-#include "innocent/exit.h"
-#include "innocent/resources.h"
-#include "innocent/util.h"
-#include "innocent/value.h"
+#include "interspective/actor.h"
+#include "interspective/exit.h"
+#include "interspective/resources.h"
+#include "interspective/util.h"
+#include "interspective/value.h"
 
-namespace Innocent {
+namespace Interspective {
 
 enum FooterOffsets {
 	kExitsCount = 2,
@@ -158,4 +158,4 @@ Actor *Program::actor(uint16 index) const {
 	return *it;
 }
 
-} // End of namespace Innocent
+} // End of namespace Interspective

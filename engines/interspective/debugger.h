@@ -23,13 +23,13 @@
  *
  */
 
-#ifndef INNOCENT_DEBUGGER_H
-#define INNOCENT_DEBUGGER_H
+#ifndef INTERSPECTIVE_DEBUGGER_H
+#define INTERSPECTIVE_DEBUGGER_H
 
 #include "common/singleton.h"
 #include "gui/debugger.h"
 
-namespace Innocent {
+namespace Interspective {
 
 class Engine;
 class Logic;
@@ -65,6 +65,6 @@ private:
 
 #define Debug Debugger::instance()
 
-} // End of namespace Innocent
+} // End of namespace Interspective
 
-#endif // defined INNOCENT_DEBUGGER_H
+#endif // defined INTERSPECTIVE_DEBUGGER_H

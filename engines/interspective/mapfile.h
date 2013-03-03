@@ -23,15 +23,15 @@
  *
  */
 
-#ifndef INNOCENT_MAPFILE_H
-#define INNOCENT_MAPFILE_H
+#ifndef INTERSPECTIVE_MAPFILE_H
+#define INTERSPECTIVE_MAPFILE_H
 
 #include "common/stream.h"
 #include "common/str.h"
 
-#include "innocent/datafile.h"
+#include "interspective/datafile.h"
 
-namespace Innocent {
+namespace Interspective {
 
 class Resources;
 
@@ -49,6 +49,6 @@ private:
 	Common::String _filename;
 };
 
-} // End of namespace Innocent
+} // End of namespace Interspective
 
-#endif // INNOCENT_MAPFILE_H
+#endif // INTERSPECTIVE_MAPFILE_H

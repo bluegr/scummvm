@@ -23,14 +23,14 @@
  *
  */
 
-#ifndef INNOCENT_MOVIE_H
-#define INNOCENT_MOVIE_H
+#ifndef INTERSPECTIVE_MOVIE_H
+#define INTERSPECTIVE_MOVIE_H
 
 #include "common/stream.h"
 
-#include "innocent/resources.h"
+#include "interspective/resources.h"
 
-namespace Innocent {
+namespace Interspective {
 //
 class Movie {
 public:

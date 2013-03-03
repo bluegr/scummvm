@@ -23,18 +23,18 @@
  *
  */
 
-#include "innocent/prog_dat.h"
+#include "interspective/prog_dat.h"
 
 #include "common/file.h"
 #include "common/util.h"
 
-#include "innocent/resources.h"
-#include "innocent/main_dat.h"
-#include "innocent/program.h"
+#include "interspective/resources.h"
+#include "interspective/main_dat.h"
+#include "interspective/program.h"
 
 using namespace Common;
 
-namespace Innocent {
+namespace Interspective {
 
 ProgDat::ProgDat(Resources *res) : Datafile(res), _data(0) {}
 
@@ -72,4 +72,4 @@ Program *ProgDat::getScript(uint16 id) {
 	return new Program(*_file, id);
 }
 
-} // End of namespace Innocent
+} // End of namespace Interspective

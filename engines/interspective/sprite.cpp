@@ -27,7 +27,7 @@
 
 #include "common/endian.h"
 
-namespace Innocent {
+namespace Interspective {
 //
 
 enum SpriteMap {

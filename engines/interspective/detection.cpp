@@ -23,23 +23,23 @@
  *
  */
 
-#include "innocent/innocent.h"
+#include "interspective/innocent.h"
 
 #include "common/error.h"
 #include "common/fs.h"
-#include "engines/game.h"
 #include "base/plugins.h"
+#include "engines/game.h"
 #include "engines/metaengine.h"
 #include "common/config-manager.h"
 
 using namespace Common;
 
-static const PlainGameDescriptor innocent_setting[] = {
+static const PlainGameDescriptor interspective_setting[] = {
 	{ "innocent", "Innocent Until Caught" },
 	{ 0, 0 }
 };
 
-class InnocentMetaEngine : public MetaEngine {
+class InterspectiveMetaEngine : public MetaEngine {
 public:
 	virtual const char *getName() const {
 		return "Innocent Until Caught";
@@ -51,7 +51,7 @@ public:
 
 	virtual GameList getSupportedGames() const {
 		GameList games;
-		const PlainGameDescriptor *g = innocent_setting;
+		const PlainGameDescriptor *g = interspective_setting;
 		while (g->gameid) {
 			games.push_back(*g);
 			g++;
@@ -61,7 +61,7 @@ public:
 	}
 
 	virtual GameDescriptor findGame(const char *gameid) const {
-		const PlainGameDescriptor *g = innocent_setting;
+		const PlainGameDescriptor *g = interspective_setting;
 		while (g->gameid) {
 			if (0 == scumm_stricmp(gameid, g->gameid))
 				break;
@@ -78,7 +78,7 @@ public:
 				const char *gameName = file->getName().c_str();
 
 				if (0 == scumm_stricmp("IUC_MAIN.DAT", gameName)) {
-					detectedGames.push_back(innocent_setting[0]);
+					detectedGames.push_back(interspective_setting[0]);
 					break;
 				}
 			}
@@ -101,7 +101,7 @@ public:
 
 		for (uint i = 0; i < detectedGames.size(); i++) {
 			if (detectedGames[i].gameid() == gameid) {
-				*engine = new Innocent::Engine(syst);
+				*engine = new Interspective::Engine(syst);
 				return kNoError;
 			}
 		}
@@ -110,8 +110,8 @@ public:
 	}
 };
 
-#if PLUGIN_ENABLED_DYNAMIC(INNOCENT)
-	REGISTER_PLUGIN_DYNAMIC(INNOCENT, PLUGIN_TYPE_ENGINE, InnocentMetaEngine);
+#if PLUGIN_ENABLED_DYNAMIC(INTERSPECTIVE)
+	REGISTER_PLUGIN_DYNAMIC(INTERSPECTIVE, PLUGIN_TYPE_ENGINE, InterspectiveMetaEngine);
 #else
-	REGISTER_PLUGIN_STATIC(INNOCENT, PLUGIN_TYPE_ENGINE, InnocentMetaEngine);
+	REGISTER_PLUGIN_STATIC(INTERSPECTIVE, PLUGIN_TYPE_ENGINE, InterspectiveMetaEngine);
 #endif

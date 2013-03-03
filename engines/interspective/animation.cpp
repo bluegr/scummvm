@@ -23,17 +23,17 @@
  *
  */
 
-#include "innocent/animation.h"
+#include "interspective/animation.h"
 
-#include "innocent/debug.h"
-#include "innocent/graphics.h"
-#include "innocent/innocent.h"
-#include "innocent/inter.h"
-#include "innocent/logic.h"
-#include "innocent/resources.h"
-#include "innocent/util.h"
+#include "interspective/debug.h"
+#include "interspective/graphics.h"
+#include "interspective/innocent.h"
+#include "interspective/inter.h"
+#include "interspective/logic.h"
+#include "interspective/resources.h"
+#include "interspective/util.h"
 
-namespace Innocent {
+namespace Interspective {
 //
 ENAME(Animation::Status_, Animation::kOk, "ok");
 ENAME(Animation::Status_, Animation::kRemove, "remove");
@@ -41,7 +41,7 @@ ENAME(Animation::Status_, Animation::kFrameDone, "frame done");
 
 class Animation::Sprite {
 public:
-	Sprite(Innocent::Sprite *s) : _sprite(s), _isRelative(true) {}
+	Sprite(Interspective::Sprite *s) : _sprite(s), _isRelative(true) {}
 
 	void setPosition(Common::Point p) {
 		_position = p;
@@ -57,7 +57,7 @@ public:
 
 	void paint(Graphics *g) const;
 
-	const Innocent::Sprite *sprite() const {
+	const Interspective::Sprite *sprite() const {
 		return _sprite.get();
 	}
 private:
@@ -73,7 +73,7 @@ Animation::Status Animation::opcodeHandler(){
 
 template<int N>
 void Animation::init_opcodes() {
-	_handlers[N] = &Innocent::Animation::opcodeHandler<N>;
+	_handlers[N] = &Interspective::Animation::opcodeHandler<N>;
 	init_opcodes<N-1>();
 }
 

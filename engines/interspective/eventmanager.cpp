@@ -23,19 +23,19 @@
  *
  */
 
-#include "innocent/eventmanager.h"
+#include "interspective/eventmanager.h"
 
-#include "innocent/debug.h"
-#include "innocent/graphics.h"
-#include "innocent/util.h"
+#include "interspective/debug.h"
+#include "interspective/graphics.h"
+#include "interspective/util.h"
 
 using namespace std;
 
 namespace Common {
-	DECLARE_SINGLETON(Innocent::EventManager);
+	DECLARE_SINGLETON(Interspective::EventManager);
 }
 
-namespace Innocent {
+namespace Interspective {
 //
 
 Clickable::Clickable() {

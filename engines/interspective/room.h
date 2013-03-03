@@ -23,18 +23,18 @@
  *
  */
 
-#ifndef INNOCENT_ROOM_H
-#define INNOCENT_ROOM_H
+#ifndef INTERSPECTIVE_ROOM_H
+#define INTERSPECTIVE_ROOM_H
 
 #include <vector>
 
 #include "common/list.h"
 #include "common/rect.h"
 
-#include "innocent/actor.h"
-#include "innocent/debug.h"
+#include "interspective/actor.h"
+#include "interspective/debug.h"
 
-namespace Innocent {
+namespace Interspective {
 //
 
 class Exit;

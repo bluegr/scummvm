@@ -23,29 +23,28 @@
  *
  */
 
-#include "innocent/innocent.h"
+#include "interspective/innocent.h"
 
+#include "audio/mididrv.h"
 #include "common/config-manager.h"
 #include "common/debug-channels.h"
 #include "common/error.h"
 #include "common/scummsys.h"
 #include "common/system.h"
 #include "common/events.h"
-#include "audio/mididrv.h"
-
 #include "engines/util.h"
 
-#include "innocent/debug.h"
-#include "innocent/debugger.h"
-#include "innocent/eventmanager.h"
-#include "innocent/graphics.h"
-#include "innocent/logic.h"
-#include "innocent/musicparser.h"
-#include "innocent/resources.h"
+#include "interspective/debug.h"
+#include "interspective/debugger.h"
+#include "interspective/eventmanager.h"
+#include "interspective/graphics.h"
+#include "interspective/logic.h"
+#include "interspective/musicparser.h"
+#include "interspective/resources.h"
 
 using namespace Common;
 
-namespace Innocent {
+namespace Interspective {
 
 Engine *Engine::me;
 
@@ -165,4 +164,4 @@ void Engine::delay(int millis) const {
 	}
 }
 
-} // End of namespace Innocent
+} // End of namespace Interspective

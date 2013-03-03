@@ -23,8 +23,8 @@
  *
  */
 
-#ifndef INNOCENT_RESOURCES_H
-#define INNOCENT_RESOURCES_H
+#ifndef INTERSPECTIVE_RESOURCES_H
+#define INTERSPECTIVE_RESOURCES_H
 
 #include <memory>
 
@@ -32,10 +32,10 @@
 #include "common/stream.h"
 #include "graphics/surface.h"
 
-#include "innocent/main_dat.h"
-#include "innocent/types.h"
+#include "interspective/main_dat.h"
+#include "interspective/types.h"
 
-namespace Innocent {
+namespace Interspective {
 //
 
 class Engine;
@@ -156,6 +156,6 @@ private:
 
 #define Res Resources::instance()
 
-} // End of namespace Innocent
+} // End of namespace Interspective
 
 #endif

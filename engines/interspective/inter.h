@@ -23,8 +23,8 @@
  *
  */
 
-#ifndef INNOCENT_INTER_H
-#define INNOCENT_INTER_H
+#ifndef INTERSPECTIVE_INTER_H
+#define INTERSPECTIVE_INTER_H
 
 #include <memory>
 
@@ -33,9 +33,9 @@
 #include "common/util.h"
 #include "config.h"
 
-#include "innocent/value.h"
+#include "interspective/value.h"
 
-namespace Innocent {
+namespace Interspective {
 
 class Animation;
 class Logic;
@@ -129,6 +129,6 @@ private:
 	Graphics *_graphics;
 };
 
-} // End of namespace Innocent
+} // End of namespace Interspective
 
-#endif // INNOCENT_INTER_H
+#endif // INTERSPECTIVE_INTER_H

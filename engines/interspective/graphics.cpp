@@ -23,7 +23,7 @@
  *
  */
 
-#include "innocent/graphics.h"
+#include "interspective/graphics.h"
 
 #include <algorithm>
 #include <functional>
@@ -34,23 +34,23 @@
 #include "graphics/cursorman.h"
 #include "graphics/palette.h"
 
-#include "innocent/animation.h"
-#include "innocent/debug.h"
-#include "innocent/debugger.h"
-#include "innocent/exit.h"
-#include "innocent/innocent.h"
-#include "innocent/logic.h"
-#include "innocent/resources.h"
-#include "innocent/room.h"
-#include "innocent/util.h"
+#include "interspective/animation.h"
+#include "interspective/debug.h"
+#include "interspective/debugger.h"
+#include "interspective/exit.h"
+#include "interspective/innocent.h"
+#include "interspective/logic.h"
+#include "interspective/resources.h"
+#include "interspective/room.h"
+#include "interspective/util.h"
 
 using namespace std;
 
 namespace Common {
-	DECLARE_SINGLETON(Innocent::Graphics);
+	DECLARE_SINGLETON(Interspective::Graphics);
 }
 
-namespace Innocent {
+namespace Interspective {
 
 //Common::Point &operator+=(Common::Point &p1, const Common::Point &p2) { return p1 = Common::Point(p1.x + p2.x, p1.y + p2.y); }
 
@@ -663,4 +663,4 @@ void Graphics::runWhenSaid(const CodePointer &cb) {
 	_speechDoneCallback = cb;
 }
 
-} // End of namespace Innocent
+} // End of namespace Interspective

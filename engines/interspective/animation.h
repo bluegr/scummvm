@@ -23,17 +23,17 @@
  *
  */
 
-#ifndef INNOCENT_ANIMATION_H
-#define INNOCENT_ANIMATION_H
+#ifndef INTERSPECTIVE_ANIMATION_H
+#define INTERSPECTIVE_ANIMATION_H
 
 #include <memory>
 
 #include "common/list.h"
 #include "common/rect.h"
 
-#include "innocent/value.h"
+#include "interspective/value.h"
 
-namespace Innocent {
+namespace Interspective {
 //
 
 class Graphics;

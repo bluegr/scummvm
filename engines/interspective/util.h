@@ -23,10 +23,10 @@
  *
  */
 
-#ifndef INNOCENT_UTIL_H
-#define INNOCENT_UTIL_H
+#ifndef INTERSPECTIVE_UTIL_H
+#define INTERSPECTIVE_UTIL_H
 
-namespace Innocent {
+namespace Interspective {
 //
 #define foreach(T, L) for (Common::List<T>::iterator it = L.begin(); it != L.end(); ++it)
 #define foreach_const(T, L) for (Common::List<T>::const_iterator it = L.begin(); it != L.end(); ++it)

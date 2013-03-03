@@ -23,25 +23,24 @@
  *
  */
 
-#include "innocent/logic.h"
-
 #include <algorithm>
 
 #include "common/util.h"
 
-#include "innocent/innocent.h"
-#include "innocent/inter.h"
-#include "innocent/program.h"
-#include "innocent/animation.h"
-#include "innocent/resources.h"
-#include "innocent/room.h"
-#include "innocent/util.h"
+#include "interspective/logic.h"
+#include "interspective/innocent.h"
+#include "interspective/inter.h"
+#include "interspective/program.h"
+#include "interspective/animation.h"
+#include "interspective/resources.h"
+#include "interspective/room.h"
+#include "interspective/util.h"
 
 namespace Common {
-	DECLARE_SINGLETON(Innocent::Logic);
+	DECLARE_SINGLETON(Interspective::Logic);
 }
 
-namespace Innocent {
+namespace Interspective {
 
 Logic::~Logic() {
 	for (Common::List<Animation *>::iterator it = _animations.begin(); it != _animations.end(); ++it)
@@ -223,4 +222,4 @@ Animation *Logic::animation(uint16 offset) const {
 }
 
 
-} // End of namespace Innocent
+} // End of namespace Interspective

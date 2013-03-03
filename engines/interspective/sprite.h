@@ -23,12 +23,12 @@
  *
  */
 
-#ifndef INNOCENT_SPRITE_H
-#define INNOCENT_SPRITE_H
+#ifndef INTERSPECTIVE_SPRITE_H
+#define INTERSPECTIVE_SPRITE_H
 
 #include "config.h"
 
-namespace Innocent {
+namespace Interspective {
 
 struct SpriteInfo {
 	SpriteInfo(const byte*, uint16 index);

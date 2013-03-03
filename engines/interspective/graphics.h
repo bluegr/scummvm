@@ -23,22 +23,21 @@
  *
  */
 
-#ifndef INNOCENT_GRAPHICS_H
-#define INNOCENT_GRAPHICS_H
+#ifndef INTERSPECTIVE_GRAPHICS_H
+#define INTERSPECTIVE_GRAPHICS_H
 
 // Used for auto_ptr (Not needed?)
 #include <memory>
-
-#include "common/rect.h"
 #include "common/list.h"
+#include "common/rect.h"
 #include "common/singleton.h"
 
-#include "innocent/types.h"
-#include "innocent/value.h"
+#include "interspective/types.h"
+#include "interspective/value.h"
 
 class OSystem;
 
-namespace Innocent {
+namespace Interspective {
 
 class Engine;
 class Resources;
@@ -168,6 +167,6 @@ private:
 
 #define Graf Graphics::instance()
 
-} // End of namespace Innocent
+} // End of namespace Interspective
 
-#endif // INNOCENT_GRAPHICS_H
+#endif // INTERSPECTIVE_GRAPHICS_H

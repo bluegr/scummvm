@@ -23,13 +23,13 @@
  *
  */
 
-#include "innocent/exit.h"
+#include "interspective/exit.h"
 
-#include "innocent/debugger.h"
-#include "innocent/graphics.h"
-#include "innocent/resources.h"
+#include "interspective/debugger.h"
+#include "interspective/graphics.h"
+#include "interspective/resources.h"
 
-namespace Innocent {
+namespace Interspective {
 //
 
 enum Offsets {

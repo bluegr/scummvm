@@ -23,25 +23,25 @@
  *
  */
 
-#include "innocent/inter.h"
+#include "interspective/inter.h"
 
 #include <vector>
 
-#include "innocent/actor.h"
-#include "innocent/animation.h"
-#include "innocent/exit.h"
-#include "innocent/graphics.h"
-#include "innocent/innocent.h"
-#include "innocent/logic.h"
-#include "innocent/movie.h"
-#include "innocent/musicparser.h"
-#include "innocent/room.h"
-#include "innocent/util.h"
+#include "interspective/actor.h"
+#include "interspective/animation.h"
+#include "interspective/exit.h"
+#include "interspective/graphics.h"
+#include "interspective/innocent.h"
+#include "interspective/logic.h"
+#include "interspective/movie.h"
+#include "interspective/musicparser.h"
+#include "interspective/room.h"
+#include "interspective/util.h"
 
 #include "common/events.h"
 #include "common/util.h"
 
-namespace Innocent {
+namespace Interspective {
 #define OPCODE(num) template<> Interpreter::OpResult Interpreter::opcodeHandler<num>(ValueVector a, CodePointer current, CodePointer next)
 
 OPCODE(0x00) {
@@ -792,4 +792,4 @@ OPCODE(0xfc) {
 // 	_code += 2;
 // }
 
-} // End of namespace Innocent
+} // End of namespace Interspective

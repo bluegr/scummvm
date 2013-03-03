@@ -23,19 +23,19 @@
  *
  */
 
-#include "innocent/main_dat.h"
+#include "interspective/main_dat.h"
 
 #include "common/endian.h"
 #include "common/util.h"
 
-#include "innocent/actor.h"
-#include "innocent/resources.h"
-#include "innocent/util.h"
+#include "interspective/actor.h"
+#include "interspective/resources.h"
+#include "interspective/util.h"
 
 using namespace Common;
 using namespace std;
 
-namespace Innocent {
+namespace Interspective {
 
 MainDat::MainDat(Resources *res) : Datafile(res), _data(0), _actors(0) {}
 
@@ -326,4 +326,4 @@ uint16 MainDat::getBubbleId(SpeechBubblePart part) const {
 	}
 }
 
-} // End of namespace Innocent
+} // End of namespace Interspective
