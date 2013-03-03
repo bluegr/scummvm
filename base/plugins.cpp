@@ -101,9 +101,6 @@ public:
 		#if defined(USE_SEQ_MIDI)
 		LINK_PLUGIN(SEQ)
 		#endif
-		#if defined(USE_SNDIO)
-		LINK_PLUGIN(SNDIO)
-		#endif
 		#if defined(__MINT__)
 		LINK_PLUGIN(STMIDI)
 		#endif
@@ -257,6 +254,8 @@ void PluginManagerUncached::init() {
 	unloadAllPlugins();
 	_allEnginePlugins.clear();
 
+	// Resize our pluginsInMem list to prevent fragmentation
+	_pluginsInMem[PLUGIN_TYPE_ENGINE].resize(2);
 	unloadPluginsExcept(PLUGIN_TYPE_ENGINE, NULL, false);	// empty the engine plugins
 
 	for (ProviderList::iterator pp = _providers.begin();
