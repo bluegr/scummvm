@@ -26,8 +26,7 @@
 #ifndef INTERSPECTIVE_RESOURCES_H
 #define INTERSPECTIVE_RESOURCES_H
 
-#include <memory>
-
+#include "common/ptr.h"
 #include "common/singleton.h"
 #include "common/stream.h"
 #include "graphics/surface.h"
@@ -50,6 +49,10 @@ public:
 		blit(s, Common::Rect(p.x, p.y, s->w, s->h), transparent, tinted);
 	}
 	void blit(const Surface *s, Common::Rect r, int transparent = -1, const byte (*tinted)[256] = 0);
+	
+	void create(uint16 width, uint16 height) {
+		::Graphics::Surface::create(width, height);
+	}
 };
 
 class Sprite : public Surface {
@@ -94,7 +97,7 @@ public:
 	Common::ReadStream *tuneStream(uint16 index) const;
 
 	void loadInterfaceImage(byte *target, byte *palette = 0) {
-		loadImage(_main->interfaceImageIndex(), target, 0x3c00, palette);
+		loadImage(_main.get()->interfaceImageIndex(), target, 0x3c00, palette);
 	}
 
 	uint16 blockOfRoom(uint16 room) const;
@@ -142,13 +145,13 @@ private:
 
 	Engine *_vm;
 
-	std::auto_ptr<MainDat> _main;
-	std::auto_ptr<MapFile> _graphicsMap;
-	std::auto_ptr<MapFile> _tuneMap;
-	std::auto_ptr<ProgDat> _progDat;
+	Common::SharedPtr<MainDat> _main;
+	Common::SharedPtr<MapFile> _graphicsMap;
+	Common::SharedPtr<MapFile> _tuneMap;
+	Common::SharedPtr<ProgDat> _progDat;
 
-	std::auto_ptr<Common::SeekableReadStream> *_graphicFiles;
-	std::auto_ptr<Common::SeekableReadStream> *_musicFiles;
+	Common::SharedPtr<Common::SeekableReadStream> *_graphicFiles;
+	Common::SharedPtr<Common::SeekableReadStream> *_musicFiles;
 
 	Sprite *_frames[9];
 	Sprite *_bubbles[13];

@@ -24,15 +24,10 @@
  */
 
 #include "common/hashmap.h"
-#include "innocent/resources.h"
 
-#include <vector>
-#include <algorithm>
-#include <ext/algorithm>
 
 #include "common/file.h"
 #include "graphics/surface.h"
-#include "graphics/pixelformat.h"
 
 #include "interspective/resources.h"
 #include "interspective/innocent.h"
@@ -76,10 +71,10 @@ void Surface::blit(const Surface *s, Common::Rect r, int transparent, const byte
 }
 
 void Resources::setEngine(Engine *vm) {
-	_main.reset(new MainDat(this));
-	_graphicsMap.reset(new MapFile("iuc_graf.dat"));
-	_tuneMap.reset(new MapFile("iuc_tune.dat"));
-	_progDat.reset(new ProgDat(this));
+	_main = Common::SharedPtr<MainDat>(new MainDat(this));
+	_graphicsMap = Common::SharedPtr<MapFile>(new MapFile("iuc_graf.dat"));
+	_tuneMap = Common::SharedPtr<MapFile>(new MapFile("iuc_tune.dat"));
+	_progDat = Common::SharedPtr<ProgDat>(new ProgDat(this));
 	_graphicFiles = 0;
 	_vm = vm;
 }
@@ -96,21 +91,21 @@ Resources::~Resources() {
 }
 
 void Resources::load() {
-	_main->load();
-	_graphicsMap->load();
-	_tuneMap->load();
+	_main.get()->load();
+	_graphicsMap.get()->load();
+	_tuneMap.get()->load();
 
 	loadGraphicFiles();
 	loadMusicFiles();
 
-	_progDat->load();
+	_progDat.get()->load();
 
 	loadFrames();
 	loadSpeechBubbles();
 }
 
 void Resources::loadFrames() {
-	#define FRAME(p) _frames[p] = loadSprite(_main->getFrameId(p))
+	#define FRAME(p) _frames[p] = loadSprite(_main.get()->getFrameId(p))
 	FRAME(kFrameTopLeft);
 	FRAME(kFrameTop);
 	FRAME(kFrameTopRight);
@@ -124,7 +119,7 @@ void Resources::loadFrames() {
 }
 
 void Resources::loadSpeechBubbles() {
-	#define BUBBLE(p) _bubbles[p] = loadSprite(_main->getBubbleId(p))
+	#define BUBBLE(p) _bubbles[p] = loadSprite(_main.get()->getBubbleId(p))
 	BUBBLE(kBubbleTopLeft);
 	BUBBLE(kBubbleLeft);
 	BUBBLE(kBubbleBottomLeft);
@@ -147,49 +142,49 @@ void Resources::init() {
 }
 
 void Resources::loadActors() {
-	_main->loadActors(_vm->logic()->mainInterpreter());
+	_main.get()->loadActors(_vm->logic()->mainInterpreter());
 }
 
 byte *Resources::getGlobalByteVariable(uint16 var) const {
-	return _main->getByteVariable(var);
+	return _main.get()->getByteVariable(var);
 }
 
 byte *Resources::getGlobalWordVariable(uint16 var) const {
-	return _main->getWordVariable(var);
+	return _main.get()->getWordVariable(var);
 }
 
 void Resources::loadGraphicFiles() {
-	const list<MainDat::GraphicFile> files(_main->graphicFiles());
+	const Common::List<MainDat::GraphicFile> files(_main.get()->graphicFiles());
 
-	_graphicFiles = new auto_ptr<SeekableReadStream>[files.size()];
+	_graphicFiles = new Common::SharedPtr<SeekableReadStream>[files.size()];
 
-	auto_ptr<SeekableReadStream> *ptr = _graphicFiles;
-	for (list<MainDat::GraphicFile>::const_iterator it = files.begin(); it != files.end(); ++it) {
+	Common::SharedPtr<SeekableReadStream> *ptr = _graphicFiles;
+	for (Common::List<MainDat::GraphicFile>::const_iterator it = files.begin(); it != files.end(); ++it) {
 		File *file = new File();
 		file->open(String(it->filename));
-		auto_ptr<SeekableReadStream> pointer(file);
+		Common::SharedPtr<SeekableReadStream> pointer(file);
 		*(ptr++) = pointer;
 	}
 }
 
 void Resources::loadMusicFiles() {
-	const list<Common::String> files(_main->musicFiles());
+	const Common::List<Common::String> files(_main.get()->musicFiles());
 
-	_musicFiles = new auto_ptr<SeekableReadStream>[files.size()];
+	_musicFiles = new Common::SharedPtr<SeekableReadStream>[files.size()];
 
-	auto_ptr<SeekableReadStream> *ptr = _musicFiles;
-	for (list<Common::String>::const_iterator it = files.begin(); it != files.end(); ++it) {
+	Common::SharedPtr<SeekableReadStream> *ptr = _musicFiles;
+	for (Common::List<Common::String>::const_iterator it = files.begin(); it != files.end(); ++it) {
 		debugC(1, kDebugLevelFiles | kDebugLevelMusic, "opening music file %s", it->c_str());
 		File *file = new File();
 		file->open(*it);
-		auto_ptr<SeekableReadStream> pointer(file);
+		Common::SharedPtr<SeekableReadStream> pointer(file);
 		*(ptr++) = pointer;
 	}
 }
 
 Common::ReadStream *Resources::imageStream(uint16 index) const {
-	uint16 file_index = _main->fileIndexOfImage(index);
-	uint32 offset = _graphicsMap->offsetOfEntry(index);
+	uint16 file_index = _main.get()->fileIndexOfImage(index);
+	uint32 offset = _graphicsMap.get()->offsetOfEntry(index);
 
 	SeekableReadStream *file = _graphicFiles[file_index].get();
 	file->seek(offset);
@@ -198,8 +193,8 @@ Common::ReadStream *Resources::imageStream(uint16 index) const {
 }
 
 Common::ReadStream *Resources::tuneStream(uint16 index) const {
-	uint16 file_index = _main->fileIndexOfTune(index)/2;
-	uint32 offset = _tuneMap->offsetOfEntry(index);
+	uint16 file_index = _main.get()->fileIndexOfTune(index)/2;
+	uint32 offset = _tuneMap.get()->offsetOfEntry(index);
 
 	debugC(2, kDebugLevelFiles | kDebugLevelMusic, "loading tune %d from file %d at offset 0x%x", index, file_index, offset);
 
@@ -240,7 +235,7 @@ Image *Resources::loadImage(uint16 index) const {
 		return img;
 
 	img = new Image;
-	img->create(320, 200, ::Graphics::PixelFormat::createFormatCLUT8());
+	img->create(320, 200);
 	assert(img->pitch == 320);
 	loadImage(index, reinterpret_cast<byte *>(img->pixels), 320*200);
 	cache[index] = img;
@@ -275,11 +270,11 @@ void Resources::decodeImage(Common::ReadStream *stream, byte *target, uint16 siz
 }
 
 uint16 Resources::blockOfRoom(uint16 room) const {
-	return _main->getRoomScriptId(room);
+	return _main.get()->getRoomScriptId(room);
 }
 
 Program *Resources::loadCodeBlock(uint16 block) const {
-	return _progDat->getScript(block);
+	return _progDat.get()->getScript(block);
 }
 
 void Resources::descramble(byte *data, uint32 len) {
@@ -288,11 +283,11 @@ void Resources::descramble(byte *data, uint32 len) {
 }
 
 byte *Resources::mainBase() const {
-	return _main->_data;
+	return _main.get()->_data;
 }
 
 uint16 Resources::mainEntryPoint() const {
-	return _main->getEntryPoint() - mainBase();
+	return _main.get()->getEntryPoint() - mainBase();
 }
 
 Surface *Resources::loadBackdrop(uint16 index, byte *palette) {
@@ -303,7 +298,7 @@ Surface *Resources::loadBackdrop(uint16 index, byte *palette) {
 
 
 	Surface *backdrop = new Surface;
-	backdrop->create(width, height, ::Graphics::PixelFormat::createFormatCLUT8());
+	backdrop->create(width, height);
 
 	decodeImage(stream, reinterpret_cast<byte *>(backdrop->pixels), width * height);
 
@@ -317,7 +312,7 @@ Surface *Resources::loadBackdrop(uint16 index, byte *palette) {
 Sprite *Resources::getGlyph(byte ch) const {
 	if (ch <= ' ' || ch > '~')
 		return 0;
-	uint16 id = _main->getGlyphSpriteId(ch);
+	uint16 id = _main.get()->getGlyphSpriteId(ch);
 	Sprite *s = loadSprite(id);
 	return s;
 }
@@ -332,20 +327,20 @@ Sprite *Resources::loadSprite(uint16 id) const {
 }
 
 SpriteInfo Resources::getSpriteInfo(uint16 id) const {
-	if (id < _main->spriteCount())
-		return _main->getSpriteInfo(id);
+	if (id < _main.get()->spriteCount())
+		return _main.get()->getSpriteInfo(id);
 	else
-		return _vm->logic()->blockProgram()->getSpriteInfo(id - _main->spriteCount());
+		return _vm->logic()->blockProgram()->getSpriteInfo(id - _main.get()->spriteCount());
 }
 
 Sprite *Image::cut(Common::Rect rect) const {
 	Sprite *sprite = new Sprite;
-	sprite->create(rect.width(), rect.height(), ::Graphics::PixelFormat::createFormatCLUT8());
+	sprite->create(rect.width(), rect.height());
 
 	const byte *src = reinterpret_cast<const byte *>(getBasePtr(rect.left, rect.top));
 	byte *dest = reinterpret_cast<byte *>(sprite->pixels);
 	for (uint16 y = 0; y < rect.height(); y++) {
-		std::copy(src, src + rect.width(), dest);
+		Common::copy(src, src + rect.width(), dest);
 		src += pitch;
 		dest += sprite->pitch;
 	}
@@ -357,20 +352,21 @@ enum {
 };
 
 void Sprite::recolour(byte colour) {
-	byte *data = reinterpret_cast<byte *>(pixels);
-	std::replace(data, data + h * pitch, byte(kChangeableColour), colour);
+	// TODO: std::replace
+	//byte *data = reinterpret_cast<byte *>(pixels);
+	//std::replace(data, data + h * pitch, byte(kChangeableColour), colour);
 }
 
 template<>
-std::auto_ptr<Sprite> &CodePointer::field<std::auto_ptr<Sprite> >(std::auto_ptr<Sprite> &p, int off) const {
+Common::SharedPtr<Interspective::Sprite> &CodePointer::field<Common::SharedPtr<Interspective::Sprite> >(Common::SharedPtr<Interspective::Sprite> &p, int off) const {
 	uint16 sprite;
 	field(sprite, off);
-	p.reset(_interpreter->resources()->loadSprite(sprite));
+	p = Common::SharedPtr<Interspective::Sprite>(_interpreter->resources()->loadSprite(sprite));
 	return p;
 }
 
 Sprite *Resources::getCursor() const {
-	return loadSprite(_main->getCursorSpriteId());
+	return loadSprite(_main.get()->getCursorSpriteId());
 }
 
 } // End of namespace Interspective
