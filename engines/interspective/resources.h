@@ -51,7 +51,7 @@ public:
 	void blit(const Surface *s, Common::Rect r, int transparent = -1, const byte (*tinted)[256] = 0);
 	
 	void create(uint16 width, uint16 height) {
-		::Graphics::Surface::create(width, height);
+		::Graphics::Surface::create(width, height, ::Graphics::PixelFormat::createFormatCLUT8());
 	}
 };
 

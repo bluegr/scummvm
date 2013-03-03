@@ -160,7 +160,7 @@ public:
 private:
 	void parseNextEvent(EventInfo &info) {  }
 	Tune *_tune;
-	MidiDriver *_driver;
+	MidiDriver *_midiDriver;
 	MusicScript *_script;
 
 	uint32 _time, _lastTick, _tick;

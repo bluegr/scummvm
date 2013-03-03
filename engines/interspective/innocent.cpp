@@ -88,16 +88,7 @@ Common::Error Engine::run() {
 	Debug.setEngine(this);
 	_resources->init();
 	_graphics->init();
-
-	int midiDriver = MidiDriver::detectDevice(MDT_MIDI);
-
-	MidiDriver *driver = MidiDriver::createMidi(midiDriver);
-
-	_musicDriver.reset(driver);
-	Music.setMidiDriver(driver);
-	driver->open();
-
-
+	// music is initialized in the singleton
 	_logic->init();
 
 	_resources->loadActors();
