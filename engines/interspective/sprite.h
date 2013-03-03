@@ -26,8 +26,6 @@
 #ifndef INTERSPECTIVE_SPRITE_H
 #define INTERSPECTIVE_SPRITE_H
 
-#include "config.h"
-
 namespace Interspective {
 
 struct SpriteInfo {

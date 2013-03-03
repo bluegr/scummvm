@@ -26,12 +26,9 @@
 #ifndef INTERSPECTIVE_INTER_H
 #define INTERSPECTIVE_INTER_H
 
-#include <memory>
-
 #include "common/list.h"
 #include "common/rect.h"
 #include "common/util.h"
-#include "config.h"
 
 #include "interspective/value.h"
 

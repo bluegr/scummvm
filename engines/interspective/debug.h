@@ -26,8 +26,6 @@
 #ifndef INTERSPECTIVE_DEBUG_H
 #define INTERSPECTIVE_DEBUG_H
 
-#include "config.h"
-
 #include "common/rect.h"
 #include "common/scummsys.h"
 

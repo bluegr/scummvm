@@ -32,7 +32,6 @@
 #include "common/list.h"
 #include "common/queue.h"
 #include "common/singleton.h"
-#include "config.h"
 
 #include "interspective/inter.h"
 #include "interspective/mapfile.h"
