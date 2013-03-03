@@ -56,9 +56,17 @@ void Surface::blit(const Surface *s, Common::Rect r, int transparent, const byte
 	
 	const byte *src = reinterpret_cast<byte *>(s->pixels);
 	byte *dest = reinterpret_cast<byte *>(getBasePtr(r.left, r.top));
-	
 	int rw = r.width(), rh = r.height();
-	for (int y = 0; y < rh; ++y) {
+	
+	if (transparent == -1 && !tinted) {
+		if (rw == s->pitch && rw == pitch && r.left == 0)
+			memmove(dest, src, rw * rh);
+		else for (int y = 0; y < rh; ++y) {
+			memmove(dest, src, rw);
+			dest += pitch;
+			src += s->pitch;
+		}
+	} else for (int y = 0; y < rh; ++y) {
 		for (int x = 0; x < rw; ++x) {
 			if (tinted && src[x] == kSemitransparent)
 				dest[x] = (*tinted)[dest[x]];
