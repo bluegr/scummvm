@@ -144,7 +144,7 @@ Common::List<Actor::Frame> Actor::findPath(Actor::Frame from, uint16 to) {
 		Common::List<Frame> next;
 		Common::String s;
 		while (!found && current != back->end()) {
-			std::vector<byte> nexts = current->nexts();
+			Common::Array<byte> nexts = current->nexts();
 			for (int i = 0; i < 8; i++)
 				if (nexts[i]) {
 					s += Common::String::format(", %d", int(nexts[i]));

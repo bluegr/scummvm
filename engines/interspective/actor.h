@@ -26,8 +26,7 @@
 #ifndef INTERSPECTIVE_ACTOR_H
 #define INTERSPECTIVE_ACTOR_H
 
-#include <vector>
-
+#include "common/array.h"
 #include "common/endian.h"
 #include "common/queue.h"
 #include "common/rect.h"
@@ -89,11 +88,13 @@ class Actor : public Animation {
 public:
 	class Frame {
 	public:
-		Frame() : _position(999, 999), _nexts(8), _nextCount(0xff) {}
-		Frame(Common::Point pos, std::vector<byte> n, uint16 i) : _position(pos), _nexts(n), _index(i), _nextCount(0xff) {}
+		Frame() : _position(999, 999), _nexts(), _nextCount(0xff) {
+			_nexts.resize(8);
+		}
+		Frame(Common::Point pos, Common::Array<byte> n, uint16 i) : _position(pos), _nexts(n), _index(i), _nextCount(0xff) {}
 
 		Common::Point position() const { return _position; }
-		const std::vector<byte> &nexts() const { return _nexts; }
+		const Common::Array<byte> &nexts() const { return _nexts; }
 		uint16 index() const { return _index; }
 
 		Direction operator-(const Frame &other) const;
@@ -115,7 +116,7 @@ public:
 	private:
 		uint16 _index;
 		Common::Point _position;
-		std::vector<byte> _nexts;
+		Common::Array<byte> _nexts;
 		mutable byte _nextCount;
 	};
 

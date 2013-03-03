@@ -36,7 +36,7 @@ Room::Room(Logic *l) : _logic(l) {
 	snprintf(_debugInfo, 50, "room %d in %s", l->roomNumber(), +*l->blockProgram());
 }
 
-void Room::addActorFrame(Common::Point pos, std::vector<byte> nexts) {
+void Room::addActorFrame(Common::Point pos, Common::Array<byte> nexts) {
 	Actor::Frame f(pos, nexts, _actorFrames.size() + 1);
 	_actorFrames.push_back(f);
 }

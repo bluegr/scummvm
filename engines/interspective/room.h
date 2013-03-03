@@ -26,8 +26,7 @@
 #ifndef INTERSPECTIVE_ROOM_H
 #define INTERSPECTIVE_ROOM_H
 
-#include <vector>
-
+#include "common/array.h"
 #include "common/list.h"
 #include "common/rect.h"
 
@@ -55,7 +54,7 @@ public:
 
 	const Common::List<Exit *> &exits() const { return _exits; }
 
-	void addActorFrame(Common::Point p, std::vector<byte> nexts);
+	void addActorFrame(Common::Point p, Common::Array<byte> nexts);
 	Actor::Frame getFrame(uint16 index) const {
 		if (index >= _actorFrames.size() || index == 0)
 			return Actor::Frame();
@@ -78,7 +77,7 @@ private:
 	Common::List<Exit *> _exits;
 	Logic *_logic;
 
-	std::vector<Actor::Frame> _actorFrames;
+	Common::Array<Actor::Frame> _actorFrames;
 	Common::List<Rect> _rects;
 
 	DEBUG_INFO

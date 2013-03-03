@@ -694,7 +694,8 @@ OPCODE(0xdb) {
 
 OPCODE(0xdf) {
 	// add actor frame
-	std::vector<byte> nexts(8);
+	Common::Array<byte> nexts;
+	nexts.resize(8);
 	for (int i = 0; i < 4; i++) {
 		uint16 val = a[i+2];
 		nexts[2*i] = val & 0xff;

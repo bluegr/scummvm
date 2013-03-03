@@ -26,9 +26,8 @@
 #ifndef INTERSPECTIVE_VARIABLES_H
 #define INTERSPECTIVE_VARIABLES_H
 
-#include <vector>
-
 #include "common/endian.h"
+#include "common/array.h"
 
 #include "interspective/debug.h"
 
@@ -116,13 +115,13 @@ private:
 class ValueVector {
 public:
 	~ValueVector() {
-		for (std::vector<Value *>::iterator it = _values.begin(); it != _values.end(); ++it)
+		for (Common::Array<Value *>::iterator it = _values.begin(); it != _values.end(); ++it)
 			/*delete *it*/; // FIXME segfaults, why?
 	}
 	void push_back(Value *element) { _values.push_back(element); }
 	Value &operator[](uint8 idx) { return *_values[idx]; }
 private:
-	std::vector<Value *> _values;
+	Common::Array<Value *> _values;
 };
 
 class CodePointer : public Value {
