@@ -92,9 +92,14 @@ public:
 
 		FSList fslist;
 		FSNode dir(ConfMan.get("path"));
-		if (!dir.getChildren(fslist, FSNode::kListAll)) {
+
+		if (!dir.exists())
 			return kPathDoesNotExist;
-		}
+		
+		if (!dir.isDirectory())
+			return kPathNotDirectory;
+		
+		dir.getChildren(fslist, FSNode::kListFilesOnly);
 
 		Common::String gameid = ConfMan.get("gameid");
 		GameList detectedGames = detectGames(fslist);
