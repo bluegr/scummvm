@@ -37,7 +37,8 @@
 
 // this has to be included here or else templates
 // would get instantiated to the generic handler
-#include "innocent/opcode_handlers.cpp"
+// TODO: This BREAKS compilation in MSVC - needs to be revised
+//#include "interspective/opcode_handlers.cpp"
 
 namespace Interspective {
 
@@ -76,8 +77,9 @@ Interpreter::Interpreter(Logic *l, byte *base, const char *n) :
 }
 
 Interpreter::~Interpreter() {
-	foreach (Animation *, _animations)
-		delete *it;
+	// TODO
+	//foreach (Animation *, _animations)
+	//	delete *it;
 }
 
 void Interpreter::tick() {
@@ -109,7 +111,7 @@ Status Interpreter::run(uint16 offset) {
 	last = code = _base + offset;
 
 	int if_depth = 0;
-	forever {
+	while (true) {
 		byte opcode = *code;
 		last = code;
 
