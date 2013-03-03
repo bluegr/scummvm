@@ -70,7 +70,7 @@ Engine::Engine(OSystem *syst) :
 	DebugMan.addDebugChannel(kDebugLevelMusic, "music", "music loading and playing");
 	DebugMan.addDebugChannel(kDebugLevelActor, "actor", "actor animation and behaviour");
 
-	_rnd = new Common::RandomSource("innocent");
+	_rnd = new Common::RandomSource("interspective");
 }
 
 Engine::~Engine() {
@@ -81,6 +81,7 @@ Engine::~Engine() {
 
 Common::Error Engine::run() {
 	initGraphics(320, 200, false);
+	
 	_copyProtection = ConfMan.getBool("copy_protection");
 	_startRoom = ConfMan.getInt("boot_param");
 	_debugger = &Debug;
