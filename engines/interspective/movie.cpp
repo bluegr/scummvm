@@ -54,7 +54,7 @@ void Movie::setFrameDelay(uint jiffies) {
 }
 
 bool Movie::play() {
-	_s.create(320, 200, ::Graphics::PixelFormat::createFormatCLUT8());
+	_s.create(320, 200);
 
 	debugC(4, kDebugLevelGraphics, "creating movie");
 	while (findKeyFrame()) {
