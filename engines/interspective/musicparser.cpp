@@ -59,8 +59,9 @@ MusicParser::~MusicParser() {
 bool MusicParser::loadMusic(byte *data, uint32 size) {
 	unloadMusic();
 	silence();
-	_script.reset(new MusicScript(data));
-	_tune.reset(new Tune(_script->getTune()));
+	delete _script;
+	_script = new MusicScript(data);
+	_tune = new Tune(_script->getTune());
 
 	_numTracks = 1;
 	_ppqn = 120;
@@ -77,7 +78,8 @@ void MusicParser::tick() {
 
 	_lastTick = _time;
 
-	_tune->tick();
+	if (_tune)
+		_tune->tick();
 	_tick++;
 }
 

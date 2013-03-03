@@ -26,12 +26,11 @@
 #ifndef INTERSPECTIVE_MUSIC_H
 #define INTERSPECTIVE_MUSIC_H
 
-#include <memory>
-#include <vector>
-
+#include "common/array.h"
 #include "common/noncopyable.h"
 #include "common/queue.h"
 #include "common/singleton.h"
+
 #include "audio/midiparser.h"
 #include "audio/mididrv.h"
 
@@ -122,7 +121,7 @@ public:
 
 	friend class Note;
 private:
-	std::vector<Beat> _beats;
+	Common::Array<Beat> _beats;
 
 	byte _data[6666];
 	int32 _currentBeat;
@@ -160,11 +159,11 @@ public:
 
 private:
 	void parseNextEvent(EventInfo &info) {  }
-	std::auto_ptr<Tune> _tune;
-	std::auto_ptr<MusicScript> _script;
+	Tune *_tune;
+	MidiDriver *_driver;
+	MusicScript *_script;
 
 	uint32 _time, _lastTick, _tick;
-	MidiDriver *_midiDriver;
 };
 
 #define Music MusicParser::instance()
