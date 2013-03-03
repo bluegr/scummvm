@@ -25,8 +25,6 @@
 
 #include "interspective/graphics.h"
 
-#include <algorithm>
-#include <functional>
 
 #include "common/events.h"
 #include "common/system.h"
@@ -52,14 +50,10 @@ namespace Common {
 
 namespace Interspective {
 
-//Common::Point &operator+=(Common::Point &p1, const Common::Point &p2) { return p1 = Common::Point(p1.x + p2.x, p1.y + p2.y); }
-
-//Common::Point &operator-=(Common::Point &p1, const Common::Point &p2) { return p1 = Common::Point(p1.x - p2.x, p1.y - p2.y); }
-
 void Graphics::setEngine(Engine *engine) {
 	_engine = engine;
-	_framebuffer.reset(new Surface);
-	_framebuffer->create(320, 200, ::Graphics::PixelFormat::createFormatCLUT8());
+	_framebuffer = Common::SharedPtr<Surface>(new Surface);
+	_framebuffer.get()->create(320, 200);
 	_willFadein = false;
 
 	_speech = 0;
@@ -105,13 +99,13 @@ void Graphics::paintExits() {
 void Graphics::loadInterface() {
 	debugC(1, kDebugLevelGraphics, "loading interface");
 	_interface = new Surface;
-	_interface->create(320, 50, ::Graphics::PixelFormat::createFormatCLUT8());
+	_interface->create(320, 50);
 	_resources->loadInterfaceImage(reinterpret_cast<byte *>(_interface->pixels), _interfacePalette);
 }
 
 void Graphics::prepareInterfacePalette() {
 	debugC(1, kDebugLevelGraphics, "preparing interface palette");
-	_system->getPaletteManager()->setPalette(_interfacePalette + 160 * 4, 160, 96);
+	_engine->_system->getPaletteManager()->setPalette(_interfacePalette + 160 * 4, 160, 96);
 }
 
 void Graphics::paintInterface() {
@@ -122,7 +116,7 @@ void Graphics::paintInterface() {
 
 void Graphics::setBackdrop(uint16 id) {
 	byte palette[0x400];
-	_backdrop.reset(_resources->loadBackdrop(id, palette));
+	_backdrop = Common::SharedPtr<Surface>(_resources->loadBackdrop(id, palette));
 	setPalette(palette, 0, 256);
 	prepareInterfacePalette();
 	paintBackdrop();
@@ -181,7 +175,7 @@ uint16 Graphics::ask(uint16 left, uint16 top, byte width, byte height, byte *str
 	};
 
 	Surface frame;
-	frame.create(width * kFrameTileWidth, height * kFrameTileHeight+4, ::Graphics::PixelFormat::createFormatCLUT8());
+	frame.create(width * kFrameTileWidth, height * kFrameTileHeight+4);
 
 	Sprite **frames = _resources->frames();
 
@@ -321,7 +315,7 @@ Common::Rect Graphics::paintSpeechInBubble(Common::Point pos, byte colour, const
 	if (horizontal_tiles == 0)
 		horizontal_tiles = 1;
 
-	bubble->create(65 + wadj + 4 * horizontal_tiles, 54 + 6 * vertical_tiles, ::Graphics::PixelFormat::createFormatCLUT8());
+	bubble->create(65 + wadj + 4 * horizontal_tiles, 54 + 6 * vertical_tiles);
 
 	Common::Point position(wadj, 0);
 	paintSpeechBubbleColumn(bubbles[bubble_indices[kBubbleTopLeft]], bubbles[bubble_indices[kBubbleLeft]], position, vertical_tiles, bubble);
@@ -595,7 +589,7 @@ void Graphics::fadeIn(const byte *colours, uint start, uint num) {
 	const int bytes = num * 4;
 	byte current[0x400];
 
-	fill(current, current + bytes, 0);
+	Common::fill(current, current + bytes, 0);
 
 	byte off = 255;
 	for (int j = 0; j < 63; j++) {

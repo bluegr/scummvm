@@ -26,9 +26,8 @@
 #ifndef INTERSPECTIVE_GRAPHICS_H
 #define INTERSPECTIVE_GRAPHICS_H
 
-// Used for auto_ptr (Not needed?)
-#include <memory>
 #include "common/list.h"
+#include "common/ptr.h"
 #include "common/rect.h"
 #include "common/singleton.h"
 
@@ -43,9 +42,6 @@ class Engine;
 class Resources;
 class Surface;
 class Sprite;
-
-//Common::Point &operator+=(Common::Point &p1, const Common::Point &p2);
-//Common::Point &operator-=(Common::Point &p1, const Common::Point &p2);
 
 class Graphics : public Common::Singleton<Graphics> {
 public:
@@ -143,7 +139,7 @@ private:
 	Engine *_engine;
 	Resources *_resources;
 	OSystem *_system;
-	std::auto_ptr<Surface> _backdrop, _framebuffer;
+	Common::SharedPtr<Surface> _backdrop, _framebuffer;
 
 	static const char _charwidths[];
 
