@@ -227,7 +227,10 @@ uint32 TinselFile::read(void *dataPtr, uint32 dataSize) {
 	return _stream->read(dataPtr, dataSize);
 }
 
-
+uint32 TinselFile::readLength() {
+	assert(_stream);
+	return (!TinselV1Saturn) ? _stream->readUint32LE() : _stream->readUint32BE();
+}
 
 
 } // End of namespace Tinsel

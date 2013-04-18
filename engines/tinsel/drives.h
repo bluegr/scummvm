@@ -73,6 +73,7 @@ public:
 
 	bool eos() const;
 	uint32 read(void *dataPtr, uint32 dataSize);
+	uint32 readLength();
 
 	int32 pos() const;
 	int32 size() const;
