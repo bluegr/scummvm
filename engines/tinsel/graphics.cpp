@@ -73,7 +73,7 @@ uint8* psxPJCRLEUnwinder(uint16 imageWidth, uint16 imageHeight, uint8 *srcIdx) {
 
 	while (remainingBlocks) { // Repeat until all blocks are decompressed
 		if (!controlBits) {
-			controlData = READ_16(srcIdx);
+			controlData = READ_LE_UINT16(srcIdx);
 			srcIdx += 2;
 
 			// If bit 15 of controlData is enabled, compression data is type 1.
@@ -92,7 +92,7 @@ uint8* psxPJCRLEUnwinder(uint16 imageWidth, uint16 imageHeight, uint8 *srcIdx) {
 			// If there is compression, we need to fetch an index
 			// to be treated as "base" for compression.
 			if (compressionType != 0) {
-				controlData = READ_16(srcIdx);
+				controlData = READ_LE_UINT16(srcIdx);
 				srcIdx += 2;
 				baseIndex = controlData;
 			}
@@ -114,7 +114,7 @@ uint8* psxPJCRLEUnwinder(uint16 imageWidth, uint16 imageHeight, uint8 *srcIdx) {
 		switch (compressionType) {
 			case 0: // No compression, plain copy of indexes
 				while (decremTiles) {
-					WRITE_LE_UINT16(dstIdx, READ_16(srcIdx));
+					WRITE_LE_UINT16(dstIdx, READ_LE_UINT16(srcIdx));
 					srcIdx += 2;
 					dstIdx += 2;
 					decremTiles--;
@@ -829,10 +829,6 @@ void DrawObject(DRAWOBJECT *pObj) {
 		// Empty image, so return immediately
 		return;
 
-	// TODO: Unhandled Saturn images
-	if (TinselV1Saturn)
-		return;
-
 	// If writing constant data, don't bother locking the data pointer and reading src details
 	if ((pObj->flags & DMA_CONST) == 0) {
 		if (TinselV2) {
@@ -843,16 +839,31 @@ void DrawObject(DRAWOBJECT *pObj) {
 			byte *p = (byte *)LockMem(pObj->hBits & HANDLEMASK);
 
 			srcPtr = p + (pObj->hBits & OFFSETMASK);
-			pObj->charBase = (char *)p + READ_LE_UINT32(p + 0x10);
-			pObj->transOffset = READ_LE_UINT32(p + 0x14);
+			if (!TinselV1Saturn) {
+				pObj->charBase = (char *)p + READ_LE_UINT32(p + 0x10);
+				pObj->transOffset = READ_LE_UINT32(p + 0x14);
+			} else {
+				pObj->charBase = (char *)p + READ_BE_UINT32(p + 0x10);
+				pObj->transOffset = READ_BE_UINT32(p + 0x14);
+			}
 
-			// Decompress block indexes for Discworld PSX
-			if (TinselV1PSX) {
-				uint8 paletteType = *(srcPtr); // if 0x88 we are using an 8bit palette type, if 0x44 we are using a 4 bit PSX CLUT
-				uint8 indexType = *(srcPtr + 1); // if 0xCC indexes for this image are compressed with PCJRLE, if 0xDD indexes are not compressed
+			// Decompress block indexes for Discworld PSX and Saturn
+			if (TinselV1PSX || TinselV1Saturn) {
+				uint8 paletteType = 0;
+				uint8 indexType = 0;
+
+				if (TinselV1PSX) {
+					paletteType = *(srcPtr); // if 0x88 we are using an 8bit palette type, if 0x44 we are using a 4 bit PSX CLUT
+					indexType = *(srcPtr + 1); // if 0xCC indexes for this image are compressed with PCJRLE, if 0xDD indexes are not compressed
+				} else if (TinselV1Saturn) {
+					paletteType = *(srcPtr + 1);	// always 0x00 (8bit palette type)
+					assert (paletteType == 0);
+					indexType = *(srcPtr);	// if 0xCC indexes for this image are compressed with PCJRLE, if 0xDD indexes are not compressed
+				}
 
 				switch (paletteType) {
-					case 0x88: // Normal 8-bit palette
+					case 0x88: // Normal 8-bit palette (PSX)
+					case 0x00: // Normal 8-bit palette (Saturn)
 						psxFourBitClut = false;
 						psxSkipBytes = 0;
 						switch (indexType) {
@@ -929,7 +940,7 @@ void DrawObject(DRAWOBJECT *pObj) {
 
 			if (TinselV2)
 				t2WrtNonZero(pObj, srcPtr, destPtr, typeId >= 0x40, (typeId & 0x10) != 0);
-			else if (TinselV1PSX)
+			else if (TinselV1PSX || TinselV1Saturn)
 				PsxDrawTiles(pObj, srcPtr, destPtr, typeId == 0x41, psxFourBitClut, psxSkipBytes, psxMapperTable, true);
 			else if (TinselV1Mac)
 				MacDrawTiles(pObj, srcPtr, destPtr, typeId == 0x41);
@@ -942,7 +953,7 @@ void DrawObject(DRAWOBJECT *pObj) {
 		case 0x48:	// draw background with clipping
 			if (TinselV2 || TinselV1Mac || TinselV0)
 				WrtAll(pObj, srcPtr, destPtr, typeId == 0x48);
-			else if (TinselV1PSX)
+			else if (TinselV1PSX || TinselV1Saturn)
 				PsxDrawTiles(pObj, srcPtr, destPtr, typeId == 0x48, psxFourBitClut, psxSkipBytes, psxMapperTable, false);
 			else if (TinselV1)
 				WrtNonZero(pObj, srcPtr, destPtr, typeId == 0x48);
@@ -962,7 +973,7 @@ void DrawObject(DRAWOBJECT *pObj) {
 
 	// If we were using Discworld PSX, free the memory allocated
 	// for decompressed block indexes.
-	if (TinselV1PSX && psxRLEindex)
+	if ((TinselV1PSX || TinselV1Saturn) && psxRLEindex)
 		free(srcPtr);
 }
 
