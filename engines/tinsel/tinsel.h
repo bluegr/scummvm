@@ -133,12 +133,13 @@ typedef bool (*KEYFPTR)(const Common::KeyState &);
 #define TinselV1PSX (TinselVersion == TINSEL_V1 && _vm->getPlatform() == Common::kPlatformPSX)
 #define TinselV1Mac (TinselVersion == TINSEL_V1 && _vm->getPlatform() == Common::kPlatformMacintosh)
 #define TinselV1Saturn (TinselVersion == TINSEL_V1 && _vm->getPlatform() == Common::kPlatformSaturn)
+#define TinselBigEndian (_vm->getPlatform() == Common::kPlatformMacintosh || _vm->getPlatform() == Common::kPlatformSaturn)
 
-#define READ_16(v) (_vm->isBigEndian() ? READ_BE_UINT16(v) : READ_LE_UINT16(v))
-#define READ_32(v) (_vm->isBigEndian() ? READ_BE_UINT32(v) : READ_LE_UINT32(v))
-#define FROM_16(v) (_vm->isBigEndian() ? FROM_BE_16(v) : FROM_LE_16(v))
-#define FROM_32(v) (_vm->isBigEndian() ? FROM_BE_32(v) : FROM_LE_32(v))
-#define TO_32(v)   (_vm->isBigEndian() ? TO_BE_32(v) : TO_LE_32(v))
+#define READ_16(v) (TinselBigEndian ? READ_BE_UINT16(v) : READ_LE_UINT16(v))
+#define READ_32(v) (TinselBigEndian ? READ_BE_UINT32(v) : READ_LE_UINT32(v))
+#define FROM_16(v) (TinselBigEndian ? FROM_BE_16(v) : FROM_LE_16(v))
+#define FROM_32(v) (TinselBigEndian ? FROM_BE_32(v) : FROM_LE_32(v))
+#define TO_32(v)   (TinselBigEndian ? TO_BE_32(v) : TO_LE_32(v))
 
 // Global reference to the TinselEngine object
 extern TinselEngine *_vm;
@@ -184,7 +185,6 @@ public:
 	uint16 getVersion() const;
 	uint32 getFlags() const;
 	Common::Platform getPlatform() const;
-	bool isBigEndian() const;
 	bool getIsADGFDemo() const;
 	bool isCD() const;
 

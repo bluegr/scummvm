@@ -71,10 +71,6 @@ bool TinselEngine::isCD() const {
 	return (bool)(_gameDescription->desc.flags & ADGF_CD);
 }
 
-bool TinselEngine::isBigEndian() const {
-	return getPlatform() == Common::kPlatformMacintosh || getPlatform() == Common::kPlatformSaturn;
-}
-
 } // End of namespace Tinsel
 
 static const PlainGameDescriptor tinselGames[] = {
