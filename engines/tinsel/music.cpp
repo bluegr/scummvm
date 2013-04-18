@@ -178,6 +178,10 @@ bool PlayMidiSequence(uint32 dwFileOffset, bool bLoop) {
 	if (dwFileOffset == 0)
 		return true;
 
+	// TODO: Unimplemented Saturn MIDI
+	if (TinselV1Saturn)
+		return true;
+
 	Common::File midiStream;
 
 	// open MIDI sequence file in binary mode
@@ -286,6 +290,8 @@ void OpenMidiFiles() {
 		// The early demo version of DW1 doesn't have MIDI
 	} else if (TinselV2) {
 		// DW2 uses a different music mechanism
+	} else if (TinselV1Saturn) {
+		// TODO: Unimplemented Saturn MIDI
 	} else if (TinselV1Mac) {
 		// open MIDI sequence file in binary mode
 		if (!midiStream.open(MIDI_FILE))
