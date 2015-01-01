@@ -84,6 +84,7 @@ private:
 
 public:
 	Resource *_music;
+	bool _byte1F781;
 
 public:
 	MusicManager(AccessEngine *vm);
