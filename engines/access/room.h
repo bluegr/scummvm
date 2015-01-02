@@ -128,6 +128,7 @@ public:
 	byte *_tile;
 	int _selectCommand;
 	bool _conFlag;
+	int _rMouse[10][2];
 public:
 	Room(AccessEngine *vm);
 
