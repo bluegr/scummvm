@@ -574,7 +574,7 @@ void Scripts::cmdSpecial() {
 	int p2 = _data->readUint16LE();
 
 	if (_specialFunction == 1) {
-		if (_vm->_establishTable[p2] == 1)
+		if (_vm->_establishTable[p2])
 			return;
 
 		_vm->_screen->savePalette();
