@@ -98,6 +98,10 @@ AccessEngine::AccessEngine(OSystem *syst, const AccessGameDescription *gameDesc)
 	for (int i = 0; i < 100; i++)
 		_objectsTable[i] = nullptr;
 	_clearSummaryFlag = false;
+
+	for (int i = 0; i < 7; i++)
+		TRAVEL[i] = 0;
+	STARTTRAVELITEM = STARTTRAVELBOX = 0;
 }
 
 AccessEngine::~AccessEngine() {
