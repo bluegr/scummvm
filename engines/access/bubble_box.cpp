@@ -27,12 +27,10 @@
 namespace Access {
 
 BubbleBox::BubbleBox(AccessEngine *vm, Access::BoxType type, int x, int y, int w, int h, int val1, int val2, int val3, int val4, Common::String title) : Manager(vm) {
-	_startItem = 0;
-	_startBox = 0;
-	_charCol = _rowOff = 0;
 	_type = type;
 	_bounds = Common::Rect(x, y, x + w, y + h);
-	_bubbleDisplStr = "";
+	_bubbleDisplStr = title;
+
 	//_fieldD = val1;
 	//_fieldE = val2;
 	//_fieldF = val3;
@@ -280,6 +278,11 @@ void BubbleBox::doBox(int item, int box) {
 
 	// Free icons data
 	delete icons;
+}
+
+int BubbleBox::doBox_v1(int item, int box, int &type) {
+	warning("TODO: dobox_v1");
+	return -1;
 }
 
 } // End of namespace Access
