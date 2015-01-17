@@ -65,6 +65,9 @@ public:
 	int _btnX2;
 	int _btnId3;
 	int _btnX3;
+	Common::Rect _btnUpPos;
+	Common::Rect _btnDownPos;
+
 	Common::Array<Common::Rect> _bubbles;
 public:
 	BubbleBox::BubbleBox(AccessEngine *vm, Access::BoxType type, int x, int y, int w, int h, int val1, int val2, int val3, int val4, Common::String title);
