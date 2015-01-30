@@ -855,7 +855,7 @@ void Scripts::cmdTexChoice() {
 
 	Common::Array<Common::Rect> responseCoords;
 	responseCoords.push_back(_vm->_bubbleBox->_bounds);
-	_vm->_screen->_printOrg.y = _vm->_bubbleBox->_bounds.bottom + (_vm->getGameID() == GType_MartianMemorandum) ? 20 : 11;
+	_vm->_screen->_printOrg.y = _vm->_bubbleBox->_bounds.bottom + ((_vm->getGameID() == GType_MartianMemorandum) ? 20 : 11);
 
 	findNull();
 
@@ -868,7 +868,7 @@ void Scripts::cmdTexChoice() {
 		_vm->_bubbleBox->calcBubble(tmpStr);
 		_vm->_bubbleBox->printBubble(tmpStr);
 		responseCoords.push_back(_vm->_bubbleBox->_bounds);
-		_vm->_screen->_printOrg.y = _vm->_bubbleBox->_bounds.bottom + (_vm->getGameID() == GType_MartianMemorandum) ? 20 : 11;
+		_vm->_screen->_printOrg.y = _vm->_bubbleBox->_bounds.bottom + ((_vm->getGameID() == GType_MartianMemorandum) ? 20 : 11);
 	}
 
 	findNull();
@@ -883,7 +883,7 @@ void Scripts::cmdTexChoice() {
 		_vm->_bubbleBox->calcBubble(tmpStr);
 		_vm->_bubbleBox->printBubble(tmpStr);
 		responseCoords.push_back(_vm->_bubbleBox->_bounds);
-		_vm->_screen->_printOrg.y = _vm->_bubbleBox->_bounds.bottom + (_vm->getGameID() == GType_MartianMemorandum) ? 20 : 11;
+		_vm->_screen->_printOrg.y = _vm->_bubbleBox->_bounds.bottom + ((_vm->getGameID() == GType_MartianMemorandum) ? 20 : 11);
 	}
 
 	findNull();
