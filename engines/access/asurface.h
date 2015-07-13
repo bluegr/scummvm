@@ -99,8 +99,9 @@ public:
 
 	virtual void drawLine();
 
-	virtual void drawBox()
+	virtual void drawBox();
 	
+	virtual void transBlitFrom(ASurface *src, const Common::Point &destPos);
 
 	virtual void transBlitFrom(ASurface *src, const Common::Rect &bounds);
 
