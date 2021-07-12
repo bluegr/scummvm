@@ -24,6 +24,7 @@
 
 #include "dune/hsq.h"
 #include "dune/video.h"
+#include "dune/music.h"
 #include "dune/statics.h"
 
 #include "common/config-manager.h"
@@ -64,7 +65,7 @@ Common::Error DuneEngine::run() {
 		pal[3*i+0] = pal[3*i+1] = pal[3*i+2] = i;
 	}
 	_system->getPaletteManager()->setPalette(pal, 0, 255);
-
+	playMusic(AGD_MORNING);
 	playVideo(HNM_VIRGIN);
 	playVideo(HNM_CRYO);
 	playVideo(HNM_CRYO2);
@@ -166,6 +167,26 @@ void DuneEngine::playVideo(HNMVideos videoId) {
 		nextFrameTime += (1000.0/12.0);
 	}
 
+}
+
+void DuneEngine::playMusic(AGDMusics musicId) {
+	const char *hnmFilenames[] = {
+		"ARRAKIS.AGD",    //  1
+		"BAGDAD.AGD",     //  2
+		"MORNING.AGD",    //  3
+		"SEEKENCE.AGD",   //  4
+		"SIETCHM.AGD",    //  5
+		"WARSONG.AGD",    //  6
+		"WATER.AGD",      //  7
+		"WORMINTR.AGD",   //  8
+		"WORMSUIT.AGD"    //  9
+	};
+
+	const char *filename = hnmFilenames[musicId];
+
+	Common::SeekableReadStream *r = _archive.openMember(filename);
+
+	_music->setReader(r);
 }
 
 } // End of namespace Dune

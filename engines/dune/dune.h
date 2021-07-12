@@ -33,7 +33,7 @@
 
 namespace Dune {
 class HnmPlayer;
-class MusicPlayer;
+class AgdPlayer;
 
 enum HNMVideos {
 	HNM_DFL2,
@@ -74,8 +74,16 @@ enum HNMVideos {
 	HNM_SEQR
 };
 
-enum DuneMusics {
-	HSQ_ARRAKIS,
+enum AGDMusics {
+	AGD_ARRAKIS,
+	AGD_BAGDAD,
+	AGD_MORNING,
+	AGD_SEEKENCE,
+	AGD_SIETCHM,
+	AGD_WARSONG,
+	AGD_WATER,
+	AGD_WORMINTR,
+	AGD_WORMSUIT
 };
 
 class DuneEngine : public Engine {
@@ -98,9 +106,9 @@ private:
 	void dumpResource(const char *filename);
 
 	HnmPlayer *_video;
-	MusicPlayer *_music;
+	AgdPlayer *_music;
 	void playVideo(HNMVideos videoId);
-	void playMusic(DuneMusics musicId);
+	void playMusic(AGDMusics musicId);
 };
 } // End of namespace Dune
 

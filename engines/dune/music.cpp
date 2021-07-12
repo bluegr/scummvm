@@ -25,12 +25,14 @@
 #include "dune/dune.h"
 
 namespace Dune {
-MusicPlayer::MusicPlayer(DuneEngine *vm) : _vm(vm) {
+AgdPlayer::AgdPlayer(DuneEngine *vm) : _vm(vm) {
 }
 
-MusicPlayer::~MusicPlayer() {
+AgdPlayer::~AgdPlayer() {
 }
 
-void MusicPlayer::PlaySong(const Common::String &song, bool loop) {
+void AgdPlayer::setReader(Common::SeekableReadStream *reader) {
+	_reader = reader;
 }
+
 } // namespace Dune

@@ -28,18 +28,15 @@
 namespace Dune {
 class DuneEngine;
 
-class MusicPlayer {
+class AgdPlayer {
 private:
-	bool _is_playing = false;
+	Common::SeekableReadStream *_reader;
 	DuneEngine *_vm;
 
 public:
-	MusicPlayer(DuneEngine *vm);
-	~MusicPlayer();
-	bool IsPlaying() {
-		return _is_playing;
-	}
-	void PlaySong(const Common::String &song, bool loop);
+	AgdPlayer(DuneEngine *vm);
+	~AgdPlayer();
+	void setReader(Common::SeekableReadStream *reader);
 };
 } // End of namespace Dune
 #endif
