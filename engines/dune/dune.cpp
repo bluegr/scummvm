@@ -47,7 +47,7 @@ DuneEngine::DuneEngine(OSystem *syst, const ADGameDescription *gameDesc)
 
 DuneEngine::~DuneEngine() {
 	delete _rnd;
-	DebugMan.clearAllDebugChannels();
+	DebugMan.removeAllDebugChannels();
 }
 
 Common::Error DuneEngine::run() {
