@@ -59,6 +59,7 @@ Common::Error DuneEngine::run() {
 	}
 
 	_video = new HnmPlayer(this);
+	_music = new AgdPlayer(this);
 
 	byte pal[3*256] = {0};
 	for (int i = 0; i != 256; ++i) {

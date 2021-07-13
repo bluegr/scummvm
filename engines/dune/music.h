@@ -30,10 +30,10 @@ class DuneEngine;
 
 class AgdPlayer {
 private:
-	Common::SeekableReadStream *_reader;
 	DuneEngine *_vm;
 
 public:
+	Common::SeekableReadStream *_reader;
 	AgdPlayer(DuneEngine *vm);
 	~AgdPlayer();
 	void setReader(Common::SeekableReadStream *reader);

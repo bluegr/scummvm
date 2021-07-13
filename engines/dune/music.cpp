@@ -26,6 +26,7 @@
 
 namespace Dune {
 AgdPlayer::AgdPlayer(DuneEngine *vm) : _vm(vm) {
+	_reader = nullptr;
 }
 
 AgdPlayer::~AgdPlayer() {
