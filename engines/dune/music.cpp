@@ -58,6 +58,8 @@
 
 #include "dune/dune.h"
 
+#include "common/debug.h"
+
 namespace Dune {
 AgdPlayer::AgdPlayer(DuneEngine *vm) : _vm(vm) {
 	_reader = nullptr;
@@ -165,16 +167,18 @@ void AgdPlayer::rewind(int subsong) {
 
 Common::String AgdPlayer::gettype() {
 	char scomp[12 + 1] = "";
-	//if (comp > HERAD_COMP_NONE)
-	//debug(scomp, ", %s packed", (comp == HERAD_COMP_HSQ ? "HSQ" : "SQX"));
+	if (comp > HERAD_COMP_NONE) {
+		debug(scomp, ", %s packed", (comp == HERAD_COMP_HSQ ? "HSQ" : "SQX"));
+	}
 	char type[40 + 1];
-	//debug(type, "HERAD System %s (version %d%s)", (AGD ? "AGD" : "SDB"), (v2 ? 2 : 1), scomp);
+	debug(type, "HERAD System %s (version %d%s)", (AGD ? "AGD" : "SDB"), (v2 ? 2 : 1), scomp);
 	return Common::String(type);
 }
 
-void AgdPlayer::setReader(Common::SeekableReadStream *reader) {
+void AgdPlayer::load(Common::SeekableReadStream *reader) {
 	_reader = reader;
 }
+
 uint32_t AgdPlayer::GetTicks(uint8_t t) {
 	uint32_t result = 0;
 	do {

@@ -232,6 +232,8 @@ public:
 
 	Common::String gettype();
 
+	void load(Common::SeekableReadStream *reader);
+
 	unsigned int getinstruments() {
 		return inst ? nInsts : 0;
 	};
@@ -239,7 +241,6 @@ public:
 	Common::String getinstrument(unsigned int n) {
 		return Common::String();
 	};
-	void setReader(Common::SeekableReadStream *reader);
 
 	static const uint8_t slot_offset[HERAD_NUM_VOICES];
 	static const uint16_t FNum[HERAD_NUM_NOTES];
