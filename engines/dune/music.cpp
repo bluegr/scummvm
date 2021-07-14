@@ -54,6 +54,8 @@
  * - Fix hiss sound in NewSan (at beginning)
  */
 
+#include <cstring>
+
 #include "dune/music.h"
 
 #include "dune/dune.h"
@@ -62,10 +64,16 @@
 
 namespace Dune {
 AgdPlayer::AgdPlayer(DuneEngine *vm) : _vm(vm) {
+	buf_size = 2048;
+	bits = 16;
+	channels = 2;
+	freq = 44100;
+	audiobuf = new char[buf_size * getsampsize()];
 	_reader = nullptr;
 }
 
 AgdPlayer::~AgdPlayer() {
+	delete[] audiobuf;
 	if (track) {
 		for (int i = 0; i < nTracks; i++) {
 			if (track[i].data)
@@ -177,6 +185,474 @@ Common::String AgdPlayer::gettype() {
 
 void AgdPlayer::load(Common::SeekableReadStream *reader) {
 	_reader = reader;
+	long size = _reader->size();
+	// Read entire file into memory
+	uint8_t *data = new uint8_t[size];
+	_reader->read(data, size);
+	// Detect compression
+	if (isHSQ(data, size)) {
+		comp = HERAD_COMP_HSQ;
+		uint8_t *out = new uint8_t[HERAD_MAX_SIZE];
+		memset(out, 0, HERAD_MAX_SIZE);
+		size = HSQ_decompress(data, size, out);
+		delete[] data;
+		data = new uint8_t[size];
+		memcpy(data, out, size);
+		delete[] out;
+	} else if (isSQX(data)) {
+		comp = HERAD_COMP_SQX;
+		uint8_t *out = new uint8_t[HERAD_MAX_SIZE];
+		memset(out, 0, HERAD_MAX_SIZE);
+		size = SQX_decompress(data, size, out);
+		delete[] data;
+		data = new uint8_t[size];
+		memcpy(data, out, size);
+		delete[] out;
+	} else {
+		comp = HERAD_COMP_NONE;
+	}
+	// Process file header
+	uint16_t offset;
+	if (size < HERAD_HEAD_SIZE) {
+		delete[] data;
+
+	}
+	if (size < *(uint16_t *)data) {
+		delete[] data;
+
+	}
+	nInsts = (size - *(uint16_t *)data) / HERAD_INST_SIZE;
+	if (nInsts == 0) {
+		delete[] data;
+	}
+	offset = *(uint16_t *)(data + 2);
+	if (offset != 0x32 && offset != 0x52) {
+		delete[] data;
+	}
+	AGD = offset == 0x52;
+	wLoopStart = *(uint16_t *)(data + 0x2C);
+	wLoopEnd = *(uint16_t *)(data + 0x2E);
+	wLoopCount = *(uint16_t *)(data + 0x30);
+	wSpeed = *(uint16_t *)(data + 0x32);
+	if (wSpeed == 0) {
+		delete[] data;
+	}
+	nTracks = 0;
+	for (int i = 0; i < HERAD_MAX_TRACKS; i++) {
+		if (*(uint16_t *)(data + 2 + i * 2) == 0)
+			break;
+		nTracks++;
+	}
+	track = new herad_trk[nTracks];
+	chn = new herad_chn[nTracks];
+	for (int i = 0; i < nTracks; i++) {
+		offset = *(uint16_t *)(data + 2 + i * 2) + 2;
+		uint16_t next = (i < HERAD_MAX_TRACKS - 1 ? *(uint16_t *)(data + 2 + (i + 1) * 2) + 2 : *(uint16_t *)data);
+		if (next <= 2)
+			next = *(uint16_t *)data;
+
+		track[i].size = next - offset;
+		track[i].data = new uint8_t[track[i].size];
+		memcpy(track[i].data, data + offset, track[i].size);
+	}
+	inst = new herad_inst[nInsts];
+	offset = *(uint16_t *)data;
+	v2 = true;
+	for (int i = 0; i < nInsts; i++) {
+		memcpy(inst[i].data, data + offset + i * HERAD_INST_SIZE, HERAD_INST_SIZE);
+		if (v2 && inst[i].param.mode == HERAD_INSTMODE_SDB1)
+			v2 = false;
+	}
+	delete[] data;
+	rewind(0);
+}
+
+bool AgdPlayer::isHSQ(uint8_t *data, int size) {
+	// data[0] - word DecompSize
+	// data[1]
+	// data[2] - byte Null = 0
+	// data[3] - word CompSize
+	// data[4]
+	// data[5] - byte Checksum
+	if (data[2] != 0) {
+#ifdef DEBUG
+		AdPlug_LogWrite("HERAD: Is not HSQ, wrong check byte.\n");
+#endif
+		return false;
+	}
+
+	const uint16_t temp_size = u16_unaligned(data + 3);
+
+	if (temp_size != size) {
+		return false;
+	}
+	uint8_t checksum = 0;
+	for (int i = 0; i < HERAD_MIN_SIZE; i++) {
+		checksum += data[i];
+	}
+	if (checksum != 0xAB) {
+		return false;
+	}
+	return true;
+}
+
+bool AgdPlayer::isSQX(uint8_t *data) {
+	// data[0] - word OutbufInit
+	// data[1]
+	// data[2] - byte SQX flag #1
+	// data[3] - byte SQX flag #2
+	// data[4] - byte SQX flag #3
+	// data[5] - byte CntOffPart
+	if (data[2] > 2 || data[3] > 2 || data[4] > 2) {
+		return false;
+	}
+	if (data[5] == 0 || data[5] > 15) {
+		return false;
+	}
+	return true;
+}
+
+uint16_t AgdPlayer::HSQ_decompress(uint8_t *data, int size, uint8_t *out) {
+	uint32_t queue = 1;
+	int8_t bit;
+	int16_t offset;
+	uint16_t count, out_size = *(uint16_t *)data;
+	uint8_t *src = data;
+	uint8_t *dst = out;
+
+	src += 6;
+	while (true) {
+		// get next bit of the queue
+		if (queue == 1) {
+			queue = u16_unaligned(src) | 0x10000;
+			src += 2;
+		}
+		bit = queue & 1;
+		queue >>= 1;
+		// if bit is non-zero
+		if (bit) {
+			// copy next byte of the input to the output
+			*dst++ = *src++;
+		} else {
+			// get next bit of the queue
+			if (queue == 1) {
+				queue = u16_unaligned(src) | 0x10000;
+				src += 2;
+			}
+			bit = queue & 1;
+			queue >>= 1;
+			// if bit is non-zero
+			if (bit) {
+				// count = next 3 bits of the input
+				// offset = next 13 bits of the input minus 8192
+				count = u16_unaligned(src);
+				offset = (count >> 3) - 8192;
+				count &= 7;
+				src += 2;
+				// if count is zero
+				if (!count) {
+					// count = next 8 bits of the input
+					count = *(uint8_t *)src;
+					src++;
+				}
+				// if count is zero
+				if (!count)
+					break; // finish the unpacking
+			} else {
+				// count = next bit of the queue * 2 + next bit of the queue
+				if (queue == 1) {
+					queue = u16_unaligned(src) | 0x10000;
+					src += 2;
+				}
+				bit = queue & 1;
+				queue >>= 1;
+				count = bit << 1;
+				if (queue == 1) {
+					queue = u16_unaligned(src) | 0x10000;
+					src += 2;
+				}
+				bit = queue & 1;
+				queue >>= 1;
+				count += bit;
+				// offset = next 8 bits of the input minus 256
+				offset = *(uint8_t *)src;
+				offset -= 256;
+				src++;
+			}
+			count += 2;
+			// copy count bytes at (output + offset) to the output
+			while (count--) {
+				*dst = *(dst + offset);
+				dst++;
+			}
+		}
+	}
+	return out_size;
+}
+
+uint16_t AgdPlayer::SQX_decompress(uint8_t *data, int size, uint8_t *out) {
+	int16_t offset;
+	uint16_t count;
+	uint8_t *src = data;
+	uint8_t *dst = out;
+	bool done = false;
+
+	std::memcpy(dst, src, sizeof(uint16_t));
+	src += 6;
+	uint16_t queue = 1;
+	uint8_t bit, bit_p;
+	while (true) {
+		bit = queue & 1;
+		queue >>= 1;
+		if (queue == 0) {
+			queue = u16_unaligned(src);
+			src += 2;
+			bit_p = bit;
+			bit = queue & 1;
+			queue >>= 1;
+			if (bit_p)
+				queue |= 0x8000;
+		}
+		if (bit == 0) {
+			switch (data[2]) {
+			case 0:
+				*dst++ = *src++;
+				break;
+			case 1:
+				count = 0;
+				bit = queue & 1;
+				queue >>= 1;
+				if (queue == 0) {
+					queue = u16_unaligned(src);
+					src += 2;
+					bit_p = bit;
+					bit = queue & 1;
+					queue >>= 1;
+					if (bit_p)
+						queue |= 0x8000;
+					count = bit;
+					bit = queue & 1;
+					queue >>= 1;
+				} else {
+					count = bit;
+					bit = queue & 1;
+					queue >>= 1;
+					if (queue == 0) {
+						queue = u16_unaligned(src);
+						src += 2;
+						bit_p = bit;
+						bit = queue & 1;
+						queue >>= 1;
+						if (bit_p)
+							queue |= 0x8000;
+					}
+				}
+				count = (count << 1) | bit;
+				offset = *(uint8_t *)src;
+				offset -= 256;
+				src++;
+				count += 2;
+				while (count--) {
+					*dst = *(dst + offset);
+					dst++;
+				}
+				break;
+			case 2:
+				count = u16_unaligned(src);
+				offset = (count >> data[5]) - (1 << (16 - data[5]));
+				count &= (1 << data[5]) - 1;
+				src += 2;
+				if (!count) {
+					count = *(uint8_t *)src;
+					src++;
+				}
+				if (!count) {
+					done = true;
+					break;
+				}
+				count += 2;
+				while (count--) {
+					*dst = *(dst + offset);
+					dst++;
+				}
+				break;
+			}
+			if (done)
+				break;
+			continue;
+		} else {
+			bit = queue & 1;
+			queue >>= 1;
+			if (queue == 0) {
+				queue = u16_unaligned(src);
+				src += 2;
+				bit_p = bit;
+				bit = queue & 1;
+				queue >>= 1;
+				if (bit_p)
+					queue |= 0x8000;
+			}
+			if (bit == 0) {
+				switch (data[3]) {
+				case 0:
+					*dst++ = *src++;
+					break;
+				case 1:
+					count = 0;
+					bit = queue & 1;
+					queue >>= 1;
+					if (queue == 0) {
+						queue = u16_unaligned(src);
+						src += 2;
+						bit_p = bit;
+						bit = queue & 1;
+						queue >>= 1;
+						if (bit_p)
+							queue |= 0x8000;
+						count = bit;
+						bit = queue & 1;
+						queue >>= 1;
+					} else {
+						count = bit;
+						bit = queue & 1;
+						queue >>= 1;
+						if (queue == 0) {
+							queue = u16_unaligned(src);
+							src += 2;
+							bit_p = bit;
+							bit = queue & 1;
+							queue >>= 1;
+							if (bit_p)
+								queue |= 0x8000;
+						}
+					}
+					count = (count << 1) | bit;
+					offset = *(uint8_t *)src;
+					offset -= 256;
+					src++;
+					count += 2;
+					while (count--) {
+						*dst = *(dst + offset);
+						dst++;
+					}
+					break;
+				case 2:
+					count = u16_unaligned(src);
+					offset = (count >> data[5]) - (1 << (16 - data[5]));
+					count &= (1 << data[5]) - 1;
+					src += 2;
+					if (!count) {
+						count = *(uint8_t *)src;
+						src++;
+					}
+					if (!count) {
+						done = true;
+						break;
+					}
+					count += 2;
+					while (count--) {
+						*dst = *(dst + offset);
+						dst++;
+					}
+					break;
+				}
+				if (done)
+					break;
+				continue;
+			} else {
+				switch (data[4]) {
+				case 0:
+					*dst++ = *src++;
+					break;
+				case 1:
+					count = 0;
+					bit = queue & 1;
+					queue >>= 1;
+					if (queue == 0) {
+						queue = u16_unaligned(src);
+						src += 2;
+						bit_p = bit;
+						bit = queue & 1;
+						queue >>= 1;
+						if (bit_p)
+							queue |= 0x8000;
+						count = bit;
+						bit = queue & 1;
+						queue >>= 1;
+					} else {
+						count = bit;
+						bit = queue & 1;
+						queue >>= 1;
+						if (queue == 0) {
+							queue = u16_unaligned(src);
+							src += 2;
+							bit_p = bit;
+							bit = queue & 1;
+							queue >>= 1;
+							if (bit_p)
+								queue |= 0x8000;
+						}
+					}
+					count = (count << 1) | bit;
+					offset = *(uint8_t *)src;
+					offset -= 256;
+					src++;
+					count += 2;
+					while (count--) {
+						*dst = *(dst + offset);
+						dst++;
+					}
+					break;
+				case 2:
+					count = u16_unaligned(src);
+					offset = (count >> data[5]) - (1 << (16 - data[5]));
+					count &= (1 << data[5]) - 1;
+					src += 2;
+					if (!count) {
+						count = *(uint8_t *)src;
+						src++;
+					}
+					if (!count) {
+						done = true;
+						break;
+					}
+					count += 2;
+					while (count--) {
+						*dst = *(dst + offset);
+						dst++;
+					}
+					break;
+				}
+				if (done)
+					break;
+				continue;
+			}
+		}
+	}
+	return dst - out;
+}
+
+void AgdPlayer::frame() {
+	static long minicnt = 0;
+	long i, towrite = buf_size;
+	char *pos = audiobuf;
+
+	// Prepare audiobuf with emulator output
+	while (towrite > 0) {
+		while (minicnt < 0) {
+			minicnt += freq;
+			playing = update();
+		}
+		i = min(towrite, (long)(minicnt / getrefresh() + 4) & ~3);
+		//opl->update((short *)pos, i);
+		pos += i * getsampsize();
+		towrite -= i;
+		i = (long)(getrefresh() * i);
+		minicnt -= max(1, i);
+	}
+
+	// call output driver
+	//output(audiobuf, buf_size * getsampsize());
 }
 
 uint32_t AgdPlayer::GetTicks(uint8_t t) {

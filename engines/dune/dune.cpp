@@ -188,6 +188,10 @@ void DuneEngine::playMusic(AGDMusics musicId) {
 	Common::SeekableReadStream *r = _archive.openMember(filename);
 
 	_music->load(r);
+
+	do {
+		_music->frame();
+	} while (true);
 }
 
 } // End of namespace Dune
