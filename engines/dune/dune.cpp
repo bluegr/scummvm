@@ -24,7 +24,7 @@
 
 #include "dune/hsq.h"
 #include "dune/video.h"
-#include "dune/music.h"
+#include "dune/midiadlib.h"
 #include "dune/statics.h"
 
 #include "common/config-manager.h"
@@ -59,7 +59,7 @@ Common::Error DuneEngine::run() {
 	}
 
 	_video = new HnmPlayer(this);
-	_music = new AgdPlayer(this);
+	//_music = new AdLibMidiDriver(this);
 
 	byte pal[3*256] = {0};
 	for (int i = 0; i != 256; ++i) {
@@ -187,11 +187,8 @@ void DuneEngine::playMusic(AGDMusics musicId) {
 
 	Common::SeekableReadStream *r = _archive.openMember(filename);
 
-	_music->load(r);
-
-	do {
-		_music->frame();
-	} while (true);
+	//_music->load(r);
+	//_music->play();
 }
 
 } // End of namespace Dune

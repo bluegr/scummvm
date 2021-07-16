@@ -33,7 +33,7 @@
 
 namespace Dune {
 class HnmPlayer;
-class AgdPlayer;
+class AdLibMidiDriver;
 
 enum HNMVideos {
 	HNM_DFL2,
@@ -106,7 +106,7 @@ private:
 	void dumpResource(const char *filename);
 
 	HnmPlayer *_video;
-	AgdPlayer *_music;
+	AdLibMidiDriver *_music;
 	void playVideo(HNMVideos videoId);
 	void playMusic(AGDMusics musicId);
 };

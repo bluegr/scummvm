@@ -57,7 +57,9 @@
 #define DUNE_MUSIC_H
 
 #include "common/array.h"
+#include "audio/fmopl.h"
 #include "common/stream.h"
+#include "audio/mididrv.h"
 
 #ifndef min
 #define min(a, b) (((a) < (b)) ? (a) : (b))
@@ -141,15 +143,19 @@ inline uint32_t u32_unaligned(const unsigned char *src, const bool big_endian = 
 namespace Dune {
 class DuneEngine;
 
-class AgdPlayer {
+class AdLibMidiDriver : public MidiDriver {
 private:
 	DuneEngine *_vm;
 	bool playing;
-	//Copl *opl;
+	OPL::OPL *_opl;
+	bool _isOplInitialized = false;
 	char *audiobuf;
 	unsigned long buf_size, freq;
 	unsigned char bits, channels;
 	unsigned char getsampsize() { return (channels * (bits / 8)); }
+	void frame();
+	void onTimer();
+	void initOpl();
 	uint32_t GetTicks(uint8_t t);
 	void executeCommand(uint8_t t);
 	void processEvents();
@@ -266,9 +272,9 @@ protected:
 
 public:
 	Common::SeekableReadStream *_reader;
-	AgdPlayer(DuneEngine *vm);
-	~AgdPlayer();
-	void frame();
+	AdLibMidiDriver(DuneEngine *vm);
+	~AdLibMidiDriver();
+	void play();
 	bool update();
 	void rewind(int subsong);
 

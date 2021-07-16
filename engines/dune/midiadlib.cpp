@@ -56,23 +56,25 @@
 
 #include <cstring>
 
-#include "dune/music.h"
+#include "dune/midiadlib.h"
 
 #include "dune/dune.h"
 
 #include "common/debug.h"
+#include "common/endian.h"
 
 namespace Dune {
-AgdPlayer::AgdPlayer(DuneEngine *vm) : _vm(vm) {
+AdLibMidiDriver::AdLibMidiDriver(DuneEngine *vm) : _vm(vm) {
 	buf_size = 2048;
 	bits = 16;
 	channels = 2;
 	freq = 44100;
 	audiobuf = new char[buf_size * getsampsize()];
 	_reader = nullptr;
+	_opl = nullptr;
 }
 
-AgdPlayer::~AgdPlayer() {
+AdLibMidiDriver::~AdLibMidiDriver() {
 	delete[] audiobuf;
 	if (track) {
 		for (int i = 0; i < nTracks; i++) {
@@ -87,17 +89,17 @@ AgdPlayer::~AgdPlayer() {
 		delete[] inst;
 }
 
-const uint8_t AgdPlayer::slot_offset[HERAD_NUM_VOICES] = {
+const uint8_t AdLibMidiDriver::slot_offset[HERAD_NUM_VOICES] = {
 	0, 1, 2, 8, 9, 10, 16, 17, 18};
-const uint16_t AgdPlayer::FNum[HERAD_NUM_NOTES] = {
+const uint16_t AdLibMidiDriver::FNum[HERAD_NUM_NOTES] = {
 	343, 364, 385, 408, 433, 459, 486, 515, 546, 579, 614, 650};
-const uint8_t AgdPlayer::fine_bend[HERAD_NUM_NOTES + 1] = {
+const uint8_t AdLibMidiDriver::fine_bend[HERAD_NUM_NOTES + 1] = {
 	19, 21, 21, 23, 25, 26, 27, 29, 31, 33, 35, 36, 37};
-const uint8_t AgdPlayer::coarse_bend[10] = {
+const uint8_t AdLibMidiDriver::coarse_bend[10] = {
 	0, 5, 10, 15, 20,
 	0, 6, 12, 18, 24};
 
-bool AgdPlayer::update() {
+bool AdLibMidiDriver::update() {
 	wTime = wTime - 256;
 	if (wTime < 0) {
 		wTime = wTime + wSpeed;
@@ -106,7 +108,7 @@ bool AgdPlayer::update() {
 	return !songend;
 }
 
-void AgdPlayer::rewind(int subsong) {
+void AdLibMidiDriver::rewind(int subsong) {
 	uint32_t j;
 	wTime = 0;
 	songend = false;
@@ -173,7 +175,7 @@ void AgdPlayer::rewind(int subsong) {
 	//}
 }
 
-Common::String AgdPlayer::gettype() {
+Common::String AdLibMidiDriver::gettype() {
 	char scomp[12 + 1] = "";
 	if (comp > HERAD_COMP_NONE) {
 		debug(scomp, ", %s packed", (comp == HERAD_COMP_HSQ ? "HSQ" : "SQX"));
@@ -183,7 +185,7 @@ Common::String AgdPlayer::gettype() {
 	return Common::String(type);
 }
 
-void AgdPlayer::load(Common::SeekableReadStream *reader) {
+void AdLibMidiDriver::load(Common::SeekableReadStream *reader) {
 	_reader = reader;
 	long size = _reader->size();
 	// Read entire file into memory
@@ -215,11 +217,9 @@ void AgdPlayer::load(Common::SeekableReadStream *reader) {
 	uint16_t offset;
 	if (size < HERAD_HEAD_SIZE) {
 		delete[] data;
-
 	}
 	if (size < *(uint16_t *)data) {
 		delete[] data;
-
 	}
 	nInsts = (size - *(uint16_t *)data) / HERAD_INST_SIZE;
 	if (nInsts == 0) {
@@ -267,7 +267,7 @@ void AgdPlayer::load(Common::SeekableReadStream *reader) {
 	rewind(0);
 }
 
-bool AgdPlayer::isHSQ(uint8_t *data, int size) {
+bool AdLibMidiDriver::isHSQ(uint8_t *data, int size) {
 	// data[0] - word DecompSize
 	// data[1]
 	// data[2] - byte Null = 0
@@ -275,9 +275,6 @@ bool AgdPlayer::isHSQ(uint8_t *data, int size) {
 	// data[4]
 	// data[5] - byte Checksum
 	if (data[2] != 0) {
-#ifdef DEBUG
-		AdPlug_LogWrite("HERAD: Is not HSQ, wrong check byte.\n");
-#endif
 		return false;
 	}
 
@@ -296,7 +293,7 @@ bool AgdPlayer::isHSQ(uint8_t *data, int size) {
 	return true;
 }
 
-bool AgdPlayer::isSQX(uint8_t *data) {
+bool AdLibMidiDriver::isSQX(uint8_t *data) {
 	// data[0] - word OutbufInit
 	// data[1]
 	// data[2] - byte SQX flag #1
@@ -312,7 +309,7 @@ bool AgdPlayer::isSQX(uint8_t *data) {
 	return true;
 }
 
-uint16_t AgdPlayer::HSQ_decompress(uint8_t *data, int size, uint8_t *out) {
+uint16_t AdLibMidiDriver::HSQ_decompress(uint8_t *data, int size, uint8_t *out) {
 	uint32_t queue = 1;
 	int8_t bit;
 	int16_t offset;
@@ -390,7 +387,7 @@ uint16_t AgdPlayer::HSQ_decompress(uint8_t *data, int size, uint8_t *out) {
 	return out_size;
 }
 
-uint16_t AgdPlayer::SQX_decompress(uint8_t *data, int size, uint8_t *out) {
+uint16_t AdLibMidiDriver::SQX_decompress(uint8_t *data, int size, uint8_t *out) {
 	int16_t offset;
 	uint16_t count;
 	uint8_t *src = data;
@@ -632,7 +629,7 @@ uint16_t AgdPlayer::SQX_decompress(uint8_t *data, int size, uint8_t *out) {
 	return dst - out;
 }
 
-void AgdPlayer::frame() {
+void AdLibMidiDriver::frame() {
 	static long minicnt = 0;
 	long i, towrite = buf_size;
 	char *pos = audiobuf;
@@ -655,7 +652,7 @@ void AgdPlayer::frame() {
 	//output(audiobuf, buf_size * getsampsize());
 }
 
-uint32_t AgdPlayer::GetTicks(uint8_t t) {
+uint32_t AdLibMidiDriver::GetTicks(uint8_t t) {
 	uint32_t result = 0;
 	do {
 		result <<= 7;
@@ -663,7 +660,7 @@ uint32_t AgdPlayer::GetTicks(uint8_t t) {
 	} while (track[t].data[track[t].pos++] & 0x80 && track[t].pos < track[t].size);
 	return result;
 }
-void AgdPlayer::executeCommand(uint8_t t) {
+void AdLibMidiDriver::executeCommand(uint8_t t) {
 	uint8_t status, note, par;
 
 	if (t >= nTracks)
@@ -712,7 +709,7 @@ void AgdPlayer::executeCommand(uint8_t t) {
 		}
 	}
 }
-void AgdPlayer::processEvents() {
+void AdLibMidiDriver::processEvents() {
 	uint8_t i;
 	songend = true;
 
@@ -775,7 +772,7 @@ void AgdPlayer::processEvents() {
 #endif
 	}
 }
-void AgdPlayer::ev_noteOn(uint8_t ch, uint8_t note, uint8_t vel) {
+void AdLibMidiDriver::ev_noteOn(uint8_t ch, uint8_t note, uint8_t vel) {
 	int8_t macro;
 
 	if (chn[ch].keyon) {
@@ -807,20 +804,20 @@ void AgdPlayer::ev_noteOn(uint8_t ch, uint8_t note, uint8_t vel) {
 	if (macro != 0)
 		macroFeedback(ch, chn[ch].playprog, macro, vel);
 }
-void AgdPlayer::ev_noteOff(uint8_t ch, uint8_t note, uint8_t vel) {
+void AdLibMidiDriver::ev_noteOff(uint8_t ch, uint8_t note, uint8_t vel) {
 	if (note != chn[ch].note || !chn[ch].keyon)
 		return;
 	chn[ch].keyon = false;
 	playNote(ch, note, HERAD_NOTE_OFF);
 }
-void AgdPlayer::ev_programChange(uint8_t ch, uint8_t prog) {
+void AdLibMidiDriver::ev_programChange(uint8_t ch, uint8_t prog) {
 	if (prog >= nInsts) // out of index
 		return;
 	chn[ch].program = prog;
 	chn[ch].playprog = prog;
 	changeProgram(ch, prog);
 }
-void AgdPlayer::ev_aftertouch(uint8_t ch, uint8_t vel) {
+void AdLibMidiDriver::ev_aftertouch(uint8_t ch, uint8_t vel) {
 	int8_t macro;
 
 	if (v2) // version 2 ignores this event
@@ -835,12 +832,12 @@ void AgdPlayer::ev_aftertouch(uint8_t ch, uint8_t vel) {
 	if (macro != 0)
 		macroFeedback(ch, chn[ch].playprog, macro, vel);
 }
-void AgdPlayer::ev_pitchBend(uint8_t ch, uint8_t bend) {
+void AdLibMidiDriver::ev_pitchBend(uint8_t ch, uint8_t bend) {
 	chn[ch].bend = bend;
 	if (chn[ch].keyon) // update pitch
 		playNote(ch, chn[ch].note, HERAD_NOTE_UPDATE);
 }
-void AgdPlayer::playNote(uint8_t c, uint8_t note, uint8_t state) {
+void AdLibMidiDriver::playNote(uint8_t c, uint8_t note, uint8_t state) {
 	if (inst[chn[c].playprog].param.mc_transpose != 0)
 		macroTranspose(&note, chn[c].playprog);
 	note = (note - 24) & 0xFF;
@@ -912,7 +909,7 @@ void AgdPlayer::playNote(uint8_t c, uint8_t note, uint8_t state) {
 	}
 	setFreq(c, oct, FNum[key] + detune, state != HERAD_NOTE_OFF);
 }
-void AgdPlayer::setFreq(uint8_t c, uint8_t oct, uint16_t freq, bool on) {
+void AdLibMidiDriver::setFreq(uint8_t c, uint8_t oct, uint16_t freq, bool on) {
 	uint8_t reg, val;
 
 	//if (c >= HERAD_NUM_VOICES)
@@ -930,7 +927,7 @@ void AgdPlayer::setFreq(uint8_t c, uint8_t oct, uint16_t freq, bool on) {
 	//if (c >= HERAD_NUM_VOICES)
 	//opl->setchip(0);
 }
-void AgdPlayer::changeProgram(uint8_t c, uint8_t i) {
+void AdLibMidiDriver::changeProgram(uint8_t c, uint8_t i) {
 	uint8_t reg, val;
 
 	if (v2 && inst[i].param.mode == HERAD_INSTMODE_KMAP)
@@ -1003,7 +1000,7 @@ void AgdPlayer::changeProgram(uint8_t c, uint8_t i) {
 	//if (c >= HERAD_NUM_VOICES)
 	//opl->setchip(0);
 }
-void AgdPlayer::macroModOutput(uint8_t c, uint8_t i, int8_t sens, uint8_t level) {
+void AdLibMidiDriver::macroModOutput(uint8_t c, uint8_t i, int8_t sens, uint8_t level) {
 	uint8_t reg, val;
 	uint16_t output;
 
@@ -1031,7 +1028,7 @@ void AgdPlayer::macroModOutput(uint8_t c, uint8_t i, int8_t sens, uint8_t level)
 	//if (c >= HERAD_NUM_VOICES)
 	//opl->setchip(0);
 }
-void AgdPlayer::macroCarOutput(uint8_t c, uint8_t i, int8_t sens, uint8_t level) {
+void AdLibMidiDriver::macroCarOutput(uint8_t c, uint8_t i, int8_t sens, uint8_t level) {
 	uint8_t reg, val;
 	uint16_t output;
 
@@ -1059,7 +1056,7 @@ void AgdPlayer::macroCarOutput(uint8_t c, uint8_t i, int8_t sens, uint8_t level)
 	//if (c >= HERAD_NUM_VOICES)
 	//opl->setchip(0);
 }
-void AgdPlayer::macroFeedback(uint8_t c, uint8_t i, int8_t sens, uint8_t level) {
+void AdLibMidiDriver::macroFeedback(uint8_t c, uint8_t i, int8_t sens, uint8_t level) {
 	uint8_t reg, val;
 	uint8_t feedback;
 
@@ -1088,7 +1085,7 @@ void AgdPlayer::macroFeedback(uint8_t c, uint8_t i, int8_t sens, uint8_t level) 
 	//if (c >= HERAD_NUM_VOICES)
 	//opl->setchip(0);
 }
-void AgdPlayer::macroTranspose(uint8_t *note, uint8_t i) {
+void AdLibMidiDriver::macroTranspose(uint8_t *note, uint8_t i) {
 	uint8_t tran = inst[i].param.mc_transpose;
 	uint8_t diff = (tran - 0x31) & 0xFF;
 	if (v2 && diff < 0x60)
@@ -1096,15 +1093,32 @@ void AgdPlayer::macroTranspose(uint8_t *note, uint8_t i) {
 	else
 		*note = (*note + tran) & 0xFF;
 }
-void AgdPlayer::macroSlide(uint8_t c) {
+void AdLibMidiDriver::macroSlide(uint8_t c) {
 	if (!chn[c].slide_dur)
 		return;
 
 	chn[c].slide_dur--;
 	chn[c].bend += inst[chn[c].playprog].param.mc_slide_range;
 
-	if (!(chn[c].note & 0x7F))
+	if (!(chn[c].note & 0x7F)) {
 		return;
+	}
 	playNote(c, chn[c].note, HERAD_NOTE_UPDATE);
+}
+
+void AdLibMidiDriver::initOpl() {
+	if (_isOplInitialized) {
+		return;
+	}
+	_isOplInitialized = true;
+	_opl = OPL::Config::create();
+	if (!_opl || !_opl->init())
+		error("Failed to create OPL");
+	_opl->start(new Common::Functor0Mem<void, AdLibMidiDriver>(this, &AdLibMidiDriver::onTimer));
+}
+
+void AdLibMidiDriver::play() {
+	initOpl();
+
 }
 } // namespace Dune
