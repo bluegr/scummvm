@@ -69,12 +69,23 @@ AdLibMidiDriver::AdLibMidiDriver(DuneEngine *vm) : _vm(vm) {
 	bits = 16;
 	channels = 2;
 	freq = 44100;
-	audiobuf = new char[buf_size * getsampsize()];
+	audiobuf = new char[getAudioBufLength()];
 	_reader = nullptr;
 	_opl = nullptr;
 }
 
+unsigned long AdLibMidiDriver::getAudioBufLength() {
+	return buf_size * getSampleSize();
+}
+
 AdLibMidiDriver::~AdLibMidiDriver() {
+	if (_opl) {
+		close();
+	}
+	if (_audioIsStarted) {
+		_audioQueue->finish();
+	}
+	_audioQueue = nullptr;
 	delete[] audiobuf;
 	if (track) {
 		for (int i = 0; i < nTracks; i++) {
@@ -163,16 +174,20 @@ void AdLibMidiDriver::rewind(int subsong) {
 			wLoopCount = 0; // repeats forever
 	}
 
-	//opl->init();
-	//opl->write(1, 32);   // Enable Waveform Select
-	//opl->write(0xBD, 0); // Disable Percussion Mode
-	//opl->write(8, 64);   // Enable Note-Sel
-	//if (AGD) {
-	//	opl->setchip(1);
-	//	opl->write(5, 1); // Enable OPL3
-	//	opl->write(4, 0); // Disable 4OP Mode
-	//	opl->setchip(0);
-	//}
+	_opl->init();
+	_opl->write(1, 32);   // Enable Waveform Select
+	_opl->write(0xBD, 0); // Disable Percussion Mode
+	_opl->write(8, 64);   // Enable Note-Sel
+	if (AGD) {
+		enableOPL3();
+	}
+}
+
+void AdLibMidiDriver::enableOPL3() {
+	//_opl->setchip(1);
+	_opl->write(5, 1); // Enable OPL3
+	_opl->write(4, 0); // Disable 4OP Mode
+	//_opl->setchip(0);
 }
 
 Common::String AdLibMidiDriver::gettype() {
@@ -186,6 +201,7 @@ Common::String AdLibMidiDriver::gettype() {
 }
 
 void AdLibMidiDriver::load(Common::SeekableReadStream *reader) {
+	open();
 	_reader = reader;
 	long size = _reader->size();
 	// Read entire file into memory
@@ -642,8 +658,8 @@ void AdLibMidiDriver::frame() {
 			playing = update();
 		}
 		i = min(towrite, (long)(minicnt / getrefresh() + 4) & ~3);
-		//opl->update((short *)pos, i);
-		pos += i * getsampsize();
+		//_opl->update((short *)pos, i);
+		pos += i * getSampleSize();
 		towrite -= i;
 		i = (long)(getrefresh() * i);
 		minicnt -= max(1, i);
@@ -651,6 +667,27 @@ void AdLibMidiDriver::frame() {
 
 	// call output driver (libao driver for ALSA from adplay-unix)
 	//output(audiobuf, buf_size * getsampsize());
+	if (!_audioQueue) {
+		_audioQueue = Audio::makeQueuingAudioStream(freq, false);
+	}
+	unsigned long size = GetOutputBufferSize();
+	int16 *audioBuffer = (int16 *)malloc(sizeof(int16) * size);
+	int readSize = _opl->readBuffer(audioBuffer, size);
+	if (readSize) {
+		_audioQueue->queueBuffer((byte *)audioBuffer, readSize, DisposeAfterUse::YES, 1);
+
+		if (!_audioIsStarted) {
+			_vm->_mixer->playStream(Audio::Mixer::kMusicSoundType, nullptr, _audioQueue);
+			_audioIsStarted = true;
+		}
+	}
+	if (audioBuffer) {
+		free(audioBuffer);
+	}
+}
+
+unsigned long AdLibMidiDriver::GetOutputBufferSize() {
+	return buf_size * getSampleSize();
 }
 
 uint32_t AdLibMidiDriver::GetTicks(uint8_t t) {
@@ -996,7 +1033,7 @@ void AdLibMidiDriver::changeProgram(uint8_t c, uint8_t i) {
 	_opl->write(reg, val);
 	reg += 3;
 	val = inst[i].param.car_wave & (AGD ? 7 : 3);
-	//opl->write(reg, val);
+	_opl->write(reg, val);
 
 	//if (c >= HERAD_NUM_VOICES)
 	//opl->setchip(0);
@@ -1081,7 +1118,7 @@ void AdLibMidiDriver::macroFeedback(uint8_t c, uint8_t i, int8_t sens, uint8_t l
 	val = (inst[i].param.con > 0 ? 0 : 1) |
 		  ((feedback & 7) << 1) |
 		  ((AGD ? (inst[i].param.pan == 0 || inst[i].param.pan > 3 ? 3 : inst[i].param.pan) : 0) << 4);
-	//opl->write(reg, val);
+	_opl->write(reg, val);
 
 	//if (c >= HERAD_NUM_VOICES)
 	//opl->setchip(0);
@@ -1116,7 +1153,7 @@ int AdLibMidiDriver::open() {
 		return 0;
 	}
 	_isOpen = true;
-	_opl = OPL::Config::create();
+	_opl = (OPL::EmulatedOPL*)OPL::Config::create();
 	if (!_opl || !_opl->init())
 		error("Failed to create OPL");
 	_opl->start(new Common::Functor0Mem<void, AdLibMidiDriver>(this, &AdLibMidiDriver::onTimer));
@@ -1124,8 +1161,11 @@ int AdLibMidiDriver::open() {
 }
 
 void AdLibMidiDriver::play() {
-	open();
-	setTimerCallback(this, &timerCallback);
+	while (true) {
+		frame();
+	}
+	//onTimer();
+	//setTimerCallback(this, &timerCallback);
 }
 void AdLibMidiDriver::setTimerCallback(void *timerParam, Common::TimerManager::TimerProc timerProc) {
 	_adlibTimerProc = timerProc;
@@ -1133,6 +1173,5 @@ void AdLibMidiDriver::setTimerCallback(void *timerParam, Common::TimerManager::T
 }
 
 void AdLibMidiDriver::onTimer() {
-	frame();
 }
 } // namespace Dune

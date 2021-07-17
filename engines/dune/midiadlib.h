@@ -61,6 +61,9 @@
 #include "common/array.h"
 #include "common/stream.h"
 
+#include "audio/audiostream.h"
+#include "audio/mixer.h"
+
 #include <cstring>
 #include <stdint.h>
 
@@ -87,12 +90,18 @@
 #define HERAD_MEASURE_TICKS 96
 #define HERAD_USE_LOOPING /* Uncomment this to enable looping */
 
+namespace Audio {
+class QueuingAudioStream;
+}
+
 namespace Dune {
 class DuneEngine;
 
 class AdLibMidiDriver : public MidiDriver {
 public:
 	Common::SeekableReadStream *_reader;
+	Audio::QueuingAudioStream *_audioQueue;
+	bool _audioIsStarted;
 	AdLibMidiDriver(DuneEngine *vm);
 	~AdLibMidiDriver() override;
 	// MidiDriver
@@ -113,6 +122,7 @@ public:
 	void play();
 	bool update();
 	void rewind(int subsong);
+
 
 	float getrefresh() {
 		return (float)200.299;
@@ -157,17 +167,20 @@ public:
 
 private:
 	DuneEngine *_vm;
-	bool _isOpen;
+	bool _isOpen = false;
 	Common::TimerManager::TimerProc _adlibTimerProc;
 	void *_adlibTimerParam;
 	bool playing;
-	OPL::OPL *_opl;
+	OPL::EmulatedOPL  *_opl;
 	char *audiobuf;
 	unsigned long buf_size, freq;
 	unsigned char bits, channels;
-	unsigned char getsampsize() { return (channels * (bits / 8)); }
+	unsigned char getSampleSize() { return (channels * (bits / 8)); }
 	void frame();
+	unsigned long GetOutputBufferSize();
 	void onTimer();
+	void enableOPL3();
+	unsigned long getAudioBufLength();
 	uint32_t GetTicks(uint8_t t);
 	void executeCommand(uint8_t t);
 	void processEvents();
