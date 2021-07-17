@@ -57,7 +57,6 @@
 #include <cstring>
 
 #include "dune/midiadlib.h"
-
 #include "dune/dune.h"
 
 #include "common/debug.h"
@@ -69,24 +68,14 @@ AdLibMidiDriver::AdLibMidiDriver(DuneEngine *vm) : _vm(vm) {
 	bits = 16;
 	channels = 2;
 	freq = 44100;
-	audiobuf = new char[getAudioBufLength()];
 	_reader = nullptr;
 	_opl = nullptr;
-}
-
-unsigned long AdLibMidiDriver::getAudioBufLength() {
-	return buf_size * getSampleSize();
 }
 
 AdLibMidiDriver::~AdLibMidiDriver() {
 	if (_opl) {
 		close();
 	}
-	if (_audioIsStarted) {
-		_audioQueue->finish();
-	}
-	_audioQueue = nullptr;
-	delete[] audiobuf;
 	if (track) {
 		for (int i = 0; i < nTracks; i++) {
 			if (track[i].data)
@@ -194,7 +183,6 @@ void AdLibMidiDriver::enableOPL3() {
 	if (_opl) {
 		close();
 	}
-	_isOpen = false;
 	_oplType = OPL::Config::OplType::kOpl3;
 	open();
 }
@@ -659,10 +647,6 @@ void AdLibMidiDriver::frame() {
 	playing = update();
 }
 
-unsigned long AdLibMidiDriver::GetOutputBufferSize() {
-	return buf_size * getSampleSize();
-}
-
 uint32_t AdLibMidiDriver::GetTicks(uint8_t t) {
 	uint32_t result = 0;
 	do {
@@ -1119,6 +1103,7 @@ void AdLibMidiDriver::macroSlide(uint8_t c) {
 
 void AdLibMidiDriver::close() {
 	delete _opl;
+	_isOpen = false;
 }
 
 int AdLibMidiDriver::open() {

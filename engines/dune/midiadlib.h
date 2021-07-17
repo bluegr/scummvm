@@ -55,17 +55,9 @@
  */
 #ifndef DUNE_MUSIC_H
 #define DUNE_MUSIC_H
-
+#include <cstring>
 #include "audio/fmopl.h"
 #include "audio/mididrv.h"
-#include "common/array.h"
-#include "common/stream.h"
-
-#include "audio/audiostream.h"
-#include "audio/mixer.h"
-
-#include <cstring>
-#include <stdint.h>
 
 #define HERAD_MIN_SIZE 6     /* Minimum file size for compression detection */
 #define HERAD_MAX_SIZE 75775 /* Maximum possible file size: 0xFFFF + 256 * HERAD_INST_SIZE */
@@ -90,20 +82,16 @@
 #define HERAD_MEASURE_TICKS 96
 #define HERAD_USE_LOOPING /* Uncomment this to enable looping */
 
-namespace Audio {
-class QueuingAudioStream;
-}
-
 namespace Dune {
 class DuneEngine;
 
 class AdLibMidiDriver : public MidiDriver {
 public:
 	Common::SeekableReadStream *_reader;
-	Audio::QueuingAudioStream *_audioQueue;
-	bool _audioIsStarted;
 	AdLibMidiDriver(DuneEngine *vm);
 	~AdLibMidiDriver() override;
+	void load(Common::SeekableReadStream *reader);
+	void play();
 	// MidiDriver
 	int open() override;
 	void close() override;
@@ -116,13 +104,26 @@ public:
 	void setTimerCallback(void *timerParam, Common::TimerManager::TimerProc timerProc) override;
 	bool isOpen() const override { return _isOpen; }
 	uint32 getBaseTempo() override { return 1000000 / OPL::OPL::kDefaultCallbackFrequency; }
-
 	void setVolume(uint32 volume);
 
-	void play();
+private:
+	DuneEngine *_vm;
+	OPL::Config::OplType _oplType = OPL::Config::OplType::kOpl2;
+	bool _isOpen = false;
+	Common::TimerManager::TimerProc _adlibTimerProc;
+	void *_adlibTimerParam;
+	bool playing;
+	OPL::EmulatedOPL  *_opl;
+	char *audiobuf;
+	unsigned long buf_size, freq;
+	unsigned char bits, channels;
+	unsigned char getSampleSize() { return (channels * (bits / 8)); }
+	void frame();
+	void onTimer();
+	void enableOPL3();
+
 	bool update();
 	void rewind(int subsong);
-
 
 	float getrefresh() {
 		return (float)200.299;
@@ -145,8 +146,6 @@ public:
 	};
 
 	Common::String gettype();
-
-	void load(Common::SeekableReadStream *reader);
 	bool isHSQ(uint8_t *data, int size);
 	bool isSQX(uint8_t *data);
 	uint16_t HSQ_decompress(uint8_t *data, int size, uint8_t *out);
@@ -164,24 +163,6 @@ public:
 	static const uint16_t FNum[HERAD_NUM_NOTES];
 	static const uint8_t fine_bend[HERAD_NUM_NOTES + 1];
 	static const uint8_t coarse_bend[10];
-
-private:
-	DuneEngine *_vm;
-	OPL::Config::OplType _oplType = OPL::Config::OplType::kOpl2;
-	bool _isOpen = false;
-	Common::TimerManager::TimerProc _adlibTimerProc;
-	void *_adlibTimerParam;
-	bool playing;
-	OPL::EmulatedOPL  *_opl;
-	char *audiobuf;
-	unsigned long buf_size, freq;
-	unsigned char bits, channels;
-	unsigned char getSampleSize() { return (channels * (bits / 8)); }
-	void frame();
-	unsigned long GetOutputBufferSize();
-	void onTimer();
-	void enableOPL3();
-	unsigned long getAudioBufLength();
 	uint32_t GetTicks(uint8_t t);
 	void executeCommand(uint8_t t);
 	void processEvents();
@@ -311,6 +292,7 @@ inline uint32_t adplug_byteswap(const uint32_t val) {
 		   ((val & 0xFF000000) >> 24);
 }
 
+// TODO: Use ScummVM API instead.
 // In many cases, we need to load a uint16_t/uint32_t from a (possibly)
 // unaligned byte stream. In order to avoid undefined behavior, we have to use
 // memcpy as the only portable way to perform type punning. See:
