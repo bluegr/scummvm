@@ -56,66 +56,13 @@
 #ifndef DUNE_MUSIC_H
 #define DUNE_MUSIC_H
 
-#include "common/array.h"
 #include "audio/fmopl.h"
-#include "common/stream.h"
 #include "audio/mididrv.h"
+#include "common/array.h"
+#include "common/stream.h"
 
-#ifndef min
-#define min(a, b) (((a) < (b)) ? (a) : (b))
-#endif
-#ifndef max
-#define max(a, b) (((a) > (b)) ? (a) : (b))
-#endif
-
-#include <stdint.h>
 #include <cstring>
-
-
-inline uint16_t adplug_byteswap(const uint16_t val) {
-	return ((val & 0x00FF) << 8) |
-		   ((val & 0xFF00) >> 8);
-}
-
-inline uint32_t adplug_byteswap(const uint32_t val) {
-	return ((val & 0x000000FF) << 24) |
-		   ((val & 0x0000FF00) << 8) |
-		   ((val & 0x00FF0000) >> 8) |
-		   ((val & 0xFF000000) >> 24);
-}
-
-// In many cases, we need to load a uint16_t/uint32_t from a (possibly)
-// unaligned byte stream. In order to avoid undefined behavior, we have to use
-// memcpy as the only portable way to perform type punning. See:
-//   https://blog.regehr.org/archives/959
-template<typename T>
-static inline T load_unaligned_impl(const unsigned char *src, const bool big_endian) {
-	T result;
-	std::memcpy(&result, src, sizeof(T));
-
-#ifdef WORDS_BIGENDIAN
-	// big-endian CHOST
-	if (!big_endian)
-#else
-	// little-endian CHOST
-	if (big_endian)
-#endif
-	{
-		// have to do a byte-swap
-		result = adplug_byteswap(result);
-	}
-
-	return result;
-}
-
-inline uint16_t u16_unaligned(const unsigned char *src, const bool big_endian = false) {
-	return load_unaligned_impl<uint16_t>(src, big_endian);
-}
-
-inline uint32_t u32_unaligned(const unsigned char *src, const bool big_endian = false) {
-	return load_unaligned_impl<uint32_t>(src, big_endian);
-}
-
+#include <stdint.h>
 
 #define HERAD_MIN_SIZE 6     /* Minimum file size for compression detection */
 #define HERAD_MAX_SIZE 75775 /* Maximum possible file size: 0xFFFF + 256 * HERAD_INST_SIZE */
@@ -144,18 +91,83 @@ namespace Dune {
 class DuneEngine;
 
 class AdLibMidiDriver : public MidiDriver {
+public:
+	Common::SeekableReadStream *_reader;
+	AdLibMidiDriver(DuneEngine *vm);
+	~AdLibMidiDriver() override;
+	// MidiDriver
+	int open() override;
+	void close() override;
+	//NOP
+	void send(uint32 b) override{}
+	//NOP
+	void metaEvent(byte type, byte *data, uint16 length) override {}
+	MidiChannel *allocateChannel() override { return 0; }
+	MidiChannel *getPercussionChannel() override { return 0; }
+	void setTimerCallback(void *timerParam, Common::TimerManager::TimerProc timerProc) override;
+	bool isOpen() const override { return _isOpen; }
+	uint32 getBaseTempo() override { return 1000000 / OPL::OPL::kDefaultCallbackFrequency; }
+
+	void setVolume(uint32 volume);
+
+	void play();
+	bool update();
+	void rewind(int subsong);
+
+	float getrefresh() {
+		return (float)200.299;
+	};
+
+	unsigned int getspeed() {
+		return wSpeed;
+	};
+
+	unsigned int getpatterns() {
+		return total_ticks / HERAD_MEASURE_TICKS + (total_ticks % HERAD_MEASURE_TICKS ? 1 : 0);
+	};
+
+	unsigned int getpattern() {
+		return (ticks_pos <= 0 ? 0 : (ticks_pos - 1) / HERAD_MEASURE_TICKS + 1);
+	};
+
+	unsigned int getrow() {
+		return (ticks_pos <= 0 ? 0 : (ticks_pos - 1) % HERAD_MEASURE_TICKS);
+	};
+
+	Common::String gettype();
+
+	void load(Common::SeekableReadStream *reader);
+	bool isHSQ(uint8_t *data, int size);
+	bool isSQX(uint8_t *data);
+	uint16_t HSQ_decompress(uint8_t *data, int size, uint8_t *out);
+	uint16_t SQX_decompress(uint8_t *data, int size, uint8_t *out);
+
+	unsigned int getinstruments() {
+		return inst ? nInsts : 0;
+	};
+
+	Common::String getinstrument(unsigned int n) {
+		return Common::String();
+	};
+
+	static const uint8_t slot_offset[HERAD_NUM_VOICES];
+	static const uint16_t FNum[HERAD_NUM_NOTES];
+	static const uint8_t fine_bend[HERAD_NUM_NOTES + 1];
+	static const uint8_t coarse_bend[10];
+
 private:
 	DuneEngine *_vm;
+	bool _isOpen;
+	Common::TimerManager::TimerProc _adlibTimerProc;
+	void *_adlibTimerParam;
 	bool playing;
 	OPL::OPL *_opl;
-	bool _isOplInitialized = false;
 	char *audiobuf;
 	unsigned long buf_size, freq;
 	unsigned char bits, channels;
 	unsigned char getsampsize() { return (channels * (bits / 8)); }
 	void frame();
 	void onTimer();
-	void initOpl();
 	uint32_t GetTicks(uint8_t t);
 	void executeCommand(uint8_t t);
 	void processEvents();
@@ -172,8 +184,8 @@ private:
 	void macroFeedback(uint8_t c, uint8_t i, int8_t sens, uint8_t level);
 	void macroTranspose(uint8_t *note, uint8_t i);
 	void macroSlide(uint8_t c);
+	static void timerCallback(void *refCon) { ((AdLibMidiDriver *)refCon)->onTimer(); }
 
-protected:
 	bool songend;
 	int16_t wTime;
 	int32_t ticks_pos;    /* current tick counter */
@@ -191,6 +203,7 @@ protected:
 	uint16_t wSpeed;     /* Fixed point value that controls music speed. Value range is 0x0100 - 0x8100 */
 
 	struct herad_trk {
+
 		// stored variables
 		uint16_t size; /* data size */
 		uint8_t *data; /* event data */
@@ -269,55 +282,60 @@ protected:
 	int32_t loop_pos;
 	uint16_t loop_times;
 	herad_trk loop_data[HERAD_MAX_TRACKS];
-
-public:
-	Common::SeekableReadStream *_reader;
-	AdLibMidiDriver(DuneEngine *vm);
-	~AdLibMidiDriver();
-	void play();
-	bool update();
-	void rewind(int subsong);
-
-	float getrefresh() {
-		return (float)200.299;
-	};
-
-	unsigned int getspeed() {
-		return wSpeed;
-	};
-
-	unsigned int getpatterns() {
-		return total_ticks / HERAD_MEASURE_TICKS + (total_ticks % HERAD_MEASURE_TICKS ? 1 : 0);
-	};
-
-	unsigned int getpattern() {
-		return (ticks_pos <= 0 ? 0 : (ticks_pos - 1) / HERAD_MEASURE_TICKS + 1);
-	};
-
-	unsigned int getrow() {
-		return (ticks_pos <= 0 ? 0 : (ticks_pos - 1) % HERAD_MEASURE_TICKS);
-	};
-
-	Common::String gettype();
-
-	void load(Common::SeekableReadStream *reader);
-	bool isHSQ(uint8_t *data, int size);
-	bool isSQX(uint8_t *data);
-	uint16_t HSQ_decompress(uint8_t *data, int size, uint8_t *out);
-	uint16_t SQX_decompress(uint8_t *data, int size, uint8_t *out);
-
-	unsigned int getinstruments() {
-		return inst ? nInsts : 0;
-	};
-
-	Common::String getinstrument(unsigned int n) {
-		return Common::String();
-	};
-
-	static const uint8_t slot_offset[HERAD_NUM_VOICES];
-	static const uint16_t FNum[HERAD_NUM_NOTES];
-	static const uint8_t fine_bend[HERAD_NUM_NOTES + 1];
-	static const uint8_t coarse_bend[10];
 };
 } // End of namespace Dune
+
+inline uint16_t adplug_byteswap(const uint16_t val) {
+	return ((val & 0x00FF) << 8) |
+		   ((val & 0xFF00) >> 8);
+}
+
+inline uint32_t adplug_byteswap(const uint32_t val) {
+	return ((val & 0x000000FF) << 24) |
+		   ((val & 0x0000FF00) << 8) |
+		   ((val & 0x00FF0000) >> 8) |
+		   ((val & 0xFF000000) >> 24);
+}
+
+// In many cases, we need to load a uint16_t/uint32_t from a (possibly)
+// unaligned byte stream. In order to avoid undefined behavior, we have to use
+// memcpy as the only portable way to perform type punning. See:
+//   https://blog.regehr.org/archives/959
+template<typename T>
+static inline T load_unaligned_impl(const unsigned char *src, const bool big_endian) {
+	T result;
+	std::memcpy(&result, src, sizeof(T));
+
+#ifdef WORDS_BIGENDIAN
+
+	// big-endian CHOST
+	if (!big_endian)
+#else
+
+	// little-endian CHOST
+	if (big_endian)
+#endif
+	{
+		// have to do a byte-swap
+		result = adplug_byteswap(result);
+	}
+
+	return result;
+}
+
+inline uint16_t u16_unaligned(const unsigned char *src, const bool big_endian = false) {
+	return load_unaligned_impl<uint16_t>(src, big_endian);
+}
+
+inline uint32_t u32_unaligned(const unsigned char *src, const bool big_endian = false) {
+	return load_unaligned_impl<uint32_t>(src, big_endian);
+}
+
+#ifndef min
+#define min(a, b) (((a) < (b)) ? (a) : (b))
+#endif
+#ifndef max
+#define max(a, b) (((a) > (b)) ? (a) : (b))
+#endif
+
 #endif

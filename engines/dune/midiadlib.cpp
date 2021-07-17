@@ -630,6 +630,7 @@ uint16_t AdLibMidiDriver::SQX_decompress(uint8_t *data, int size, uint8_t *out) 
 }
 
 void AdLibMidiDriver::frame() {
+	debug("frame exec");
 	static long minicnt = 0;
 	long i, towrite = buf_size;
 	char *pos = audiobuf;
@@ -648,7 +649,7 @@ void AdLibMidiDriver::frame() {
 		minicnt -= max(1, i);
 	}
 
-	// call output driver
+	// call output driver (libao driver for ALSA from adplay-unix)
 	//output(audiobuf, buf_size * getsampsize());
 }
 
@@ -917,12 +918,12 @@ void AdLibMidiDriver::setFreq(uint8_t c, uint8_t oct, uint16_t freq, bool on) {
 
 	reg = 0xA0 + (c % HERAD_NUM_VOICES);
 	val = freq & 0xFF;
-	//opl->write(reg, val);
+	_opl->write(reg, val);
 	reg = 0xB0 + (c % HERAD_NUM_VOICES);
 	val = ((freq >> 8) & 3) |
 		  ((oct & 7) << 2) |
 		  ((on ? 1 : 0) << 5);
-	//opl->write(reg, val);
+	_opl->write(reg, val);
 
 	//if (c >= HERAD_NUM_VOICES)
 	//opl->setchip(0);
@@ -943,56 +944,56 @@ void AdLibMidiDriver::changeProgram(uint8_t c, uint8_t i) {
 		  ((inst[i].param.mod_eg > 0 ? 1 : 0) << 5) |
 		  ((inst[i].param.mod_vib & 1) << 6) |
 		  ((inst[i].param.mod_am & 1) << 7);
-	//opl->write(reg, val);
+	_opl->write(reg, val);
 	reg += 3;
 	val = (inst[i].param.car_mul & 15) |
 		  ((inst[i].param.car_ksr & 1) << 4) |
 		  ((inst[i].param.car_eg > 0 ? 1 : 0) << 5) |
 		  ((inst[i].param.car_vib & 1) << 6) |
 		  ((inst[i].param.car_am & 1) << 7);
-	//opl->write(reg, val);
+	_opl->write(reg, val);
 
 	// Key scaling level / Output level
 	reg = 0x40 + slot_offset[c % HERAD_NUM_VOICES];
 	val = (inst[i].param.mod_out & 63) |
 		  ((inst[i].param.mod_ksl & 3) << 6);
-	//opl->write(reg, val);
+	_opl->write(reg, val);
 	reg += 3;
 	val = (inst[i].param.car_out & 63) |
 		  ((inst[i].param.car_ksl & 3) << 6);
-	//opl->write(reg, val);
+	_opl->write(reg, val);
 
 	// Attack Rate / Decay Rate
 	reg = 0x60 + slot_offset[c % HERAD_NUM_VOICES];
 	val = (inst[i].param.mod_D & 15) |
 		  ((inst[i].param.mod_A & 15) << 4);
-	//opl->write(reg, val);
+	_opl->write(reg, val);
 	reg += 3;
 	val = (inst[i].param.car_D & 15) |
 		  ((inst[i].param.car_A & 15) << 4);
-	//opl->write(reg, val);
+	_opl->write(reg, val);
 
 	// Sustain Level / Release Rate
 	reg = 0x80 + slot_offset[c % HERAD_NUM_VOICES];
 	val = (inst[i].param.mod_R & 15) |
 		  ((inst[i].param.mod_S & 15) << 4);
-	//opl->write(reg, val);
+	_opl->write(reg, val);
 	reg += 3;
 	val = (inst[i].param.car_R & 15) |
 		  ((inst[i].param.car_S & 15) << 4);
-	//opl->write(reg, val);
+	_opl->write(reg, val);
 
 	// Panning / Feedback strength / Connection type
 	reg = 0xC0 + (c % HERAD_NUM_VOICES);
 	val = (inst[i].param.con > 0 ? 0 : 1) |
 		  ((inst[i].param.feedback & 7) << 1) |
 		  ((AGD ? (inst[i].param.pan == 0 || inst[i].param.pan > 3 ? 3 : inst[i].param.pan) : 0) << 4);
-	//opl->write(reg, val);
+	_opl->write(reg, val);
 
 	// Wave Select
 	reg = 0xE0 + slot_offset[c % HERAD_NUM_VOICES];
 	val = inst[i].param.mod_wave & (AGD ? 7 : 3);
-	//opl->write(reg, val);
+	_opl->write(reg, val);
 	reg += 3;
 	val = inst[i].param.car_wave & (AGD ? 7 : 3);
 	//opl->write(reg, val);
@@ -1023,7 +1024,7 @@ void AdLibMidiDriver::macroModOutput(uint8_t c, uint8_t i, int8_t sens, uint8_t 
 	reg = 0x40 + slot_offset[c % HERAD_NUM_VOICES];
 	val = (output & 63) |
 		  ((inst[i].param.mod_ksl & 3) << 6);
-	//opl->write(reg, val);
+	_opl->write(reg, val);
 
 	//if (c >= HERAD_NUM_VOICES)
 	//opl->setchip(0);
@@ -1051,7 +1052,7 @@ void AdLibMidiDriver::macroCarOutput(uint8_t c, uint8_t i, int8_t sens, uint8_t 
 	reg = 0x43 + slot_offset[c % HERAD_NUM_VOICES];
 	val = (output & 63) |
 		  ((inst[i].param.car_ksl & 3) << 6);
-	//opl->write(reg, val);
+	_opl->write(reg, val);
 
 	//if (c >= HERAD_NUM_VOICES)
 	//opl->setchip(0);
@@ -1106,19 +1107,32 @@ void AdLibMidiDriver::macroSlide(uint8_t c) {
 	playNote(c, chn[c].note, HERAD_NOTE_UPDATE);
 }
 
-void AdLibMidiDriver::initOpl() {
-	if (_isOplInitialized) {
-		return;
+void AdLibMidiDriver::close() {
+	delete _opl;
+}
+
+int AdLibMidiDriver::open() {
+	if (_isOpen) {
+		return 0;
 	}
-	_isOplInitialized = true;
+	_isOpen = true;
 	_opl = OPL::Config::create();
 	if (!_opl || !_opl->init())
 		error("Failed to create OPL");
 	_opl->start(new Common::Functor0Mem<void, AdLibMidiDriver>(this, &AdLibMidiDriver::onTimer));
+	return 0;
 }
 
 void AdLibMidiDriver::play() {
-	initOpl();
+	open();
+	setTimerCallback(this, &timerCallback);
+}
+void AdLibMidiDriver::setTimerCallback(void *timerParam, Common::TimerManager::TimerProc timerProc) {
+	_adlibTimerProc = timerProc;
+	_adlibTimerParam = timerParam;
+}
 
+void AdLibMidiDriver::onTimer() {
+	frame();
 }
 } // namespace Dune

@@ -59,7 +59,7 @@ Common::Error DuneEngine::run() {
 	}
 
 	_video = new HnmPlayer(this);
-	//_music = new AdLibMidiDriver(this);
+	_music = new AdLibMidiDriver(this);
 
 	byte pal[3*256] = {0};
 	for (int i = 0; i != 256; ++i) {
@@ -187,8 +187,8 @@ void DuneEngine::playMusic(AGDMusics musicId) {
 
 	Common::SeekableReadStream *r = _archive.openMember(filename);
 
-	//_music->load(r);
-	//_music->play();
+	_music->load(r);
+	_music->play();
 }
 
 } // End of namespace Dune
