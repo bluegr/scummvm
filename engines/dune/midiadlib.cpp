@@ -664,26 +664,6 @@ void AdLibMidiDriver::frame() {
 		i = (long)(getrefresh() * i);
 		minicnt -= max(1, i);
 	}
-
-	// call output driver (libao driver for ALSA from adplay-unix)
-	//output(audiobuf, buf_size * getsampsize());
-	if (!_audioQueue) {
-		_audioQueue = Audio::makeQueuingAudioStream(freq, false);
-	}
-	unsigned long size = GetOutputBufferSize();
-	int16 *audioBuffer = (int16 *)malloc(sizeof(int16) * size);
-	int readSize = _opl->readBuffer(audioBuffer, size);
-	if (readSize) {
-		_audioQueue->queueBuffer((byte *)audioBuffer, readSize, DisposeAfterUse::YES, 1);
-
-		if (!_audioIsStarted) {
-			_vm->_mixer->playStream(Audio::Mixer::kMusicSoundType, nullptr, _audioQueue);
-			_audioIsStarted = true;
-		}
-	}
-	if (audioBuffer) {
-		free(audioBuffer);
-	}
 }
 
 unsigned long AdLibMidiDriver::GetOutputBufferSize() {
@@ -1156,16 +1136,11 @@ int AdLibMidiDriver::open() {
 	_opl = (OPL::EmulatedOPL*)OPL::Config::create();
 	if (!_opl || !_opl->init())
 		error("Failed to create OPL");
-	_opl->start(new Common::Functor0Mem<void, AdLibMidiDriver>(this, &AdLibMidiDriver::onTimer));
 	return 0;
 }
 
 void AdLibMidiDriver::play() {
-	while (true) {
-		frame();
-	}
-	//onTimer();
-	//setTimerCallback(this, &timerCallback);
+	_opl->start(new Common::Functor0Mem<void, AdLibMidiDriver>(this, &AdLibMidiDriver::onTimer));
 }
 void AdLibMidiDriver::setTimerCallback(void *timerParam, Common::TimerManager::TimerProc timerProc) {
 	_adlibTimerProc = timerProc;
@@ -1173,5 +1148,6 @@ void AdLibMidiDriver::setTimerCallback(void *timerParam, Common::TimerManager::T
 }
 
 void AdLibMidiDriver::onTimer() {
+	frame();
 }
 } // namespace Dune
