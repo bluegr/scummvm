@@ -185,9 +185,18 @@ void AdLibMidiDriver::rewind(int subsong) {
 
 void AdLibMidiDriver::enableOPL3() {
 	//_opl->setchip(1);
-	_opl->write(5, 1); // Enable OPL3
-	_opl->write(4, 0); // Disable 4OP Mode
+	//_opl->write(5, 1); // Enable OPL3
+	//_opl->write(4, 0); // Disable 4OP Mode
 	//_opl->setchip(0);
+	if (_oplType == OPL::Config::OplType::kOpl3 && _opl && _isOpen) {
+		return;
+	}
+	if (_opl) {
+		close();
+	}
+	_isOpen = false;
+	_oplType = OPL::Config::OplType::kOpl3;
+	open();
 }
 
 Common::String AdLibMidiDriver::gettype() {
@@ -647,23 +656,7 @@ uint16_t AdLibMidiDriver::SQX_decompress(uint8_t *data, int size, uint8_t *out) 
 
 void AdLibMidiDriver::frame() {
 	debug("frame exec");
-	static long minicnt = 0;
-	long i, towrite = buf_size;
-	char *pos = audiobuf;
-
-	// Prepare audiobuf with emulator output
-	while (towrite > 0) {
-		while (minicnt < 0) {
-			minicnt += freq;
-			playing = update();
-		}
-		i = min(towrite, (long)(minicnt / getrefresh() + 4) & ~3);
-		//_opl->update((short *)pos, i);
-		pos += i * getSampleSize();
-		towrite -= i;
-		i = (long)(getrefresh() * i);
-		minicnt -= max(1, i);
-	}
+	playing = update();
 }
 
 unsigned long AdLibMidiDriver::GetOutputBufferSize() {
@@ -1133,7 +1126,7 @@ int AdLibMidiDriver::open() {
 		return 0;
 	}
 	_isOpen = true;
-	_opl = (OPL::EmulatedOPL*)OPL::Config::create();
+	_opl = (OPL::EmulatedOPL*)OPL::Config::create(_oplType);
 	if (!_opl || !_opl->init())
 		error("Failed to create OPL");
 	return 0;

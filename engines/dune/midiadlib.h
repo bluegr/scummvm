@@ -167,6 +167,7 @@ public:
 
 private:
 	DuneEngine *_vm;
+	OPL::Config::OplType _oplType = OPL::Config::OplType::kOpl2;
 	bool _isOpen = false;
 	Common::TimerManager::TimerProc _adlibTimerProc;
 	void *_adlibTimerParam;
