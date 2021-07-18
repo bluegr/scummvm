@@ -1111,7 +1111,7 @@ int AdLibMidiDriver::open() {
 		return 0;
 	}
 	_isOpen = true;
-	_opl = (OPL::EmulatedOPL*)OPL::Config::create(_oplType);
+	_opl = OPL::Config::create(_oplType);
 	if (!_opl || !_opl->init())
 		error("Failed to create OPL");
 	return 0;

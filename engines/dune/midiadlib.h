@@ -113,7 +113,7 @@ private:
 	Common::TimerManager::TimerProc _adlibTimerProc;
 	void *_adlibTimerParam;
 	bool playing;
-	OPL::EmulatedOPL  *_opl;
+	OPL::OPL  *_opl;
 	char *audiobuf;
 	unsigned long buf_size, freq;
 	unsigned char bits, channels;
