@@ -80,7 +80,6 @@
 #define HERAD_NUM_VOICES 9
 #define HERAD_NUM_NOTES 12
 #define HERAD_MEASURE_TICKS 96
-#define HERAD_USE_LOOPING /* Uncomment this to enable looping */
 
 namespace Dune {
 class DuneEngine;
@@ -91,7 +90,7 @@ public:
 	AdLibMidiDriver(DuneEngine *vm);
 	~AdLibMidiDriver() override;
 	void load(Common::SeekableReadStream *reader);
-	void play();
+	void play(bool loop);
 	// MidiDriver
 	int open() override;
 	void close() override;
@@ -182,6 +181,7 @@ private:
 	static void timerCallback(void *refCon) { ((AdLibMidiDriver *)refCon)->onTimer(); }
 
 	bool songend;
+	bool loopSong = false;
 	int16_t wTime;
 	int32_t ticks_pos;    /* current tick counter */
 	uint32_t total_ticks; /* total ticks in song */
