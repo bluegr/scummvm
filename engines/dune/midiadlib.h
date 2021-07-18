@@ -101,26 +101,31 @@ public:
 	MidiChannel *allocateChannel() override { return 0; }
 	MidiChannel *getPercussionChannel() override { return 0; }
 	void setTimerCallback(void *timerParam, Common::TimerManager::TimerProc timerProc) override;
-	bool isOpen() const override { return _isOpen; }
+	bool isOpen() const override { return _isOplInitialized; }
 	uint32 getBaseTempo() override { return 1000000 / OPL::OPL::kDefaultCallbackFrequency; }
 	void setVolume(uint32 volume);
 
 private:
 	DuneEngine *_vm;
 	OPL::Config::OplType _oplType = OPL::Config::OplType::kOpl2;
-	bool _isOpen = false;
+	bool _isOplInitialized = false;
 	Common::TimerManager::TimerProc _adlibTimerProc;
 	void *_adlibTimerParam;
-	bool playing;
+	bool _isPlaying;
 	OPL::OPL  *_opl;
-	char *audiobuf;
-	unsigned long buf_size, freq;
-	unsigned char bits, channels;
-	unsigned char getSampleSize() { return (channels * (bits / 8)); }
+	char *_audiobuf;
+	unsigned long _buf_size, _frequency;
+	unsigned char _bits, _nChannels;
+
+	Common::String gettype();
+	bool isHSQ(uint8_t *data, int size);
+	bool isSQX(uint8_t *data);
+	uint16_t HSQ_decompress(uint8_t *data, int size, uint8_t *out);
+	uint16_t SQX_decompress(uint8_t *data, int size, uint8_t *out);
+	unsigned char getSampleSize() { return (_nChannels * (_bits / 8)); }
 	void frame();
 	void onTimer();
 	void enableOPL3();
-
 	bool update();
 	void rewind(int subsong);
 
@@ -129,29 +134,23 @@ private:
 	};
 
 	unsigned int getspeed() {
-		return wSpeed;
+		return _wSpeed;
 	};
 
 	unsigned int getpatterns() {
-		return total_ticks / HERAD_MEASURE_TICKS + (total_ticks % HERAD_MEASURE_TICKS ? 1 : 0);
+		return _total_tick_count / HERAD_MEASURE_TICKS + (_total_tick_count % HERAD_MEASURE_TICKS ? 1 : 0);
 	};
 
 	unsigned int getpattern() {
-		return (ticks_pos <= 0 ? 0 : (ticks_pos - 1) / HERAD_MEASURE_TICKS + 1);
+		return (_current_tick_position <= 0 ? 0 : (_current_tick_position - 1) / HERAD_MEASURE_TICKS + 1);
 	};
 
 	unsigned int getrow() {
-		return (ticks_pos <= 0 ? 0 : (ticks_pos - 1) % HERAD_MEASURE_TICKS);
+		return (_current_tick_position <= 0 ? 0 : (_current_tick_position - 1) % HERAD_MEASURE_TICKS);
 	};
 
-	Common::String gettype();
-	bool isHSQ(uint8_t *data, int size);
-	bool isSQX(uint8_t *data);
-	uint16_t HSQ_decompress(uint8_t *data, int size, uint8_t *out);
-	uint16_t SQX_decompress(uint8_t *data, int size, uint8_t *out);
-
 	unsigned int getinstruments() {
-		return inst ? nInsts : 0;
+		return _instruments ? _nInstruments : 0;
 	};
 
 	Common::String getinstrument(unsigned int n) {
@@ -162,7 +161,7 @@ private:
 	static const uint16_t FNum[HERAD_NUM_NOTES];
 	static const uint8_t fine_bend[HERAD_NUM_NOTES + 1];
 	static const uint8_t coarse_bend[10];
-	uint32_t GetTicks(uint8_t t);
+	uint32_t getTicks(uint8_t t);
 	void executeCommand(uint8_t t);
 	void processEvents();
 	void ev_noteOn(uint8_t ch, uint8_t note, uint8_t vel);
@@ -171,7 +170,7 @@ private:
 	void ev_aftertouch(uint8_t ch, uint8_t vel);
 	void ev_pitchBend(uint8_t ch, uint8_t bend);
 	void playNote(uint8_t c, uint8_t note, uint8_t state);
-	void setFreq(uint8_t c, uint8_t oct, uint16_t freq, bool on);
+	void setFreq(uint8_t c, uint8_t oct, uint16_t _frequency, bool on);
 	void changeProgram(uint8_t c, uint8_t i);
 	void macroModOutput(uint8_t c, uint8_t i, int8_t sens, uint8_t level);
 	void macroCarOutput(uint8_t c, uint8_t i, int8_t sens, uint8_t level);
@@ -180,22 +179,22 @@ private:
 	void macroSlide(uint8_t c);
 	static void timerCallback(void *refCon) { ((AdLibMidiDriver *)refCon)->onTimer(); }
 
-	bool songend;
-	bool loopSong = false;
-	int16_t wTime;
-	int32_t ticks_pos;    /* current tick counter */
-	uint32_t total_ticks; /* total ticks in song */
+	bool _songEnd;
+	bool _isLoopingEnabled = false;
+	int16_t _wTime;
+	int32_t _current_tick_position;    /* current tick counter */
+	uint32_t _total_tick_count; /* total ticks in song */
 
-	uint8_t comp;    /* File compression type (see HERAD_COMP_*) */
-	bool AGD;        /* Whether this is HERAD AGD (OPL3) */
-	bool v2;         /* Whether this is HERAD version 2 */
-	uint8_t nTracks; /* Number of tracks */
-	uint8_t nInsts;  /* Number of instruments */
+	uint8_t _fileCompressionType;    /* File compression type (see HERAD_COMP_*) */
+	bool isAgd;        /* Whether this is HERAD AGD (OPL3) */
+	bool _isHeradV2;         /* Whether this is HERAD version 2 */
+	uint8_t _nTracks; /* Number of tracks */
+	uint8_t _nInstruments;  /* Number of instruments */
 
-	uint16_t wLoopStart; /* Loop starts at this measure (0 = don't loop) */
-	uint16_t wLoopEnd;   /* Loop ends at this measure (0 = don't loop) */
-	uint16_t wLoopCount; /* Number of times the selected measures will play (0 = loop forever; >0 - play N times) */
-	uint16_t wSpeed;     /* Fixed point value that controls music speed. Value range is 0x0100 - 0x8100 */
+	uint16_t _wLoopStart; /* Loop starts at this measure (0 = don't loop) */
+	uint16_t _wLoopEnd;   /* Loop ends at this measure (0 = don't loop) */
+	uint16_t _wLoopCount; /* Number of times the selected measures will play (0 = loop forever; >0 - play N times) */
+	uint16_t _wSpeed;     /* Fixed point value that controls music speed. Value range is 0x0100 - 0x8100 */
 
 	struct herad_trk {
 
@@ -270,13 +269,13 @@ private:
 		herad_inst_data param;         /* structure of parameters */
 		herad_keymap keymap;           /* keymap structure */
 	};
-	herad_trk *track; /* event tracks [nTracks] */
-	herad_chn *chn;   /* active channels [nTracks] */
-	herad_inst *inst; /* instruments [nInsts] */
+	herad_trk *_tracks; /* event tracks [nTracks] */
+	herad_chn *_channels;   /* active channels [nTracks] */
+	herad_inst *_instruments; /* instruments [nInsts] */
 
-	int32_t loop_pos;
-	uint16_t loop_times;
-	herad_trk loop_data[HERAD_MAX_TRACKS];
+	int32_t _loop_pos;
+	uint16_t _loop_times;
+	herad_trk _loop_data[HERAD_MAX_TRACKS];
 };
 } // End of namespace Dune
 

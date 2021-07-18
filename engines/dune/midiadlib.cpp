@@ -64,10 +64,10 @@
 
 namespace Dune {
 AdLibMidiDriver::AdLibMidiDriver(DuneEngine *vm) : _vm(vm) {
-	buf_size = 2048;
-	bits = 16;
-	channels = 2;
-	freq = 44100;
+	_buf_size = 2048;
+	_bits = 16;
+	_nChannels = 2;
+	_frequency = 44100;
 	_reader = nullptr;
 	_opl = nullptr;
 }
@@ -76,17 +76,17 @@ AdLibMidiDriver::~AdLibMidiDriver() {
 	if (_opl) {
 		close();
 	}
-	if (track) {
-		for (int i = 0; i < nTracks; i++) {
-			if (track[i].data)
-				delete[] track[i].data;
+	if (_tracks) {
+		for (int i = 0; i < _nTracks; i++) {
+			if (_tracks[i].data)
+				delete[] _tracks[i].data;
 		}
-		delete[] track;
+		delete[] _tracks;
 	}
-	if (chn)
-		delete[] chn;
-	if (inst)
-		delete[] inst;
+	if (_channels)
+		delete[] _channels;
+	if (_instruments)
+		delete[] _instruments;
 }
 
 const uint8_t AdLibMidiDriver::slot_offset[HERAD_NUM_VOICES] = {
@@ -100,74 +100,74 @@ const uint8_t AdLibMidiDriver::coarse_bend[10] = {
 	0, 6, 12, 18, 24};
 
 bool AdLibMidiDriver::update() {
-	wTime = wTime - 256;
-	if (wTime < 0) {
-		wTime = wTime + wSpeed;
+	_wTime = _wTime - 256;
+	if (_wTime < 0) {
+		_wTime = _wTime + _wSpeed;
 		processEvents();
 	}
-	return !songend;
+	return !_songEnd;
 }
 
 void AdLibMidiDriver::rewind(int subsong) {
 	uint32_t j;
-	wTime = 0;
-	songend = false;
+	_wTime = 0;
+	_songEnd = false;
 
-	ticks_pos = -1; // there's always 1 excess tick at start
-	total_ticks = 0;
-	loop_pos = -1;
-	loop_times = 1;
+	_current_tick_position = -1; // there's always 1 excess tick at start
+	_total_tick_count = 0;
+	_loop_pos = -1;
+	_loop_times = 1;
 
-	for (int i = 0; i < nTracks; i++) {
-		track[i].pos = 0;
+	for (int i = 0; i < _nTracks; i++) {
+		_tracks[i].pos = 0;
 		j = 0;
-		while (track[i].pos < track[i].size) {
-			j += GetTicks(i);
-			switch (track[i].data[track[i].pos++] & 0xF0) {
+		while (_tracks[i].pos < _tracks[i].size) {
+			j += getTicks(i);
+			switch (_tracks[i].data[_tracks[i].pos++] & 0xF0) {
 			case 0x80: // Note Off
-				track[i].pos += (v2 ? 1 : 2);
+				_tracks[i].pos += (_isHeradV2 ? 1 : 2);
 				break;
 			case 0x90: // Note On
 			case 0xA0: // Unused
 			case 0xB0: // Unused
-				track[i].pos += 2;
+				_tracks[i].pos += 2;
 				break;
 			case 0xC0: // Program Change
 			case 0xD0: // Aftertouch
 			case 0xE0: // Pitch Bend
-				track[i].pos++;
+				_tracks[i].pos++;
 				break;
 			default:
-				track[i].pos = track[i].size;
+				_tracks[i].pos = _tracks[i].size;
 				break;
 			}
 		}
-		if (j > total_ticks)
-			total_ticks = j;
-		track[i].pos = 0;
-		track[i].counter = 0;
-		track[i].ticks = 0;
-		chn[i].program = 0;
-		chn[i].playprog = 0;
-		chn[i].note = 0;
-		chn[i].keyon = false;
-		chn[i].bend = HERAD_BEND_CENTER;
-		chn[i].slide_dur = 0;
+		if (j > _total_tick_count)
+			_total_tick_count = j;
+		_tracks[i].pos = 0;
+		_tracks[i].counter = 0;
+		_tracks[i].ticks = 0;
+		_channels[i].program = 0;
+		_channels[i].playprog = 0;
+		_channels[i].note = 0;
+		_channels[i].keyon = false;
+		_channels[i].bend = HERAD_BEND_CENTER;
+		_channels[i].slide_dur = 0;
 	}
-	if (v2) {
-		if (!wLoopStart || wLoopCount)
-			wLoopStart = 1; // if loop not specified, start from beginning
-		if (!wLoopEnd || wLoopCount)
-			wLoopEnd = getpatterns() + 1; // till the end
-		if (wLoopCount)
-			wLoopCount = 0; // repeats forever
+	if (_isHeradV2) {
+		if (!_wLoopStart || _wLoopCount)
+			_wLoopStart = 1; // if loop not specified, start from beginning
+		if (!_wLoopEnd || _wLoopCount)
+			_wLoopEnd = getpatterns() + 1; // till the end
+		if (_wLoopCount)
+			_wLoopCount = 0; // repeats forever
 	}
 
 	_opl->init();
 	_opl->write(1, 32);   // Enable Waveform Select
 	_opl->write(0xBD, 0); // Disable Percussion Mode
 	_opl->write(8, 64);   // Enable Note-Sel
-	if (AGD) {
+	if (isAgd) {
 		enableOPL3();
 	}
 }
@@ -177,7 +177,7 @@ void AdLibMidiDriver::enableOPL3() {
 	//_opl->write(5, 1); // Enable OPL3
 	//_opl->write(4, 0); // Disable 4OP Mode
 	//_opl->setchip(0);
-	if (_oplType == OPL::Config::OplType::kOpl3 && _opl && _isOpen) {
+	if (_oplType == OPL::Config::OplType::kOpl3 && _opl && _isOplInitialized) {
 		return;
 	}
 	if (_opl) {
@@ -189,11 +189,11 @@ void AdLibMidiDriver::enableOPL3() {
 
 Common::String AdLibMidiDriver::gettype() {
 	char scomp[12 + 1] = "";
-	if (comp > HERAD_COMP_NONE) {
-		debug(scomp, ", %s packed", (comp == HERAD_COMP_HSQ ? "HSQ" : "SQX"));
+	if (_fileCompressionType > HERAD_COMP_NONE) {
+		debug(scomp, ", %s packed", (_fileCompressionType == HERAD_COMP_HSQ ? "HSQ" : "SQX"));
 	}
 	char type[40 + 1];
-	debug(type, "HERAD System %s (version %d%s)", (AGD ? "AGD" : "SDB"), (v2 ? 2 : 1), scomp);
+	debug(type, "HERAD System %s (version %d%s)", (isAgd ? "AGD" : "SDB"), (_isHeradV2 ? 2 : 1), scomp);
 	return Common::String(type);
 }
 
@@ -206,7 +206,7 @@ void AdLibMidiDriver::load(Common::SeekableReadStream *reader) {
 	_reader->read(data, size);
 	// Detect compression
 	if (isHSQ(data, size)) {
-		comp = HERAD_COMP_HSQ;
+		_fileCompressionType = HERAD_COMP_HSQ;
 		uint8_t *out = new uint8_t[HERAD_MAX_SIZE];
 		memset(out, 0, HERAD_MAX_SIZE);
 		size = HSQ_decompress(data, size, out);
@@ -215,7 +215,7 @@ void AdLibMidiDriver::load(Common::SeekableReadStream *reader) {
 		memcpy(data, out, size);
 		delete[] out;
 	} else if (isSQX(data)) {
-		comp = HERAD_COMP_SQX;
+		_fileCompressionType = HERAD_COMP_SQX;
 		uint8_t *out = new uint8_t[HERAD_MAX_SIZE];
 		memset(out, 0, HERAD_MAX_SIZE);
 		size = SQX_decompress(data, size, out);
@@ -224,7 +224,7 @@ void AdLibMidiDriver::load(Common::SeekableReadStream *reader) {
 		memcpy(data, out, size);
 		delete[] out;
 	} else {
-		comp = HERAD_COMP_NONE;
+		_fileCompressionType = HERAD_COMP_NONE;
 	}
 	// Process file header
 	uint16_t offset;
@@ -234,47 +234,47 @@ void AdLibMidiDriver::load(Common::SeekableReadStream *reader) {
 	if (size < *(uint16_t *)data) {
 		delete[] data;
 	}
-	nInsts = (size - *(uint16_t *)data) / HERAD_INST_SIZE;
-	if (nInsts == 0) {
+	_nInstruments = (size - *(uint16_t *)data) / HERAD_INST_SIZE;
+	if (_nInstruments == 0) {
 		delete[] data;
 	}
 	offset = *(uint16_t *)(data + 2);
 	if (offset != 0x32 && offset != 0x52) {
 		delete[] data;
 	}
-	AGD = offset == 0x52;
-	wLoopStart = *(uint16_t *)(data + 0x2C);
-	wLoopEnd = *(uint16_t *)(data + 0x2E);
-	wLoopCount = *(uint16_t *)(data + 0x30);
-	wSpeed = *(uint16_t *)(data + 0x32);
-	if (wSpeed == 0) {
+	isAgd = offset == 0x52;
+	_wLoopStart = *(uint16_t *)(data + 0x2C);
+	_wLoopEnd = *(uint16_t *)(data + 0x2E);
+	_wLoopCount = *(uint16_t *)(data + 0x30);
+	_wSpeed = *(uint16_t *)(data + 0x32);
+	if (_wSpeed == 0) {
 		delete[] data;
 	}
-	nTracks = 0;
+	_nTracks = 0;
 	for (int i = 0; i < HERAD_MAX_TRACKS; i++) {
 		if (*(uint16_t *)(data + 2 + i * 2) == 0)
 			break;
-		nTracks++;
+		_nTracks++;
 	}
-	track = new herad_trk[nTracks];
-	chn = new herad_chn[nTracks];
-	for (int i = 0; i < nTracks; i++) {
+	_tracks = new herad_trk[_nTracks];
+	_channels = new herad_chn[_nTracks];
+	for (int i = 0; i < _nTracks; i++) {
 		offset = *(uint16_t *)(data + 2 + i * 2) + 2;
 		uint16_t next = (i < HERAD_MAX_TRACKS - 1 ? *(uint16_t *)(data + 2 + (i + 1) * 2) + 2 : *(uint16_t *)data);
 		if (next <= 2)
 			next = *(uint16_t *)data;
 
-		track[i].size = next - offset;
-		track[i].data = new uint8_t[track[i].size];
-		memcpy(track[i].data, data + offset, track[i].size);
+		_tracks[i].size = next - offset;
+		_tracks[i].data = new uint8_t[_tracks[i].size];
+		memcpy(_tracks[i].data, data + offset, _tracks[i].size);
 	}
-	inst = new herad_inst[nInsts];
+	_instruments = new herad_inst[_nInstruments];
 	offset = *(uint16_t *)data;
-	v2 = true;
-	for (int i = 0; i < nInsts; i++) {
-		memcpy(inst[i].data, data + offset + i * HERAD_INST_SIZE, HERAD_INST_SIZE);
-		if (v2 && inst[i].param.mode == HERAD_INSTMODE_SDB1)
-			v2 = false;
+	_isHeradV2 = true;
+	for (int i = 0; i < _nInstruments; i++) {
+		memcpy(_instruments[i].data, data + offset + i * HERAD_INST_SIZE, HERAD_INST_SIZE);
+		if (_isHeradV2 && _instruments[i].param.mode == HERAD_INSTMODE_SDB1)
+			_isHeradV2 = false;
 	}
 	delete[] data;
 	rewind(0);
@@ -644,125 +644,125 @@ uint16_t AdLibMidiDriver::SQX_decompress(uint8_t *data, int size, uint8_t *out) 
 
 void AdLibMidiDriver::frame() {
 	debug("frame exec");
-	playing = update();
+	_isPlaying = update();
 }
 
-uint32_t AdLibMidiDriver::GetTicks(uint8_t t) {
+uint32_t AdLibMidiDriver::getTicks(uint8_t t) {
 	uint32_t result = 0;
 	do {
 		result <<= 7;
-		result |= track[t].data[track[t].pos] & 0x7F;
-	} while (track[t].data[track[t].pos++] & 0x80 && track[t].pos < track[t].size);
+		result |= _tracks[t].data[_tracks[t].pos] & 0x7F;
+	} while (_tracks[t].data[_tracks[t].pos++] & 0x80 && _tracks[t].pos < _tracks[t].size);
 	return result;
 }
 void AdLibMidiDriver::executeCommand(uint8_t t) {
 	uint8_t status, note, par;
 
-	if (t >= nTracks)
+	if (t >= _nTracks)
 		return;
 
-	if (t >= (AGD ? HERAD_NUM_VOICES * 2 : HERAD_NUM_VOICES)) {
-		track[t].pos = track[t].size;
+	if (t >= (isAgd ? HERAD_NUM_VOICES * 2 : HERAD_NUM_VOICES)) {
+		_tracks[t].pos = _tracks[t].size;
 		return;
 	}
 
 	// execute MIDI command
-	status = track[t].data[track[t].pos++];
+	status = _tracks[t].data[_tracks[t].pos++];
 	if (status == 0xFF) {
-		track[t].pos = track[t].size;
+		_tracks[t].pos = _tracks[t].size;
 	} else {
 		switch (status & 0xF0) {
 		case 0x80: // Note Off
-			note = track[t].data[track[t].pos++];
-			par = (v2 ? 0 : track[t].data[track[t].pos++]);
+			note = _tracks[t].data[_tracks[t].pos++];
+			par = (_isHeradV2 ? 0 : _tracks[t].data[_tracks[t].pos++]);
 			ev_noteOff(t, note, par);
 			break;
 		case 0x90: // Note On
-			note = track[t].data[track[t].pos++];
-			par = track[t].data[track[t].pos++];
+			note = _tracks[t].data[_tracks[t].pos++];
+			par = _tracks[t].data[_tracks[t].pos++];
 			ev_noteOn(t, note, par);
 			break;
 		case 0xA0: // Unused
 		case 0xB0: // Unused
-			track[t].pos += 2;
+			_tracks[t].pos += 2;
 			break;
 		case 0xC0: // Program Change
-			par = track[t].data[track[t].pos++];
+			par = _tracks[t].data[_tracks[t].pos++];
 			ev_programChange(t, par);
 			break;
 		case 0xD0: // Aftertouch
-			par = track[t].data[track[t].pos++];
+			par = _tracks[t].data[_tracks[t].pos++];
 			ev_aftertouch(t, par);
 			break;
 		case 0xE0: // Pitch Bend
-			par = track[t].data[track[t].pos++];
+			par = _tracks[t].data[_tracks[t].pos++];
 			ev_pitchBend(t, par);
 			break;
 		default:
-			track[t].pos = track[t].size;
+			_tracks[t].pos = _tracks[t].size;
 			break;
 		}
 	}
 }
 void AdLibMidiDriver::processEvents() {
 	uint8_t i;
-	songend = true;
+	_songEnd = true;
 
-	if (wLoopStart && wLoopEnd && (ticks_pos + 1) % HERAD_MEASURE_TICKS == 0 && (ticks_pos + 1) / HERAD_MEASURE_TICKS + 1 == wLoopStart) {
-		loop_pos = ticks_pos;
-		for (i = 0; i < nTracks; i++) {
-			loop_data[i].counter = track[i].counter;
-			loop_data[i].ticks = track[i].ticks;
-			loop_data[i].pos = track[i].pos;
+	if (_wLoopStart && _wLoopEnd && (_current_tick_position + 1) % HERAD_MEASURE_TICKS == 0 && (_current_tick_position + 1) / HERAD_MEASURE_TICKS + 1 == _wLoopStart) {
+		_loop_pos = _current_tick_position;
+		for (i = 0; i < _nTracks; i++) {
+			_loop_data[i].counter = _tracks[i].counter;
+			_loop_data[i].ticks = _tracks[i].ticks;
+			_loop_data[i].pos = _tracks[i].pos;
 		}
 	}
-	for (i = 0; i < nTracks; i++) {
-		if (chn[i].slide_dur > 0 && chn[i].keyon)
+	for (i = 0; i < _nTracks; i++) {
+		if (_channels[i].slide_dur > 0 && _channels[i].keyon)
 			macroSlide(i);
-		if (track[i].pos >= track[i].size)
+		if (_tracks[i].pos >= _tracks[i].size)
 			continue;
-		songend = false; // track is not finished
-		if (!track[i].counter) {
-			bool first = track[i].pos == 0;
-			track[i].ticks = GetTicks(i);
-			if (first && track[i].ticks)
-				track[i].ticks++; // workaround to synchronize tracks (there's always 1 excess tick at start)
+		_songEnd = false; // track is not finished
+		if (!_tracks[i].counter) {
+			bool first = _tracks[i].pos == 0;
+			_tracks[i].ticks = getTicks(i);
+			if (first && _tracks[i].ticks)
+				_tracks[i].ticks++; // workaround to synchronize tracks (there's always 1 excess tick at start)
 		}
-		if (++track[i].counter >= track[i].ticks) {
-			track[i].counter = 0;
-			while (track[i].pos < track[i].size) {
+		if (++_tracks[i].counter >= _tracks[i].ticks) {
+			_tracks[i].counter = 0;
+			while (_tracks[i].pos < _tracks[i].size) {
 				executeCommand(i);
-				if (track[i].pos >= track[i].size) {
+				if (_tracks[i].pos >= _tracks[i].size) {
 					break;
-				} else if (!track[i].data[track[i].pos]) // if next delay is zero
+				} else if (!_tracks[i].data[_tracks[i].pos]) // if next delay is zero
 				{
-					track[i].pos++;
+					_tracks[i].pos++;
 				} else
 					break;
 			}
-		} else if (track[i].ticks >= 0x8000) {
-			track[i].pos = track[i].size;
-			track[i].counter = track[i].ticks;
+		} else if (_tracks[i].ticks >= 0x8000) {
+			_tracks[i].pos = _tracks[i].size;
+			_tracks[i].counter = _tracks[i].ticks;
 		}
 	}
-	if (!songend)
-		ticks_pos++;
-	if (wLoopStart && wLoopEnd && (ticks_pos == total_ticks || (ticks_pos % HERAD_MEASURE_TICKS == 0 && ticks_pos / HERAD_MEASURE_TICKS + 1 == wLoopEnd))) {
-	if (loopSong) {
-		if (!wLoopCount)
-			songend = true;
-		else if (songend && loop_times < wLoopCount)
-			songend = false;
+	if (!_songEnd)
+		_current_tick_position++;
+	if (_wLoopStart && _wLoopEnd && (_current_tick_position == _total_tick_count || (_current_tick_position % HERAD_MEASURE_TICKS == 0 && _current_tick_position / HERAD_MEASURE_TICKS + 1 == _wLoopEnd))) {
+	if (_isLoopingEnabled) {
+		if (!_wLoopCount)
+			_songEnd = true;
+		else if (_songEnd && _loop_times < _wLoopCount)
+			_songEnd = false;
 
-		if (!wLoopCount || loop_times < wLoopCount) {
-			ticks_pos = loop_pos;
-			for (i = 0; i < nTracks; i++) {
-				track[i].counter = loop_data[i].counter;
-				track[i].ticks = loop_data[i].ticks;
-				track[i].pos = loop_data[i].pos;
+		if (!_wLoopCount || _loop_times < _wLoopCount) {
+			_current_tick_position = _loop_pos;
+			for (i = 0; i < _nTracks; i++) {
+				_tracks[i].counter = _loop_data[i].counter;
+				_tracks[i].ticks = _loop_data[i].ticks;
+				_tracks[i].pos = _loop_data[i].pos;
 			}
-			if (wLoopCount)
-				loop_times++;
+			if (_wLoopCount)
+				_loop_times++;
 		}
 	}
 	}
@@ -770,83 +770,83 @@ void AdLibMidiDriver::processEvents() {
 void AdLibMidiDriver::ev_noteOn(uint8_t ch, uint8_t note, uint8_t vel) {
 	int8_t macro;
 
-	if (chn[ch].keyon) {
+	if (_channels[ch].keyon) {
 		// turn off last active note
-		chn[ch].keyon = false;
-		playNote(ch, chn[ch].note, HERAD_NOTE_OFF);
+		_channels[ch].keyon = false;
+		playNote(ch, _channels[ch].note, HERAD_NOTE_OFF);
 	}
-	if (v2 && inst[chn[ch].program].param.mode == HERAD_INSTMODE_KMAP) {
+	if (_isHeradV2 && _instruments[_channels[ch].program].param.mode == HERAD_INSTMODE_KMAP) {
 		// keymap is used
-		int8_t mp = note - (inst[chn[ch].program].keymap.offset + 24);
+		int8_t mp = note - (_instruments[_channels[ch].program].keymap.offset + 24);
 		if (mp < 0 || mp >= HERAD_INST_SIZE - 4)
 			return; // if not in range, skip note
-		chn[ch].playprog = inst[chn[ch].program].keymap.index[mp];
-		changeProgram(ch, chn[ch].playprog);
+		_channels[ch].playprog = _instruments[_channels[ch].program].keymap.index[mp];
+		changeProgram(ch, _channels[ch].playprog);
 	}
-	chn[ch].note = note;
-	chn[ch].keyon = true;
-	chn[ch].bend = HERAD_BEND_CENTER;
-	if (v2 && inst[chn[ch].playprog].param.mode == HERAD_INSTMODE_KMAP)
+	_channels[ch].note = note;
+	_channels[ch].keyon = true;
+	_channels[ch].bend = HERAD_BEND_CENTER;
+	if (_isHeradV2 && _instruments[_channels[ch].playprog].param.mode == HERAD_INSTMODE_KMAP)
 		return; // single keymapped instrument can't be keymap (avoid recursion)
 	playNote(ch, note, HERAD_NOTE_ON);
-	macro = inst[chn[ch].playprog].param.mc_mod_out_vel;
+	macro = _instruments[_channels[ch].playprog].param.mc_mod_out_vel;
 	if (macro != 0)
-		macroModOutput(ch, chn[ch].playprog, macro, vel);
-	macro = inst[chn[ch].playprog].param.mc_car_out_vel;
+		macroModOutput(ch, _channels[ch].playprog, macro, vel);
+	macro = _instruments[_channels[ch].playprog].param.mc_car_out_vel;
 	if (macro != 0)
-		macroCarOutput(ch, chn[ch].playprog, macro, vel);
-	macro = inst[chn[ch].playprog].param.mc_fb_vel;
+		macroCarOutput(ch, _channels[ch].playprog, macro, vel);
+	macro = _instruments[_channels[ch].playprog].param.mc_fb_vel;
 	if (macro != 0)
-		macroFeedback(ch, chn[ch].playprog, macro, vel);
+		macroFeedback(ch, _channels[ch].playprog, macro, vel);
 }
 void AdLibMidiDriver::ev_noteOff(uint8_t ch, uint8_t note, uint8_t vel) {
-	if (note != chn[ch].note || !chn[ch].keyon)
+	if (note != _channels[ch].note || !_channels[ch].keyon)
 		return;
-	chn[ch].keyon = false;
+	_channels[ch].keyon = false;
 	playNote(ch, note, HERAD_NOTE_OFF);
 }
 void AdLibMidiDriver::ev_programChange(uint8_t ch, uint8_t prog) {
-	if (prog >= nInsts) // out of index
+	if (prog >= _nInstruments) // out of index
 		return;
-	chn[ch].program = prog;
-	chn[ch].playprog = prog;
+	_channels[ch].program = prog;
+	_channels[ch].playprog = prog;
 	changeProgram(ch, prog);
 }
 void AdLibMidiDriver::ev_aftertouch(uint8_t ch, uint8_t vel) {
 	int8_t macro;
 
-	if (v2) // version 2 ignores this event
+	if (_isHeradV2) // version 2 ignores this event
 		return;
-	macro = inst[chn[ch].playprog].param.mc_mod_out_at;
+	macro = _instruments[_channels[ch].playprog].param.mc_mod_out_at;
 	if (macro != 0)
-		macroModOutput(ch, chn[ch].playprog, macro, vel);
-	macro = inst[chn[ch].playprog].param.mc_car_out_at;
-	if (macro != 0 && inst[chn[ch].playprog].param.mc_car_out_vel != 0)
-		macroCarOutput(ch, chn[ch].playprog, macro, vel);
-	macro = inst[chn[ch].playprog].param.mc_fb_at;
+		macroModOutput(ch, _channels[ch].playprog, macro, vel);
+	macro = _instruments[_channels[ch].playprog].param.mc_car_out_at;
+	if (macro != 0 && _instruments[_channels[ch].playprog].param.mc_car_out_vel != 0)
+		macroCarOutput(ch, _channels[ch].playprog, macro, vel);
+	macro = _instruments[_channels[ch].playprog].param.mc_fb_at;
 	if (macro != 0)
-		macroFeedback(ch, chn[ch].playprog, macro, vel);
+		macroFeedback(ch, _channels[ch].playprog, macro, vel);
 }
 void AdLibMidiDriver::ev_pitchBend(uint8_t ch, uint8_t bend) {
-	chn[ch].bend = bend;
-	if (chn[ch].keyon) // update pitch
-		playNote(ch, chn[ch].note, HERAD_NOTE_UPDATE);
+	_channels[ch].bend = bend;
+	if (_channels[ch].keyon) // update pitch
+		playNote(ch, _channels[ch].note, HERAD_NOTE_UPDATE);
 }
 void AdLibMidiDriver::playNote(uint8_t c, uint8_t note, uint8_t state) {
-	if (inst[chn[c].playprog].param.mc_transpose != 0)
-		macroTranspose(&note, chn[c].playprog);
+	if (_instruments[_channels[c].playprog].param.mc_transpose != 0)
+		macroTranspose(&note, _channels[c].playprog);
 	note = (note - 24) & 0xFF;
 	if (state != HERAD_NOTE_UPDATE && note >= 0x60)
 		note = 0; // clip too low/high notes
 	int8_t oct = note / HERAD_NUM_NOTES;
 	int8_t key = note % HERAD_NUM_NOTES;
-	if (state != HERAD_NOTE_UPDATE && inst[chn[c].playprog].param.mc_slide_dur) {
-		chn[c].slide_dur = (state == HERAD_NOTE_ON ? inst[chn[c].playprog].param.mc_slide_dur : 0);
+	if (state != HERAD_NOTE_UPDATE && _instruments[_channels[c].playprog].param.mc_slide_dur) {
+		_channels[c].slide_dur = (state == HERAD_NOTE_ON ? _instruments[_channels[c].playprog].param.mc_slide_dur : 0);
 	}
-	uint8_t bend = chn[c].bend;
+	uint8_t bend = _channels[c].bend;
 	int16_t amount, detune = 0;
 	uint8_t amount_lo, amount_hi;
-	if (!(inst[chn[c].playprog].param.mc_slide_coarse & 1)) { // fine tune
+	if (!(_instruments[_channels[c].playprog].param.mc_slide_coarse & 1)) { // fine tune
 		if (bend - HERAD_BEND_CENTER < 0) {                   // slide down
 			amount = HERAD_BEND_CENTER - bend;
 			amount_lo = (amount >> 5);
@@ -904,17 +904,17 @@ void AdLibMidiDriver::playNote(uint8_t c, uint8_t note, uint8_t state) {
 	}
 	setFreq(c, oct, FNum[key] + detune, state != HERAD_NOTE_OFF);
 }
-void AdLibMidiDriver::setFreq(uint8_t c, uint8_t oct, uint16_t freq, bool on) {
+void AdLibMidiDriver::setFreq(uint8_t c, uint8_t oct, uint16_t _frequency, bool on) {
 	uint8_t reg, val;
 
 	//if (c >= HERAD_NUM_VOICES)
 	//opl->setchip(1);
 
 	reg = 0xA0 + (c % HERAD_NUM_VOICES);
-	val = freq & 0xFF;
+	val = _frequency & 0xFF;
 	_opl->write(reg, val);
 	reg = 0xB0 + (c % HERAD_NUM_VOICES);
-	val = ((freq >> 8) & 3) |
+	val = ((_frequency >> 8) & 3) |
 		  ((oct & 7) << 2) |
 		  ((on ? 1 : 0) << 5);
 	_opl->write(reg, val);
@@ -925,7 +925,7 @@ void AdLibMidiDriver::setFreq(uint8_t c, uint8_t oct, uint16_t freq, bool on) {
 void AdLibMidiDriver::changeProgram(uint8_t c, uint8_t i) {
 	uint8_t reg, val;
 
-	if (v2 && inst[i].param.mode == HERAD_INSTMODE_KMAP)
+	if (_isHeradV2 && _instruments[i].param.mode == HERAD_INSTMODE_KMAP)
 		return;
 
 	//if (c >= HERAD_NUM_VOICES)
@@ -933,63 +933,63 @@ void AdLibMidiDriver::changeProgram(uint8_t c, uint8_t i) {
 
 	// Amp Mod / Vibrato / EG type / Key Scaling / Multiple
 	reg = 0x20 + slot_offset[c % HERAD_NUM_VOICES];
-	val = (inst[i].param.mod_mul & 15) |
-		  ((inst[i].param.mod_ksr & 1) << 4) |
-		  ((inst[i].param.mod_eg > 0 ? 1 : 0) << 5) |
-		  ((inst[i].param.mod_vib & 1) << 6) |
-		  ((inst[i].param.mod_am & 1) << 7);
+	val = (_instruments[i].param.mod_mul & 15) |
+		  ((_instruments[i].param.mod_ksr & 1) << 4) |
+		  ((_instruments[i].param.mod_eg > 0 ? 1 : 0) << 5) |
+		  ((_instruments[i].param.mod_vib & 1) << 6) |
+		  ((_instruments[i].param.mod_am & 1) << 7);
 	_opl->write(reg, val);
 	reg += 3;
-	val = (inst[i].param.car_mul & 15) |
-		  ((inst[i].param.car_ksr & 1) << 4) |
-		  ((inst[i].param.car_eg > 0 ? 1 : 0) << 5) |
-		  ((inst[i].param.car_vib & 1) << 6) |
-		  ((inst[i].param.car_am & 1) << 7);
+	val = (_instruments[i].param.car_mul & 15) |
+		  ((_instruments[i].param.car_ksr & 1) << 4) |
+		  ((_instruments[i].param.car_eg > 0 ? 1 : 0) << 5) |
+		  ((_instruments[i].param.car_vib & 1) << 6) |
+		  ((_instruments[i].param.car_am & 1) << 7);
 	_opl->write(reg, val);
 
 	// Key scaling level / Output level
 	reg = 0x40 + slot_offset[c % HERAD_NUM_VOICES];
-	val = (inst[i].param.mod_out & 63) |
-		  ((inst[i].param.mod_ksl & 3) << 6);
+	val = (_instruments[i].param.mod_out & 63) |
+		  ((_instruments[i].param.mod_ksl & 3) << 6);
 	_opl->write(reg, val);
 	reg += 3;
-	val = (inst[i].param.car_out & 63) |
-		  ((inst[i].param.car_ksl & 3) << 6);
+	val = (_instruments[i].param.car_out & 63) |
+		  ((_instruments[i].param.car_ksl & 3) << 6);
 	_opl->write(reg, val);
 
 	// Attack Rate / Decay Rate
 	reg = 0x60 + slot_offset[c % HERAD_NUM_VOICES];
-	val = (inst[i].param.mod_D & 15) |
-		  ((inst[i].param.mod_A & 15) << 4);
+	val = (_instruments[i].param.mod_D & 15) |
+		  ((_instruments[i].param.mod_A & 15) << 4);
 	_opl->write(reg, val);
 	reg += 3;
-	val = (inst[i].param.car_D & 15) |
-		  ((inst[i].param.car_A & 15) << 4);
+	val = (_instruments[i].param.car_D & 15) |
+		  ((_instruments[i].param.car_A & 15) << 4);
 	_opl->write(reg, val);
 
 	// Sustain Level / Release Rate
 	reg = 0x80 + slot_offset[c % HERAD_NUM_VOICES];
-	val = (inst[i].param.mod_R & 15) |
-		  ((inst[i].param.mod_S & 15) << 4);
+	val = (_instruments[i].param.mod_R & 15) |
+		  ((_instruments[i].param.mod_S & 15) << 4);
 	_opl->write(reg, val);
 	reg += 3;
-	val = (inst[i].param.car_R & 15) |
-		  ((inst[i].param.car_S & 15) << 4);
+	val = (_instruments[i].param.car_R & 15) |
+		  ((_instruments[i].param.car_S & 15) << 4);
 	_opl->write(reg, val);
 
 	// Panning / Feedback strength / Connection type
 	reg = 0xC0 + (c % HERAD_NUM_VOICES);
-	val = (inst[i].param.con > 0 ? 0 : 1) |
-		  ((inst[i].param.feedback & 7) << 1) |
-		  ((AGD ? (inst[i].param.pan == 0 || inst[i].param.pan > 3 ? 3 : inst[i].param.pan) : 0) << 4);
+	val = (_instruments[i].param.con > 0 ? 0 : 1) |
+		  ((_instruments[i].param.feedback & 7) << 1) |
+		  ((isAgd ? (_instruments[i].param.pan == 0 || _instruments[i].param.pan > 3 ? 3 : _instruments[i].param.pan) : 0) << 4);
 	_opl->write(reg, val);
 
 	// Wave Select
 	reg = 0xE0 + slot_offset[c % HERAD_NUM_VOICES];
-	val = inst[i].param.mod_wave & (AGD ? 7 : 3);
+	val = _instruments[i].param.mod_wave & (isAgd ? 7 : 3);
 	_opl->write(reg, val);
 	reg += 3;
-	val = inst[i].param.car_wave & (AGD ? 7 : 3);
+	val = _instruments[i].param.car_wave & (isAgd ? 7 : 3);
 	_opl->write(reg, val);
 
 	//if (c >= HERAD_NUM_VOICES)
@@ -1007,7 +1007,7 @@ void AdLibMidiDriver::macroModOutput(uint8_t c, uint8_t i, int8_t sens, uint8_t 
 	} else {
 		output = ((0x80 - level) >> (4 - sens) > 63 ? 63 : (0x80 - level) >> (4 - sens));
 	}
-	output += inst[i].param.mod_out;
+	output += _instruments[i].param.mod_out;
 	if (output > 63)
 		output = 63;
 
@@ -1017,7 +1017,7 @@ void AdLibMidiDriver::macroModOutput(uint8_t c, uint8_t i, int8_t sens, uint8_t 
 	// Key scaling level / Output level
 	reg = 0x40 + slot_offset[c % HERAD_NUM_VOICES];
 	val = (output & 63) |
-		  ((inst[i].param.mod_ksl & 3) << 6);
+		  ((_instruments[i].param.mod_ksl & 3) << 6);
 	_opl->write(reg, val);
 
 	//if (c >= HERAD_NUM_VOICES)
@@ -1035,7 +1035,7 @@ void AdLibMidiDriver::macroCarOutput(uint8_t c, uint8_t i, int8_t sens, uint8_t 
 	} else {
 		output = ((0x80 - level) >> (4 - sens) > 63 ? 63 : (0x80 - level) >> (4 - sens));
 	}
-	output += inst[i].param.car_out;
+	output += _instruments[i].param.car_out;
 	if (output > 63)
 		output = 63;
 
@@ -1045,7 +1045,7 @@ void AdLibMidiDriver::macroCarOutput(uint8_t c, uint8_t i, int8_t sens, uint8_t 
 	// Key scaling level / Output level
 	reg = 0x43 + slot_offset[c % HERAD_NUM_VOICES];
 	val = (output & 63) |
-		  ((inst[i].param.car_ksl & 3) << 6);
+		  ((_instruments[i].param.car_ksl & 3) << 6);
 	_opl->write(reg, val);
 
 	//if (c >= HERAD_NUM_VOICES)
@@ -1063,7 +1063,7 @@ void AdLibMidiDriver::macroFeedback(uint8_t c, uint8_t i, int8_t sens, uint8_t l
 	} else {
 		feedback = ((0x80 - level) >> (7 - sens) > 7 ? 7 : (0x80 - level) >> (7 - sens));
 	}
-	feedback += inst[i].param.feedback;
+	feedback += _instruments[i].param.feedback;
 	if (feedback > 7)
 		feedback = 7;
 
@@ -1072,45 +1072,44 @@ void AdLibMidiDriver::macroFeedback(uint8_t c, uint8_t i, int8_t sens, uint8_t l
 
 	// Panning / Feedback strength / Connection type
 	reg = 0xC0 + (c % HERAD_NUM_VOICES);
-	val = (inst[i].param.con > 0 ? 0 : 1) |
+	val = (_instruments[i].param.con > 0 ? 0 : 1) |
 		  ((feedback & 7) << 1) |
-		  ((AGD ? (inst[i].param.pan == 0 || inst[i].param.pan > 3 ? 3 : inst[i].param.pan) : 0) << 4);
+		  ((isAgd ? (_instruments[i].param.pan == 0 || _instruments[i].param.pan > 3 ? 3 : _instruments[i].param.pan) : 0) << 4);
 	_opl->write(reg, val);
 
 	//if (c >= HERAD_NUM_VOICES)
 	//opl->setchip(0);
 }
 void AdLibMidiDriver::macroTranspose(uint8_t *note, uint8_t i) {
-	uint8_t tran = inst[i].param.mc_transpose;
+	uint8_t tran = _instruments[i].param.mc_transpose;
 	uint8_t diff = (tran - 0x31) & 0xFF;
-	if (v2 && diff < 0x60)
+	if (_isHeradV2 && diff < 0x60)
 		*note = (diff + 0x18) & 0xFF;
 	else
 		*note = (*note + tran) & 0xFF;
 }
 void AdLibMidiDriver::macroSlide(uint8_t c) {
-	if (!chn[c].slide_dur)
+	if (!_channels[c].slide_dur)
 		return;
 
-	chn[c].slide_dur--;
-	chn[c].bend += inst[chn[c].playprog].param.mc_slide_range;
+	_channels[c].slide_dur--;
+	_channels[c].bend += _instruments[_channels[c].playprog].param.mc_slide_range;
 
-	if (!(chn[c].note & 0x7F)) {
+	if (!(_channels[c].note & 0x7F))
 		return;
-	}
-	playNote(c, chn[c].note, HERAD_NOTE_UPDATE);
+	playNote(c, _channels[c].note, HERAD_NOTE_UPDATE);
 }
 
 void AdLibMidiDriver::close() {
 	delete _opl;
-	_isOpen = false;
+	_isOplInitialized = false;
 }
 
 int AdLibMidiDriver::open() {
-	if (_isOpen) {
+	if (_isOplInitialized) {
 		return 0;
 	}
-	_isOpen = true;
+	_isOplInitialized = true;
 	_opl = OPL::Config::create(_oplType);
 	if (!_opl || !_opl->init())
 		error("Failed to create OPL");
@@ -1118,7 +1117,7 @@ int AdLibMidiDriver::open() {
 }
 
 void AdLibMidiDriver::play(bool loop) {
-	loopSong = loop;
+	_isLoopingEnabled = loop;
 	_opl->start(new Common::Functor0Mem<void, AdLibMidiDriver>(this, &AdLibMidiDriver::onTimer));
 }
 void AdLibMidiDriver::setTimerCallback(void *timerParam, Common::TimerManager::TimerProc timerProc) {
