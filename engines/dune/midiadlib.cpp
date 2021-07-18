@@ -904,17 +904,17 @@ void AdLibMidiDriver::playNote(uint8_t c, uint8_t note, uint8_t state) {
 	}
 	setFreq(c, oct, FNum[key] + detune, state != HERAD_NOTE_OFF);
 }
-void AdLibMidiDriver::setFreq(uint8_t c, uint8_t oct, uint16_t _frequency, bool on) {
+void AdLibMidiDriver::setFreq(uint8_t c, uint8_t oct, uint16_t freq, bool on) {
 	uint8_t reg, val;
 
 	//if (c >= HERAD_NUM_VOICES)
 	//opl->setchip(1);
 
 	reg = 0xA0 + (c % HERAD_NUM_VOICES);
-	val = _frequency & 0xFF;
+	val = freq & 0xFF;
 	_opl->write(reg, val);
 	reg = 0xB0 + (c % HERAD_NUM_VOICES);
-	val = ((_frequency >> 8) & 3) |
+	val = ((freq >> 8) & 3) |
 		  ((oct & 7) << 2) |
 		  ((on ? 1 : 0) << 5);
 	_opl->write(reg, val);
