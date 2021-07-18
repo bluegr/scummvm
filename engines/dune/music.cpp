@@ -112,16 +112,16 @@ void MidiMusic::stopMusic() {
 }
 
 
-//void MidiMusic::setVolume(int volume) {
-//	volume = CLIP(volume, 0, 255);
-//
-//	if (_masterVolume == volume)
-//		return;
-//
-//	_masterVolume = volume;
-//
-//	if (_isUsingAdlib)
-//		static_cast<AdLibMidiDriver *>(_driver)->setVolume(volume);
-//}
+void MidiMusic::setVolume(int volume) {
+	volume = CLIP(volume, 0, 255);
+
+	if (_masterVolume == volume)
+		return;
+
+	_masterVolume = volume;
+
+	if (_isUsingAdlib)
+		static_cast<AdLibMidiDriver *>(_driver)->setVolume(volume);
+}
 
 } // End of namespace Dune

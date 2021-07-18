@@ -33,7 +33,7 @@ class MidiMusic : public MidiDriver_BASE {
 public:
 	MidiMusic(DuneEngine *vm);
 	~MidiMusic() override;
-	//void setVolume(int volume);
+	void setVolume(int volume);
 	int getVolume()	const { return _masterVolume; }
 
 	void playSong(Musics musicId, bool loop);
