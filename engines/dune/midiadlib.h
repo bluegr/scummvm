@@ -113,7 +113,6 @@ private:
 	void *_adlibTimerParam;
 	bool _isPlaying;
 	OPL::OPL  *_opl;
-	char *_audiobuf;
 	unsigned long _buf_size, _frequency;
 	unsigned char _bits, _nChannels;
 
