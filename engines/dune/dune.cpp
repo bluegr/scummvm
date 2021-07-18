@@ -24,7 +24,7 @@
 
 #include "dune/hsq.h"
 #include "dune/video.h"
-#include "dune/midiadlib.h"
+#include "dune/music.h"
 #include "dune/statics.h"
 
 #include "common/config-manager.h"
@@ -59,14 +59,14 @@ Common::Error DuneEngine::run() {
 	}
 
 	_video = new HnmPlayer(this);
-	_music = new AdLibMidiDriver(this);
+	_music = new MidiMusic(this);
 
 	byte pal[3*256] = {0};
 	for (int i = 0; i != 256; ++i) {
 		pal[3*i+0] = pal[3*i+1] = pal[3*i+2] = i;
 	}
 	_system->getPaletteManager()->setPalette(pal, 0, 255);
-	playMusic(AGD_MORNING);
+	playMusic(MORNING, false);
 	playVideo(HNM_VIRGIN);
 	playVideo(HNM_CRYO);
 	playVideo(HNM_CRYO2);
@@ -93,6 +93,10 @@ void DuneEngine::dumpResource(const char *filename) {
 	f.write(buf, size);
 	r->seek(0);
 	delete[] buf;
+}
+
+Common::SeekableReadStream *DuneEngine::openResource(const char *filename) {
+	return _archive.openMember(filename);
 }
 
 void DuneEngine::playVideo(HNMVideos videoId) {
@@ -170,25 +174,8 @@ void DuneEngine::playVideo(HNMVideos videoId) {
 
 }
 
-void DuneEngine::playMusic(AGDMusics musicId) {
-	const char *hnmFilenames[] = {
-		"ARRAKIS.AGD",    //  1
-		"BAGDAD.AGD",     //  2
-		"MORNING.AGD",    //  3
-		"SEEKENCE.AGD",   //  4
-		"SIETCHM.AGD",    //  5
-		"WARSONG.AGD",    //  6
-		"WATER.AGD",      //  7
-		"WORMINTR.AGD",   //  8
-		"WORMSUIT.AGD"    //  9
-	};
-
-	const char *filename = hnmFilenames[musicId];
-
-	Common::SeekableReadStream *r = _archive.openMember(filename);
-
-	_music->load(r);
-	_music->play(false);
+void DuneEngine::playMusic(Musics musicId, bool loop) {
+	_music->playSong(musicId, loop);
 }
 
 } // End of namespace Dune

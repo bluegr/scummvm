@@ -6,6 +6,7 @@ MODULE_OBJS = \
 	graphics.o \
 	metaengine.o \
 	statics.o \
+	music.o \
 	midiadlib.o \
 	video.o
 

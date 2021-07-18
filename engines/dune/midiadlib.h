@@ -53,8 +53,8 @@
  * - Fix splash sound in Gorbi (at 0:23)
  * - Fix hiss sound in NewSan (at beginning)
  */
-#ifndef DUNE_MUSIC_H
-#define DUNE_MUSIC_H
+#ifndef DUNE_MIDIADLIB_H
+#define DUNE_MIDIADLIB_H
 #include <cstring>
 #include "audio/fmopl.h"
 #include "audio/mididrv.h"
@@ -179,7 +179,7 @@ private:
 	static void timerCallback(void *refCon) { ((AdLibMidiDriver *)refCon)->onTimer(); }
 
 	bool _songEnd;
-	bool _isLoopingEnabled = false;
+	bool _isLooping = false;
 	int16_t _wTime;
 	int32_t _current_tick_position;    /* current tick counter */
 	uint32_t _total_tick_count; /* total ticks in song */

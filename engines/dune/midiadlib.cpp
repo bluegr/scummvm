@@ -748,7 +748,7 @@ void AdLibMidiDriver::processEvents() {
 	if (!_songEnd)
 		_current_tick_position++;
 	if (_wLoopStart && _wLoopEnd && (_current_tick_position == _total_tick_count || (_current_tick_position % HERAD_MEASURE_TICKS == 0 && _current_tick_position / HERAD_MEASURE_TICKS + 1 == _wLoopEnd))) {
-	if (_isLoopingEnabled) {
+	if (_isLooping) {
 		if (!_wLoopCount)
 			_songEnd = true;
 		else if (_songEnd && _loop_times < _wLoopCount)
@@ -1117,7 +1117,7 @@ int AdLibMidiDriver::open() {
 }
 
 void AdLibMidiDriver::play(bool loop) {
-	_isLoopingEnabled = loop;
+	_isLooping = loop;
 	_opl->start(new Common::Functor0Mem<void, AdLibMidiDriver>(this, &AdLibMidiDriver::onTimer));
 }
 void AdLibMidiDriver::setTimerCallback(void *timerParam, Common::TimerManager::TimerProc timerProc) {

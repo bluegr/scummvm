@@ -33,7 +33,7 @@
 
 namespace Dune {
 class HnmPlayer;
-class AdLibMidiDriver;
+class MidiMusic;
 
 enum HNMVideos {
 	HNM_DFL2,
@@ -74,16 +74,16 @@ enum HNMVideos {
 	HNM_SEQR
 };
 
-enum AGDMusics {
-	AGD_ARRAKIS,
-	AGD_BAGDAD,
-	AGD_MORNING,
-	AGD_SEEKENCE,
-	AGD_SIETCHM,
-	AGD_WARSONG,
-	AGD_WATER,
-	AGD_WORMINTR,
-	AGD_WORMSUIT
+enum Musics {
+	ARRAKIS,
+	BAGDAD,
+	MORNING,
+	SEEKENCE,
+	SIETCHM,
+	WARSONG,
+	WATER,
+	WORMINTR,
+	WORMSUIT
 };
 
 class DuneEngine : public Engine {
@@ -97,6 +97,7 @@ public:
 
 	int _timerTicks;
 	Graphics _graphics;
+	Common::SeekableReadStream *openResource(const char *filename);
 
 private:
 	Common::RandomSource *_rnd;
@@ -104,11 +105,10 @@ private:
 
 	Archive _archive;
 	void dumpResource(const char *filename);
-
 	HnmPlayer *_video;
-	AdLibMidiDriver *_music;
+	MidiMusic *_music;
 	void playVideo(HNMVideos videoId);
-	void playMusic(AGDMusics musicId);
+	void playMusic(Musics musicId, bool loop);
 };
 } // End of namespace Dune
 
