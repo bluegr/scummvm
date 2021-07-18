@@ -71,17 +71,19 @@ void MidiMusic::onTimer() {
 
 
 //TODO: Support AGD (which means usage of the OPL3 by the AdLib midi driver), and M32 (MT-32) files variants.
+//TOOD: Fix how it sounds compared to DOSBox
 void MidiMusic::playSong(Musics musicId, bool loop) {
 	const char *hsqMusicFilenames[] = {
 		"ARRAKIS.HSQ",  //  1
 		"BAGDAD.HSQ",   //  2
-		"MORNING.HSQ",  //  3
-		"SEEKENCE.HSQ", //  4
-		"SIETCHM.HSQ",  //  5
-		"WARSONG.HSQ",  //  6
-		"WATER.HSQ",    //  7
-		"WORMINTR.HSQ", //  8
-		"WORMSUIT.HSQ"  //  9
+		"CRYOMUS.HSQ",  //  3 (CD only)
+		"MORNING.HSQ",  //  4
+		"SEKENCE.HSQ",  //  5
+		"SIETCHM.HSQ",  //  6
+		"WARSONG.HSQ",  //  7
+		"WATER.HSQ",    //  8
+		"WORMINTR.HSQ", //  9
+		"WORMSUIT.HSQ"  //  10
 	};
 
 	const char *filename = hsqMusicFilenames[musicId];
@@ -104,6 +106,9 @@ void MidiMusic::playMusic() {
 
 void MidiMusic::stopMusic() {
 	_isPlaying = false;
+	if (_isUsingAdlib) {
+		_driver->stopAllNotes(true);
+	}
 }
 
 

@@ -77,8 +77,9 @@ enum HNMVideos {
 enum Musics {
 	ARRAKIS,
 	BAGDAD,
+	CRYOMUS,
 	MORNING,
-	SEEKENCE,
+	SEKENCE,
 	SIETCHM,
 	WARSONG,
 	WATER,
@@ -109,6 +110,7 @@ private:
 	MidiMusic *_music;
 	void playVideo(HNMVideos videoId);
 	void playMusic(Musics musicId, bool loop);
+	void stopMusic();
 };
 } // End of namespace Dune
 

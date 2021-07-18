@@ -68,8 +68,11 @@ Common::Error DuneEngine::run() {
 	_system->getPaletteManager()->setPalette(pal, 0, 255);
 	playMusic(MORNING, false);
 	playVideo(HNM_VIRGIN);
+	stopMusic();
+	playMusic(CRYOMUS, false);
 	playVideo(HNM_CRYO);
 	playVideo(HNM_CRYO2);
+	stopMusic();
 	playVideo(HNM_PRESENT);
 	// playVideo(HNM_FORT);
 	playVideo(HNM_IRULAN);
@@ -176,6 +179,10 @@ void DuneEngine::playVideo(HNMVideos videoId) {
 
 void DuneEngine::playMusic(Musics musicId, bool loop) {
 	_music->playSong(musicId, loop);
+}
+
+void DuneEngine::stopMusic() {
+	_music->stopMusic();
 }
 
 } // End of namespace Dune
