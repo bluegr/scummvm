@@ -61,7 +61,6 @@ MidiMusic::MidiMusic(DuneEngine *vm)
 
 MidiMusic::~MidiMusic() {
 	_driver->setTimerCallback(0, 0);
-	_driver->close();
 	delete _driver;
 }
 
@@ -107,7 +106,7 @@ void MidiMusic::playMusic() {
 void MidiMusic::stopMusic() {
 	_isPlaying = false;
 	if (_isUsingAdlib) {
-		_driver->stopAllNotes(true);
+		//TODO: implement it.
 	}
 }
 

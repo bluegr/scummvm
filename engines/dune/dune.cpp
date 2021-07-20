@@ -72,7 +72,6 @@ Common::Error DuneEngine::run() {
 	playMusic(CRYOMUS, false);
 	playVideo(HNM_CRYO);
 	playVideo(HNM_CRYO2);
-	stopMusic();
 	playVideo(HNM_PRESENT);
 	// playVideo(HNM_FORT);
 	playVideo(HNM_IRULAN);
@@ -182,7 +181,8 @@ void DuneEngine::playMusic(Musics musicId, bool loop) {
 }
 
 void DuneEngine::stopMusic() {
-	_music->stopMusic();
+	delete _music;
+	_music = new MidiMusic(this);
 }
 
 } // End of namespace Dune

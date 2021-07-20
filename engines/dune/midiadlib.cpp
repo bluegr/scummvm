@@ -194,6 +194,36 @@ void AdLibMidiDriver::enableOPL3() {
 	open();
 }
 
+void AdLibMidiDriver::enableDualOPL2() {
+	//_opl->setchip(1);
+	//_opl->write(5, 1); // Enable OPL3
+	//_opl->write(4, 0); // Disable 4OP Mode
+	//_opl->setchip(0);
+	if (_oplType == OPL::Config::OplType::kDualOpl2 && _opl && _isOplInitialized) {
+		return;
+	}
+	if (_opl) {
+		close();
+	}
+	_oplType = OPL::Config::OplType::kDualOpl2;
+	open();
+}
+
+void AdLibMidiDriver::enableSingleOPL2() {
+	//_opl->setchip(1);
+	//_opl->write(5, 1); // Enable OPL3
+	//_opl->write(4, 0); // Disable 4OP Mode
+	//_opl->setchip(0);
+	if (_oplType == OPL::Config::OplType::kOpl2 && _opl && _isOplInitialized) {
+		return;
+	}
+	if (_opl) {
+		close();
+	}
+	_oplType = OPL::Config::OplType::kOpl2;
+	open();
+}
+
 Common::String AdLibMidiDriver::gettype() {
 	char scomp[12 + 1] = "";
 	if (_fileCompressionType > HERAD_COMP_NONE) {
@@ -913,8 +943,8 @@ void AdLibMidiDriver::playNote(uint8_t c, uint8_t note, uint8_t state) {
 void AdLibMidiDriver::setFreq(uint8_t c, uint8_t oct, uint16_t freq, bool on) {
 	uint8_t reg, val;
 
-	//if (c >= HERAD_NUM_VOICES)
-	//opl->setchip(1);
+	if (c >= HERAD_NUM_VOICES)
+		enableDualOPL2();
 
 	reg = 0xA0 + (c % HERAD_NUM_VOICES);
 	val = freq & 0xFF;
@@ -925,8 +955,8 @@ void AdLibMidiDriver::setFreq(uint8_t c, uint8_t oct, uint16_t freq, bool on) {
 		  ((on ? 1 : 0) << 5);
 	adlibWrite(reg, val);
 
-	//if (c >= HERAD_NUM_VOICES)
-	//opl->setchip(0);
+	/*if (c >= HERAD_NUM_VOICES)
+		enableSingleOPL2();*/
 }
 void AdLibMidiDriver::changeProgram(uint8_t c, uint8_t i) {
 	uint8_t reg, val;
@@ -934,8 +964,8 @@ void AdLibMidiDriver::changeProgram(uint8_t c, uint8_t i) {
 	if (_isHeradV2 && _instruments[i].param.mode == HERAD_INSTMODE_KMAP)
 		return;
 
-	//if (c >= HERAD_NUM_VOICES)
-	//opl->setchip(1);
+	/*if (c >= HERAD_NUM_VOICES)
+		enableDualOPL2();*/
 
 	// Amp Mod / Vibrato / EG type / Key Scaling / Multiple
 	reg = 0x20 + slot_offset[c % HERAD_NUM_VOICES];
@@ -998,8 +1028,8 @@ void AdLibMidiDriver::changeProgram(uint8_t c, uint8_t i) {
 	val = _instruments[i].param.car_wave & (isAgd ? 7 : 3);
 	adlibWrite(reg, val);
 
-	//if (c >= HERAD_NUM_VOICES)
-	//opl->setchip(0);
+	/*if (c >= HERAD_NUM_VOICES)
+		enableSingleOPL2();*/
 }
 void AdLibMidiDriver::send(uint32 b) {
 	int channel = b & 15;
@@ -1023,7 +1053,7 @@ void AdLibMidiDriver::send(uint32 b) {
 		adlibSetPitchBend(channel, param1 | (param2 << 7));
 		break;
 	default:
-		//		warning("Unhandled cmd %d channel %d (0x%X)", cmd, channel, b);
+		debug("Unhandled cmd %d channel %d (0x%X)", cmd, channel, b);
 		break;
 	}
 }
@@ -1044,17 +1074,16 @@ void AdLibMidiDriver::macroModOutput(uint8_t c, uint8_t i, int8_t sens, uint8_t 
 	if (output > 63)
 		output = 63;
 
-	//if (c >= HERAD_NUM_VOICES)
-	//opl->setchip(1);
+	/*if (c >= HERAD_NUM_VOICES)
+		enableDualOPL2();*/
 
 	// Key scaling level / Output level
 	reg = 0x40 + slot_offset[c % HERAD_NUM_VOICES];
-	val = (output & 63) |
-		  ((_instruments[i].param.mod_ksl & 3) << 6);
+	val = (output & 63) | ((_instruments[i].param.mod_ksl & 3) << 6);
 	adlibWrite(reg, val);
 
-	//if (c >= HERAD_NUM_VOICES)
-	//opl->setchip(0);
+	/*if (c >= HERAD_NUM_VOICES)
+		enableSingleOPL2();*/
 }
 void AdLibMidiDriver::macroCarOutput(uint8_t c, uint8_t i, int8_t sens, uint8_t level) {
 	uint8_t reg, val;
@@ -1072,17 +1101,16 @@ void AdLibMidiDriver::macroCarOutput(uint8_t c, uint8_t i, int8_t sens, uint8_t 
 	if (output > 63)
 		output = 63;
 
-	//if (c >= HERAD_NUM_VOICES)
-	//opl->setchip(1);
+	/*if (c >= HERAD_NUM_VOICES)
+		enableDualOPL2();*/
 
 	// Key scaling level / Output level
 	reg = 0x43 + slot_offset[c % HERAD_NUM_VOICES];
-	val = (output & 63) |
-		  ((_instruments[i].param.car_ksl & 3) << 6);
+	val = (output & 63) | ((_instruments[i].param.car_ksl & 3) << 6);
 	adlibWrite(reg, val);
 
-	//if (c >= HERAD_NUM_VOICES)
-	//opl->setchip(0);
+	/*if (c >= HERAD_NUM_VOICES)
+		enableSingleOPL2();*/
 }
 void AdLibMidiDriver::macroFeedback(uint8_t c, uint8_t i, int8_t sens, uint8_t level) {
 	uint8_t reg, val;
@@ -1100,18 +1128,17 @@ void AdLibMidiDriver::macroFeedback(uint8_t c, uint8_t i, int8_t sens, uint8_t l
 	if (feedback > 7)
 		feedback = 7;
 
-	//if (c >= HERAD_NUM_VOICES)
-	//opl->setchip(1);
+	/*if (c >= HERAD_NUM_VOICES)
+		enableDualOPL2();*/
 
 	// Panning / Feedback strength / Connection type
 	reg = 0xC0 + (c % HERAD_NUM_VOICES);
-	val = (_instruments[i].param.con > 0 ? 0 : 1) |
-		  ((feedback & 7) << 1) |
-		  ((isAgd ? (_instruments[i].param.pan == 0 || _instruments[i].param.pan > 3 ? 3 : _instruments[i].param.pan) : 0) << 4);
+	val = (_instruments[i].param.con > 0 ? 0 : 1) | ((feedback & 7) << 1) |
+		((isAgd ? (_instruments[i].param.pan == 0 || _instruments[i].param.pan > 3 ? 3 : _instruments[i].param.pan) : 0) << 4);
 	adlibWrite(reg, val);
 
-	//if (c >= HERAD_NUM_VOICES)
-	//opl->setchip(0);
+	/*if (c >= HERAD_NUM_VOICES)
+		enableSingleOPL2();*/
 }
 void AdLibMidiDriver::macroTranspose(uint8_t *note, uint8_t i) {
 	uint8_t tran = _instruments[i].param.mc_transpose;

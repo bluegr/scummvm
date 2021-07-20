@@ -105,7 +105,7 @@ public:
 
 private:
 	DuneEngine *_vm;
-	OPL::Config::OplType _oplType = OPL::Config::OplType::kOpl2;
+	OPL::Config::OplType _oplType = OPL::Config::OplType::kDualOpl2;
 	bool _isOplInitialized = false;
 	bool _isPlaying;
 	OPL::OPL  *_opl;
@@ -121,6 +121,8 @@ private:
 	void frame();
 	void onTimer();
 	void enableOPL3();
+	void enableDualOPL2();
+	void enableSingleOPL2();
 	bool update();
 	void rewind(int subsong);
 
