@@ -1178,7 +1178,7 @@ int AdLibMidiDriver::open() {
 
 void AdLibMidiDriver::play(bool loop) {
 	_isLooping = loop;
-	_opl->start(new Common::Functor0Mem<void, AdLibMidiDriver>(this, &AdLibMidiDriver::onTimer));
+	_opl->start(new Common::Functor0Mem<void, AdLibMidiDriver>(this, &AdLibMidiDriver::onTimer), 235);
 }
 void AdLibMidiDriver::setTimerCallback(void *timerParam, Common::TimerManager::TimerProc timerProc) {
 	_adlibTimerProc = timerProc;
