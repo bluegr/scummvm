@@ -181,8 +181,6 @@ void AdLibMidiDriver::rewind(int subsong) {
 
 void AdLibMidiDriver::enableOPL3() {
 	//_opl->setchip(1);
-	//_opl->write(5, 1); // Enable OPL3
-	//_opl->write(4, 0); // Disable 4OP Mode
 	//_opl->setchip(0);
 	if (_oplType == OPL::Config::OplType::kOpl3 && _opl && _isOplInitialized) {
 		return;
@@ -192,13 +190,11 @@ void AdLibMidiDriver::enableOPL3() {
 	}
 	_oplType = OPL::Config::OplType::kOpl3;
 	open();
+	_opl->write(5, 1); // Enable OPL3
+	_opl->write(4, 0); // Disable 4OP Mode
 }
 
 void AdLibMidiDriver::enableDualOPL2() {
-	//_opl->setchip(1);
-	//_opl->write(5, 1); // Enable OPL3
-	//_opl->write(4, 0); // Disable 4OP Mode
-	//_opl->setchip(0);
 	if (_oplType == OPL::Config::OplType::kDualOpl2 && _opl && _isOplInitialized) {
 		return;
 	}
@@ -210,10 +206,6 @@ void AdLibMidiDriver::enableDualOPL2() {
 }
 
 void AdLibMidiDriver::enableSingleOPL2() {
-	//_opl->setchip(1);
-	//_opl->write(5, 1); // Enable OPL3
-	//_opl->write(4, 0); // Disable 4OP Mode
-	//_opl->setchip(0);
 	if (_oplType == OPL::Config::OplType::kOpl2 && _opl && _isOplInitialized) {
 		return;
 	}
@@ -242,16 +234,7 @@ void AdLibMidiDriver::load(Common::SeekableReadStream *reader) {
 	uint8_t *data = new uint8_t[size];
 	_reader->read(data, size);
 	// Detect compression
-	if (isHSQ(data, size)) {
-		_fileCompressionType = HERAD_COMP_HSQ;
-		uint8_t *out = new uint8_t[HERAD_MAX_SIZE];
-		memset(out, 0, HERAD_MAX_SIZE);
-		size = HSQ_decompress(data, size, out);
-		delete[] data;
-		data = new uint8_t[size];
-		memcpy(data, out, size);
-		delete[] out;
-	} else if (isSQX(data)) {
+	if (isSQX(data)) {
 		_fileCompressionType = HERAD_COMP_SQX;
 		uint8_t *out = new uint8_t[HERAD_MAX_SIZE];
 		memset(out, 0, HERAD_MAX_SIZE);
@@ -317,32 +300,6 @@ void AdLibMidiDriver::load(Common::SeekableReadStream *reader) {
 	rewind(0);
 }
 
-bool AdLibMidiDriver::isHSQ(uint8_t *data, int size) {
-	// data[0] - word DecompSize
-	// data[1]
-	// data[2] - byte Null = 0
-	// data[3] - word CompSize
-	// data[4]
-	// data[5] - byte Checksum
-	if (data[2] != 0) {
-		return false;
-	}
-
-	const uint16_t temp_size = u16_unaligned(data + 3);
-
-	if (temp_size != size) {
-		return false;
-	}
-	uint8_t checksum = 0;
-	for (int i = 0; i < HERAD_MIN_SIZE; i++) {
-		checksum += data[i];
-	}
-	if (checksum != 0xAB) {
-		return false;
-	}
-	return true;
-}
-
 bool AdLibMidiDriver::isSQX(uint8_t *data) {
 	// data[0] - word OutbufInit
 	// data[1]
@@ -357,84 +314,6 @@ bool AdLibMidiDriver::isSQX(uint8_t *data) {
 		return false;
 	}
 	return true;
-}
-
-uint16_t AdLibMidiDriver::HSQ_decompress(uint8_t *data, int size, uint8_t *out) {
-	uint32_t queue = 1;
-	int8_t bit;
-	int16_t offset;
-	uint16_t count, out_size = *(uint16_t *)data;
-	uint8_t *src = data;
-	uint8_t *dst = out;
-
-	src += 6;
-	while (true) {
-		// get next bit of the queue
-		if (queue == 1) {
-			queue = u16_unaligned(src) | 0x10000;
-			src += 2;
-		}
-		bit = queue & 1;
-		queue >>= 1;
-		// if bit is non-zero
-		if (bit) {
-			// copy next byte of the input to the output
-			*dst++ = *src++;
-		} else {
-			// get next bit of the queue
-			if (queue == 1) {
-				queue = u16_unaligned(src) | 0x10000;
-				src += 2;
-			}
-			bit = queue & 1;
-			queue >>= 1;
-			// if bit is non-zero
-			if (bit) {
-				// count = next 3 bits of the input
-				// offset = next 13 bits of the input minus 8192
-				count = u16_unaligned(src);
-				offset = (count >> 3) - 8192;
-				count &= 7;
-				src += 2;
-				// if count is zero
-				if (!count) {
-					// count = next 8 bits of the input
-					count = *(uint8_t *)src;
-					src++;
-				}
-				// if count is zero
-				if (!count)
-					break; // finish the unpacking
-			} else {
-				// count = next bit of the queue * 2 + next bit of the queue
-				if (queue == 1) {
-					queue = u16_unaligned(src) | 0x10000;
-					src += 2;
-				}
-				bit = queue & 1;
-				queue >>= 1;
-				count = bit << 1;
-				if (queue == 1) {
-					queue = u16_unaligned(src) | 0x10000;
-					src += 2;
-				}
-				bit = queue & 1;
-				queue >>= 1;
-				count += bit;
-				// offset = next 8 bits of the input minus 256
-				offset = *(uint8_t *)src;
-				offset -= 256;
-				src++;
-			}
-			count += 2;
-			// copy count bytes at (output + offset) to the output
-			while (count--) {
-				*dst = *(dst + offset);
-				dst++;
-			}
-		}
-	}
-	return out_size;
 }
 
 uint16_t AdLibMidiDriver::SQX_decompress(uint8_t *data, int size, uint8_t *out) {
@@ -784,23 +663,23 @@ void AdLibMidiDriver::processEvents() {
 	if (!_songEnd)
 		_current_tick_position++;
 	if (_wLoopStart && _wLoopEnd && (_current_tick_position == _total_tick_count || (_current_tick_position % HERAD_MEASURE_TICKS == 0 && _current_tick_position / HERAD_MEASURE_TICKS + 1 == _wLoopEnd))) {
-	if (_isLooping) {
-		if (!_wLoopCount)
-			_songEnd = true;
-		else if (_songEnd && _loop_times < _wLoopCount)
-			_songEnd = false;
+		if (_isLooping) {
+			if (!_wLoopCount)
+				_songEnd = true;
+			else if (_songEnd && _loop_times < _wLoopCount)
+				_songEnd = false;
 
-		if (!_wLoopCount || _loop_times < _wLoopCount) {
-			_current_tick_position = _loop_pos;
-			for (i = 0; i < _nTracks; i++) {
-				_tracks[i].counter = _loop_data[i].counter;
-				_tracks[i].ticks = _loop_data[i].ticks;
-				_tracks[i].pos = _loop_data[i].pos;
+			if (!_wLoopCount || _loop_times < _wLoopCount) {
+				_current_tick_position = _loop_pos;
+				for (i = 0; i < _nTracks; i++) {
+					_tracks[i].counter = _loop_data[i].counter;
+					_tracks[i].ticks = _loop_data[i].ticks;
+					_tracks[i].pos = _loop_data[i].pos;
+				}
+				if (_wLoopCount)
+					_loop_times++;
 			}
-			if (_wLoopCount)
-				_loop_times++;
 		}
-	}
 	}
 }
 void AdLibMidiDriver::ev_noteOn(uint8_t ch, uint8_t note, uint8_t vel) {

@@ -113,9 +113,7 @@ private:
 	unsigned char _bits, _nChannels;
 
 	Common::String gettype();
-	bool isHSQ(uint8_t *data, int size);
 	bool isSQX(uint8_t *data);
-	uint16_t HSQ_decompress(uint8_t *data, int size, uint8_t *out);
 	uint16_t SQX_decompress(uint8_t *data, int size, uint8_t *out);
 	unsigned char getSampleSize() { return (_nChannels * (_bits / 8)); }
 	void frame();
