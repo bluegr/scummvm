@@ -31,8 +31,7 @@
 namespace Dune {
 
 MidiMusic::MidiMusic(DuneEngine *vm)
-	: _isPlaying(false), _isLooping(false),
-	  _masterVolume(192)
+	: _masterVolume(192)
 	{
 	_vm = vm;
 	MidiDriver::DeviceHandle dev = MidiDriver::detectDevice(MDT_MIDI | MDT_ADLIB | MDT_PREFER_MT32);
@@ -100,14 +99,19 @@ void MidiMusic::playMusic() {
 	if (_isUsingAdlib) {
 		static_cast<AdLibMidiDriver *>(_driver)-> play(_isLooping);
 	}
-	_isPlaying = true;
 }
 
 void MidiMusic::stopMusic() {
-	_isPlaying = false;
 	if (_isUsingAdlib) {
 		//TODO: implement it.
 	}
+}
+
+bool MidiMusic::isPlaying() {
+	if (_isUsingAdlib) {
+		return static_cast<AdLibMidiDriver *>(_driver)->isPlaying();
+	}
+	return false;
 }
 
 

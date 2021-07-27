@@ -37,6 +37,7 @@ public:
 	int getVolume()	const { return _masterVolume; }
 
 	void playSong(Musics musicId, bool loop);
+	bool isPlaying();
 	void stopMusic();
 	void setLoop(bool loop)		{ _isLooping = loop; }
 
@@ -58,7 +59,6 @@ protected:
 	bool _isUsingAdlib;
 	bool _isUsingNativeMT32;
 
-	bool _isPlaying;
 	bool _isLooping;
 	byte _masterVolume;
 

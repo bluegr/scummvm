@@ -72,9 +72,15 @@ Common::Error DuneEngine::run() {
 	playMusic(CRYOMUS, false);
 	playVideo(HNM_CRYO);
 	playVideo(HNM_CRYO2);
+	while (!shouldQuit()) {
+		if (_music->isPlaying() == false) {
+			break;
+		}
+	}
 	playVideo(HNM_PRESENT);
-	// playVideo(HNM_FORT);
 	playVideo(HNM_IRULAN);
+	playVideo(HNM_TITLE);
+	playVideo(HNM_CREDITS);
 
 	return Common::kNoError;
 }

@@ -91,6 +91,7 @@ public:
 	~AdLibMidiDriver() override;
 	void load(Common::SeekableReadStream *reader);
 	void play(bool loop);
+	bool isPlaying();
 	// MidiDriver
 	int open() override;
 	void close() override;

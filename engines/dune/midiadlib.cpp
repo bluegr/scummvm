@@ -115,6 +115,10 @@ bool AdLibMidiDriver::update() {
 	return !_songEnd;
 }
 
+bool AdLibMidiDriver::isPlaying() {
+	return _isPlaying;
+}
+
 void AdLibMidiDriver::rewind(int subsong) {
 	uint32_t j;
 	_wTime = 0;
@@ -634,8 +638,10 @@ void AdLibMidiDriver::processEvents() {
 	for (i = 0; i < _nTracks; i++) {
 		if (_channels[i].slide_dur > 0 && _channels[i].keyon)
 			macroSlide(i);
-		if (_tracks[i].pos >= _tracks[i].size)
+		if (_tracks[i].pos >= _tracks[i].size) {
+			_songEnd = true;
 			continue;
+		}
 		_songEnd = false; // track is not finished
 		if (!_tracks[i].counter) {
 			bool first = _tracks[i].pos == 0;
