@@ -1,3 +1,4 @@
+#include "dune.h"
 /* ScummVM - Graphic Adventure Engine
  *
  * ScummVM is the legal property of its developers, whose names
@@ -23,9 +24,9 @@
 #include "dune/dune.h"
 
 #include "dune/hsq.h"
-#include "dune/video.h"
 #include "dune/music.h"
 #include "dune/statics.h"
+#include "dune/video.h"
 
 #include "common/config-manager.h"
 #include "common/debug-channels.h"
@@ -38,10 +39,8 @@
 #include "gui/EventRecorder.h"
 
 namespace Dune {
-
 DuneEngine::DuneEngine(OSystem *syst, const ADGameDescription *gameDesc)
-	: Engine(syst)
-{
+	: Engine(syst) {
 	_timerTicks = 0;
 	_rnd = new Common::RandomSource("dune_randomseed");
 }
@@ -61,22 +60,18 @@ Common::Error DuneEngine::run() {
 	_video = new HnmPlayer(this);
 	_music = new MidiMusic(this);
 
-	byte pal[3*256] = {0};
+	byte pal[3 * 256] = {0};
 	for (int i = 0; i != 256; ++i) {
-		pal[3*i+0] = pal[3*i+1] = pal[3*i+2] = i;
+		pal[3 * i + 0] = pal[3 * i + 1] = pal[3 * i + 2] = i;
 	}
 	_system->getPaletteManager()->setPalette(pal, 0, 255);
+
 	playMusic(MORNING, false);
 	playVideo(HNM_VIRGIN);
 	stopMusic();
 	playMusic(CRYOMUS, false);
 	playVideo(HNM_CRYO);
 	playVideo(HNM_CRYO2);
-	while (!shouldQuit()) {
-		if (_music->isPlaying() == false) {
-			break;
-		}
-	}
 	playVideo(HNM_PRESENT);
 	playVideo(HNM_IRULAN);
 	playVideo(HNM_TITLE);
@@ -163,7 +158,7 @@ void DuneEngine::playVideo(HNMVideos videoId) {
 	Common::Event event;
 	Common::EventManager *eventMan = _system->getEventManager();
 
-	float nextFrameTime = _system->getMillis() + (1000.0/12.0);
+	float nextFrameTime = _system->getMillis() + (1000.0 / 12.0);
 	while (!_video->done() && !shouldQuit()) {
 		_video->decodeAVFrame();
 
@@ -177,9 +172,35 @@ void DuneEngine::playVideo(HNMVideos videoId) {
 		if (now < nextFrameTime) {
 			_system->delayMillis((int)floor(nextFrameTime - now));
 		}
-		nextFrameTime += (1000.0/12.0);
+		nextFrameTime += (1000.0 / 12.0);
 	}
+	if (videoId == HNM_CRYO) {
+		waitAFewMoreFrames(20);
+	}
+	if (videoId == HNM_CRYO2) {
+		waitForMusicToEnd();
+		waitAFewMoreFrames(20);
+	}
+}
 
+void DuneEngine::waitForMusicToEnd() {
+	float nextFrameTime = _system->getMillis() + (1000.0 / 12.0);
+	while (!shouldQuit() && _music->isPlaying()) {
+		float now = _system->getMillis();
+		_system->delayMillis((int)floor(nextFrameTime - now));
+		nextFrameTime += (1000.0 / 12.0);
+	}
+}
+
+void DuneEngine::waitAFewMoreFrames(int numberOfFrames) {
+	int stillFrames = 0;
+	float nextFrameTime = _system->getMillis() + (1000.0 / 12.0);
+	while (!shouldQuit() && stillFrames < numberOfFrames) {
+		++stillFrames;
+		float now = _system->getMillis();
+		_system->delayMillis((int)floor(nextFrameTime - now));
+		nextFrameTime += (1000.0 / 12.0);
+	}
 }
 
 void DuneEngine::playMusic(Musics musicId, bool loop) {
@@ -190,5 +211,4 @@ void DuneEngine::stopMusic() {
 	delete _music;
 	_music = new MidiMusic(this);
 }
-
 } // End of namespace Dune

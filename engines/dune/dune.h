@@ -109,6 +109,8 @@ private:
 	HnmPlayer *_video;
 	MidiMusic *_music;
 	void playVideo(HNMVideos videoId);
+	void waitForMusicToEnd();
+	void waitAFewMoreFrames(int numberOfFrames);
 	void playMusic(Musics musicId, bool loop);
 	void stopMusic();
 };
