@@ -35,6 +35,7 @@ namespace Dune {
 class HnmPlayer;
 class MidiMusic;
 
+
 enum HNMVideos {
 	HNM_DFL2,
 	HNM_MNT1,
@@ -98,7 +99,8 @@ public:
 
 	int _timerTicks;
 	Graphics _graphics;
-	Common::SeekableReadStream *openResource(const char *filename);
+	Common::SeekableReadStream *openMember(const char *filename);
+	OSystem *getSystem() { return _system; }
 
 private:
 	Common::RandomSource *_rnd;
@@ -108,9 +110,6 @@ private:
 	void dumpResource(const char *filename);
 	HnmPlayer *_video;
 	MidiMusic *_music;
-	void playVideo(HNMVideos videoId);
-	void waitForMusicToEnd();
-	void waitAFewMoreFrames(int numberOfFrames);
 	void playMusic(Musics musicId, bool loop);
 	void stopMusic();
 };

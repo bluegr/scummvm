@@ -86,7 +86,7 @@ void MidiMusic::playSong(Musics musicId, bool loop) {
 
 	const char *filename = hsqMusicFilenames[musicId];
 	setLoop(loop);
-	Common::SeekableReadStream *r = _vm->openResource(filename);
+	Common::SeekableReadStream *r = _vm->openMember(filename);
 	if (_isUsingAdlib) {
 		static_cast<AdLibMidiDriver *>(_driver)->load(r);
 	}

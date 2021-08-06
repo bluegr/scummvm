@@ -22,6 +22,9 @@
 
 #ifndef DUNE_VIDEO_H
 #define DUNE_VIDEO_H
+#include "dune/dune.h"
+#include "dune/archive.h"
+#include "dune/graphics.h"
 
 #include "common/array.h"
 #include "common/stream.h"
@@ -34,7 +37,7 @@ namespace Dune {
 class DuneEngine;
 
 class HnmPlayer {
-public:
+private:
 	Common::SeekableReadStream *_reader;
 	bool _done;
 	uint16 _headerSize;
@@ -63,13 +66,8 @@ public:
 	int _subtitleCurrentPart;
 	Common::SeekableReadStream *_subtitleResource;
 
-private:
 	DuneEngine *_vm;
-
-public:
-	HnmPlayer(DuneEngine *vm);
-	~HnmPlayer();
-
+	void waitAFewMoreFrames(int numberOfFrames);
 	void setReader(Common::SeekableReadStream *reader);
 
 	void setSubtitles(const int16 *subtitleFrames, Common::SeekableReadStream *subtitleResource) {
@@ -83,13 +81,16 @@ public:
 	}
 
 	bool done() { return _done; };
-
 	void start();
-
 	void applyPaletteBlock(Common::ReadStream *reader);
 	void decodeAVFrame();
 	void decodeAVFrameChunks();
 	void decodeVideoFrame();
+
+public:
+	void playVideo(HNMVideos videoId);
+	HnmPlayer(DuneEngine *vm);
+	~HnmPlayer();
 };
 } // End of namespace Dune
 

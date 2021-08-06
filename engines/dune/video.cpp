@@ -25,6 +25,7 @@
 #include "dune/dune.h"
 #include "dune/graphics.h"
 #include "dune/hsq.h"
+#include "dune/statics.h"
 
 #include "audio/audiostream.h"
 #include "audio/mixer.h"
@@ -33,6 +34,7 @@
 #include "common/memstream.h"
 #include "common/substream.h"
 #include "common/system.h"
+#include "common/timer.h"
 #include "common/util.h"
 #include "graphics/palette.h"
 
@@ -64,6 +66,92 @@ HnmPlayer::~HnmPlayer() {
 
 	delete[] _frameBuffer;
 	_frameBuffer = nullptr;
+}
+
+void HnmPlayer::playVideo(HNMVideos videoId) {
+
+	const char *hnmFilenames[] = {
+		"DFL2.HNM",    //  1
+		"MNT1.HNM",    //  2
+		"MNT2.HNM",    //  3
+		"MNT3.HNM",    //  4
+		"MNT4.HNM",    //  5
+		"SIET.HNM",    //  6
+		"PALACE.HNM",  //  7
+		"PALACE.HNM",  //  8
+		"FORT.HNM",    //  9
+		"FORT.HNM",    // 10
+		"DEAD3.HNM",   // 11
+		"DEAD.HNM",    // 12
+		"DEAD2.HNM",   // 13
+		"VER.HNM",     // 14
+		"TITLE.HNM",   // 15
+		"MTG1.HNM",    // 16
+		"MTG2.HNM",    // 17
+		"MTG3.HNM",    // 18
+		"PLANT.HNM",   // 19
+		"CREDITS.HNM", // 20
+		"VIRGIN.HNM",  // 21
+		"CRYO.HNM",    // 22
+		"CRYO2.HNM",   // 23
+		"PRESENT.HNM", // 24
+		"IRULAN.HNM",  // 25
+		"SEQA.HNM",    // 26
+		"SEQL.HNM",    // 27
+		"SEQM.HNM",    // 28
+		"SEQP.HNM",    // 29
+		"SEQG.HNM",    // 30
+		"SEQJ.HNM",    // 31
+		"SEQK.HNM",    // 32
+		"SEQI.HNM",    // 33
+		"SEQD.HNM",    // 34
+		"SEQN.HNM",    // 35
+		"SEQR.HNM"     // 36
+	};
+
+	const char *filename = hnmFilenames[videoId];
+
+	Common::SeekableReadStream *r = _vm->openMember(filename);
+
+	setReader(r);
+
+	if (videoId == HNM_IRULAN) {
+		setSubtitles(Subs::irulan, _vm->openMember("IRUL1.HSQ"));
+	}
+
+	setInterlace(videoId >= HNM_IRULAN);
+	start();
+
+	float nextFrameTime = _vm->getSystem()->getMillis() + (1000.0 / 12.0);
+	while (!done() && !_vm->shouldQuit()) {
+		decodeAVFrame();
+
+		_vm->getSystem()->copyRectToScreen(_frameBuffer, 320, 0, 0, 320, 200);
+		_vm->getSystem()->updateScreen();
+
+		float now = _vm->getSystem()->getMillis();
+		if (now < nextFrameTime) {
+			_vm->getSystem()->delayMillis((int)floor(nextFrameTime - now));
+		}
+		nextFrameTime += (1000.0 / 12.0);
+	}
+	if (videoId == HNM_CRYO) {
+		waitAFewMoreFrames(20);
+	}
+	if (videoId == HNM_CRYO2) {
+		waitAFewMoreFrames(20);
+	}
+}
+
+void HnmPlayer::waitAFewMoreFrames(int numberOfFrames) {
+	int stillFrames = 0;
+	float nextFrameTime = _vm->getSystem()->getMillis() + (1000.0 / 12.0);
+	while (!_vm->shouldQuit() && stillFrames < numberOfFrames) {
+		++stillFrames;
+		float now = _vm->getSystem()->getMillis();
+		_vm->getSystem()->delayMillis((int)floor(nextFrameTime - now));
+		nextFrameTime += (1000.0 / 12.0);
+	}
 }
 
 void HnmPlayer::setReader(Common::SeekableReadStream *reader) {
