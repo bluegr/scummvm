@@ -63,17 +63,24 @@ Common::Error DuneEngine::run() {
 		pal[3 * i + 0] = pal[3 * i + 1] = pal[3 * i + 2] = i;
 	}
 	_system->getPaletteManager()->setPalette(pal, 0, 255);
-
-	playMusic(MORNING, false);
-	_video->playVideo(HNM_VIRGIN);
-	stopMusic();
-	playMusic(CRYOMUS, false);
-	_video->playVideo(HNM_CRYO);
-	_video->playVideo(HNM_CRYO2);
-	_video->playVideo(HNM_PRESENT);
-	_video->playVideo(HNM_IRULAN);
-	_video->playVideo(HNM_TITLE);
-	_video->playVideo(HNM_CREDITS);
+	while (!_video->skipped()) {
+		playMusic(MORNING, false);
+		_video->playVideo(HNM_VIRGIN);
+		if (_video->skipped()) {
+			stopMusic();
+		}
+		playMusic(CRYOMUS, false);
+		_video->playVideo(HNM_CRYO);
+		_video->playVideo(HNM_CRYO2);
+		if (_video->skipped()) {
+			stopMusic();
+		}
+		_video->playVideo(HNM_PRESENT);
+		_video->playVideo(HNM_IRULAN);
+		_video->playVideo(HNM_TITLE);
+		_video->playVideo(HNM_CREDITS);
+	}
+	_video->resetSkipped();
 
 	return Common::kNoError;
 }

@@ -39,6 +39,7 @@ class DuneEngine;
 class HnmPlayer {
 private:
 	Common::SeekableReadStream *_reader;
+	bool _skipped;
 	bool _done;
 	uint16 _headerSize;
 	int _currentFrame;
@@ -79,7 +80,6 @@ private:
 	void setInterlace(bool interlace = true) {
 		_interlace = interlace;
 	}
-
 	bool done() { return _done; };
 	void start();
 	void applyPaletteBlock(Common::ReadStream *reader);
@@ -90,6 +90,8 @@ private:
 	void decodeVideoFrame();
 
 public:
+	bool skipped() { return _skipped; }
+	void resetSkipped() { _skipped = false; }
 	void playVideo(HNMVideos videoId);
 	HnmPlayer(DuneEngine *vm);
 	~HnmPlayer();

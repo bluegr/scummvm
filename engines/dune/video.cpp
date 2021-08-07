@@ -51,6 +51,7 @@ HnmPlayer::HnmPlayer(DuneEngine *vm) : _vm(vm) {
 	_subtitleFrames = nullptr;
 	_audioQueue = nullptr;
 	_audioIsStarted = false;
+	_skipped = false;
 }
 
 HnmPlayer::~HnmPlayer() {
@@ -67,7 +68,6 @@ HnmPlayer::~HnmPlayer() {
 }
 
 void HnmPlayer::playVideo(HNMVideos videoId) {
-
 	const char *hnmFilenames[] = {
 		"DFL2.HNM",    //  1
 		"MNT1.HNM",    //  2
@@ -123,11 +123,12 @@ void HnmPlayer::playVideo(HNMVideos videoId) {
 	float nextFrameTime = _vm->getSystem()->getMillis() + (1000.0 / 12.0);
 	Common::Event event;
 	Common::EventManager *eventMan = _vm->getSystem()->getEventManager();
-	while (eventMan->pollEvent(event) || !done()) {
+	while (eventMan->pollEvent(event) || !done() && !_skipped) {
 		switch (event.type) {
+		case Common::EVENT_CUSTOM_ENGINE_ACTION_START:
 			switch ((Dune::DuneActions)event.customType) {
 			case kDuneActionSkipCutscene:
-				_done = true;
+				_skipped = true;
 				break;
 			default:
 				break;
@@ -135,7 +136,7 @@ void HnmPlayer::playVideo(HNMVideos videoId) {
 		default:
 			break;
 		}
-		if (done()) {
+		if (_skipped) {
 			break;
 		}
 		float now = _vm->getSystem()->getMillis();
@@ -147,10 +148,10 @@ void HnmPlayer::playVideo(HNMVideos videoId) {
 		_vm->getSystem()->updateScreen();
 		nextFrameTime += (1000.0 / 12.0);
 	}
-	if (videoId == HNM_CRYO) {
+	if (videoId == HNM_CRYO && !_skipped) {
 		waitAFewMoreFrames(20);
 	}
-	if (videoId == HNM_CRYO2) {
+	if (videoId == HNM_CRYO2 && !_skipped) {
 		waitAFewMoreFrames(70);
 	}
 }
