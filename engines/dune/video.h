@@ -28,7 +28,6 @@
 
 #include "common/array.h"
 #include "common/stream.h"
-#include "common/timer.h"
 
 namespace Audio {
 class QueuingAudioStream;
@@ -36,7 +35,6 @@ class QueuingAudioStream;
 
 namespace Dune {
 class DuneEngine;
-void timerCallback(void *refCon);
 
 class HnmPlayer {
 private:

@@ -36,6 +36,11 @@ class HnmPlayer;
 class MidiMusic;
 
 
+enum DuneActions {
+	kDuneActionSkipCutscene,
+};
+
+
 enum HNMVideos {
 	HNM_DFL2,
 	HNM_MNT1,

@@ -22,23 +22,51 @@
 
 #include "dune/dune.h"
 
+#include "backends/keymapper/action.h"
+#include "backends/keymapper/keymapper.h"
+#include "backends/keymapper/standard-actions.h"
+#include "common/events.h"
 #include "common/config-manager.h"
 #include "common/savefile.h"
 #include "common/serializer.h"
 #include "common/system.h"
+#include "common/translation.h"
 
 #include "engines/advancedDetector.h"
 
 class DuneMetaEngine : public AdvancedMetaEngine {
 public:
 	const char *getName() const override;
+	Common::KeymapArray initKeymaps(const char *target) const override;
 
 	Common::Error createInstance(OSystem *syst, Engine **engine, const ADGameDescription *desc) const override;
 	bool hasFeature(MetaEngineFeature f) const override;
+
+private:
+	const char *cutscenesKeymapId = "dune-cutscenes";
+	const char *mainKeymapId = "dune";
 };
 
 const char *DuneMetaEngine::getName() const {
 	return "dune";
+}
+
+Common::KeymapArray DuneMetaEngine::initKeymaps(const char *target) const {
+	Common::Keymap *cutscenesKeymap = new Common::Keymap(Common::Keymap::kKeymapTypeGame, cutscenesKeymapId, "Z-Vision - Cutscenes");
+
+	Common::Action *act;
+
+	act = new Common::Action(Common::kStandardActionSkip, _("Skip cutscene"));
+	act->setCustomEngineActionEvent(Dune::kDuneActionSkipCutscene);
+	act->addDefaultInputMapping("SPACE");
+	act->addDefaultInputMapping("JOY_Y");
+	cutscenesKeymap->addAction(act);
+
+	
+	Common::KeymapArray keymaps(1);
+	keymaps[0] = cutscenesKeymap;
+
+	return keymaps;
 }
 
 Common::Error DuneMetaEngine::createInstance(OSystem *syst, Engine **engine, const ADGameDescription *desc) const {

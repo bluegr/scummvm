@@ -32,16 +32,13 @@
 #include "common/memstream.h"
 #include "common/substream.h"
 #include "common/system.h"
-#include "common/timer.h"
 #include "common/util.h"
 #include "graphics/palette.h"
+#include <common/events.h>
 
 namespace Dune {
 #define MAX_DECODE_BUFFER_SIZE 64000
 
-void timerCallback(void *refCon) {
-	//debug("timer!");
-}
 HnmPlayer::HnmPlayer(DuneEngine *vm) : _vm(vm) {
 	_reader = nullptr;
 	_done = false;
@@ -54,7 +51,6 @@ HnmPlayer::HnmPlayer(DuneEngine *vm) : _vm(vm) {
 	_subtitleFrames = nullptr;
 	_audioQueue = nullptr;
 	_audioIsStarted = false;
-	_vm->getTimerManager()->installTimerProc(timerCallback, 1000, this, "duneVideoCallback");
 }
 
 HnmPlayer::~HnmPlayer() {
@@ -68,8 +64,6 @@ HnmPlayer::~HnmPlayer() {
 
 	delete[] _frameBuffer;
 	_frameBuffer = nullptr;
-
-	_vm->getTimerManager()->removeTimerProc(timerCallback);
 }
 
 void HnmPlayer::playVideo(HNMVideos videoId) {
@@ -127,16 +121,30 @@ void HnmPlayer::playVideo(HNMVideos videoId) {
 	start();
 
 	float nextFrameTime = _vm->getSystem()->getMillis() + (1000.0 / 12.0);
-	while (!done() && !_vm->shouldQuit()) {
-		decodeAVFrame();
-
-		_vm->getSystem()->copyRectToScreen(_frameBuffer, 320, 0, 0, 320, 200);
-		_vm->getSystem()->updateScreen();
-
+	Common::Event event;
+	Common::EventManager *eventMan = _vm->getSystem()->getEventManager();
+	while (eventMan->pollEvent(event) || !done()) {
+		switch (event.type) {
+			switch ((Dune::DuneActions)event.customType) {
+			case kDuneActionSkipCutscene:
+				_done = true;
+				break;
+			default:
+				break;
+			}
+		default:
+			break;
+		}
+		if (done()) {
+			break;
+		}
 		float now = _vm->getSystem()->getMillis();
 		if (now < nextFrameTime) {
-			_vm->getSystem()->delayMillis((int)floor(nextFrameTime - now));
+			continue;
 		}
+		decodeAVFrame();
+		_vm->getSystem()->copyRectToScreen(_frameBuffer, 320, 0, 0, 320, 200);
+		_vm->getSystem()->updateScreen();
 		nextFrameTime += (1000.0 / 12.0);
 	}
 	if (videoId == HNM_CRYO) {
@@ -150,10 +158,29 @@ void HnmPlayer::playVideo(HNMVideos videoId) {
 void HnmPlayer::waitAFewMoreFrames(int numberOfFrames) {
 	int stillFrames = 0;
 	float nextFrameTime = _vm->getSystem()->getMillis() + (1000.0 / 12.0);
-	while (!_vm->shouldQuit() && stillFrames < numberOfFrames) {
-		++stillFrames;
+	Common::Event event;
+	Common::EventManager *eventMan = _vm->getSystem()->getEventManager();
+	while (eventMan->pollEvent(event) || stillFrames < numberOfFrames) {
+		switch (event.type) {
+			switch ((Dune::DuneActions)event.customType) {
+			case kDuneActionSkipCutscene:
+				_done = true;
+				break;
+			default:
+				break;
+			}
+		default:
+			break;
+		}
+		if (done()) {
+			break;
+		}
 		float now = _vm->getSystem()->getMillis();
-		_vm->getSystem()->delayMillis((int)floor(nextFrameTime - now));
+		if (now < nextFrameTime) {
+			continue;
+		} else {
+			++stillFrames;
+		}
 		nextFrameTime += (1000.0 / 12.0);
 	}
 }
