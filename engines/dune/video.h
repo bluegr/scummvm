@@ -28,6 +28,7 @@
 
 #include "common/array.h"
 #include "common/stream.h"
+#include "common/timer.h"
 
 namespace Audio {
 class QueuingAudioStream;
@@ -35,6 +36,7 @@ class QueuingAudioStream;
 
 namespace Dune {
 class DuneEngine;
+void timerCallback(void *refCon);
 
 class HnmPlayer {
 private:
@@ -84,6 +86,8 @@ private:
 	void start();
 	void applyPaletteBlock(Common::ReadStream *reader);
 	void decodeAVFrame();
+	void clearSubtitleArea();
+	void drawSubtitleImage();
 	void decodeAVFrameChunks();
 	void decodeVideoFrame();
 

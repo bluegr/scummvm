@@ -21,12 +21,10 @@
  */
 
 #include "dune/video.h"
-
 #include "dune/dune.h"
 #include "dune/graphics.h"
 #include "dune/hsq.h"
 #include "dune/statics.h"
-
 #include "audio/audiostream.h"
 #include "audio/mixer.h"
 #include "common/debug.h"
@@ -41,6 +39,9 @@
 namespace Dune {
 #define MAX_DECODE_BUFFER_SIZE 64000
 
+void timerCallback(void *refCon) {
+	//debug("timer!");
+}
 HnmPlayer::HnmPlayer(DuneEngine *vm) : _vm(vm) {
 	_reader = nullptr;
 	_done = false;
@@ -53,6 +54,7 @@ HnmPlayer::HnmPlayer(DuneEngine *vm) : _vm(vm) {
 	_subtitleFrames = nullptr;
 	_audioQueue = nullptr;
 	_audioIsStarted = false;
+	_vm->getTimerManager()->installTimerProc(timerCallback, 1000, this, "duneVideoCallback");
 }
 
 HnmPlayer::~HnmPlayer() {
@@ -66,6 +68,8 @@ HnmPlayer::~HnmPlayer() {
 
 	delete[] _frameBuffer;
 	_frameBuffer = nullptr;
+
+	_vm->getTimerManager()->removeTimerProc(timerCallback);
 }
 
 void HnmPlayer::playVideo(HNMVideos videoId) {
@@ -139,7 +143,7 @@ void HnmPlayer::playVideo(HNMVideos videoId) {
 		waitAFewMoreFrames(20);
 	}
 	if (videoId == HNM_CRYO2) {
-		waitAFewMoreFrames(20);
+		waitAFewMoreFrames(70);
 	}
 }
 
@@ -260,25 +264,10 @@ void HnmPlayer::decodeAVFrame() {
 		if (_subtitleFrames[_subtitleCurrentPart] >= 0 && _currentFrame >= _subtitleFrames[_subtitleCurrentPart]) {
 			if (_subtitleCurrentPart % 2) {
 
-				// Clear subtitle area
-				int y_offset = 190;
-				for (int y = 0; y != 10; ++y) {
-					byte *dst = _frameBuffer + 320 * (y + y_offset);
-					for (int x = 0; x != 320; ++x) {
-						*dst++ = 0;
-					}
-				}
+				clearSubtitleArea();
 			} else {
 
-				// Draw subtitle image
-				_subtitleResource->seek(2 * (_subtitleCurrentPart / 2) + 2, SEEK_SET);
-				int offset = _subtitleResource->readUint16LE();
-				_subtitleResource->seek(offset + 2, SEEK_SET);
-
-				int w, h;
-				byte flags, mode;
-				readFrameHeader(_subtitleResource, &w, &h, &flags, &mode);
-				_vm->_graphics.blitGraphics(_subtitleResource, _frameBuffer, 0, 190, w, h, flags, mode);
+				drawSubtitleImage();
 			}
 			_subtitleCurrentPart++;
 		}
@@ -288,6 +277,27 @@ void HnmPlayer::decodeAVFrame() {
 	if (_currentFrame == _frameCount) {
 		_done = 1;
 	}
+}
+
+void HnmPlayer::clearSubtitleArea() {
+	int y_offset = 190;
+	for (int y = 0; y != 10; ++y) {
+		byte *dst = _frameBuffer + 320 * (y + y_offset);
+		for (int x = 0; x != 320; ++x) {
+			*dst++ = 0;
+		}
+	}
+}
+
+void HnmPlayer::drawSubtitleImage() {
+	_subtitleResource->seek(2 * (_subtitleCurrentPart / 2) + 2, SEEK_SET);
+	int offset = _subtitleResource->readUint16LE();
+	_subtitleResource->seek(offset + 2, SEEK_SET);
+
+	int w, h;
+	byte flags, mode;
+	readFrameHeader(_subtitleResource, &w, &h, &flags, &mode);
+	_vm->_graphics.blitGraphics(_subtitleResource, _frameBuffer, 0, 190, w, h, flags, mode);
 }
 
 int g_framesPlayed = 0;
