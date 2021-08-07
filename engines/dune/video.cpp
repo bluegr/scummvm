@@ -123,25 +123,19 @@ void HnmPlayer::playVideo(HNMVideos videoId) {
 	float nextFrameTime = _vm->getSystem()->getMillis() + (1000.0 / 12.0);
 	Common::Event event;
 	Common::EventManager *eventMan = _vm->getSystem()->getEventManager();
-	while (eventMan->pollEvent(event) || !done() && !_skipped) {
+	while (eventMan->pollEvent(event) || !done() && !skipped()) {
 		switch (event.type) {
 		case Common::EVENT_CUSTOM_ENGINE_ACTION_START:
-			switch ((Dune::DuneActions)event.customType) {
-			case kDuneActionSkipCutscene:
 				_skipped = true;
-				break;
 			default:
 				break;
-			}
-		default:
-			break;
 		}
-		if (_skipped) {
-			break;
+		if (skipped()) {
+			return;
 		}
 		float now = _vm->getSystem()->getMillis();
 		if (now < nextFrameTime) {
-			continue;
+			_vm->getSystem()->delayMillis((int)floor(nextFrameTime - now));
 		}
 		decodeAVFrame();
 		_vm->getSystem()->copyRectToScreen(_frameBuffer, 320, 0, 0, 320, 200);
@@ -161,27 +155,21 @@ void HnmPlayer::waitAFewMoreFrames(int numberOfFrames) {
 	float nextFrameTime = _vm->getSystem()->getMillis() + (1000.0 / 12.0);
 	Common::Event event;
 	Common::EventManager *eventMan = _vm->getSystem()->getEventManager();
-	while (eventMan->pollEvent(event) || stillFrames < numberOfFrames) {
+	while (eventMan->pollEvent(event) || stillFrames < numberOfFrames && !skipped()) {
 		switch (event.type) {
-			switch ((Dune::DuneActions)event.customType) {
-			case kDuneActionSkipCutscene:
-				_done = true;
-				break;
-			default:
-				break;
-			}
+		case Common::EVENT_CUSTOM_ENGINE_ACTION_START:
+			_skipped = true;
 		default:
 			break;
 		}
-		if (done()) {
-			break;
+		if (skipped()) {
+			return;
 		}
 		float now = _vm->getSystem()->getMillis();
 		if (now < nextFrameTime) {
-			continue;
-		} else {
-			++stillFrames;
+			_vm->getSystem()->delayMillis((int)floor(nextFrameTime - now));
 		}
+		++stillFrames;
 		nextFrameTime += (1000.0 / 12.0);
 	}
 }

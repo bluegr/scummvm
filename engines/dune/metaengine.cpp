@@ -59,7 +59,6 @@ Common::KeymapArray DuneMetaEngine::initKeymaps(const char *target) const {
 	act = new Common::Action(Common::kStandardActionSkip, _("Skip cutscene"));
 	act->setCustomEngineActionEvent(Dune::kDuneActionSkipCutscene);
 	act->addDefaultInputMapping("SPACE");
-	act->addDefaultInputMapping("JOY_Y");
 	cutscenesKeymap->addAction(act);
 
 	
