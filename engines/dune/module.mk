@@ -1,13 +1,14 @@
 MODULE := engines/dune
 
-MODULE_OBJS = \
+MODULE_OBJS := \
 	archive.o \
 	dune.o \
 	graphics.o \
 	metaengine.o \
 	statics.o \
-	music.o \
-	midiadlib.o \
+	sound/voc.o \
+	sound/music.o \
+	sound/midiadlib.o \
 	video.o
 
 # This module can be built as a plugin

@@ -24,9 +24,9 @@
 #include "common/events.h"
 #include "common/util.h"
 
-#include "dune/music.h"
+#include "dune/sound/music.h"
 #include "dune/dune.h"
-#include "dune/midiadlib.h"
+#include "dune/sound/midiadlib.h"
 
 namespace Dune {
 
@@ -70,7 +70,7 @@ void MidiMusic::onTimer() {
 
 //TODO: Support AGD (which means usage of the OPL3 by the AdLib midi driver), and M32 (MT-32) files variants.
 //TOOD: Fix how it sounds compared to DOSBox
-void MidiMusic::playSong(Musics musicId, bool loop) {
+void MidiMusic::playMusic(Musics musicId, bool loop) {
 	const char *hsqMusicFilenames[] = {
 		"ARRAKIS.HSQ",  //  1
 		"BAGDAD.HSQ",   //  2

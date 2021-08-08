@@ -20,52 +20,66 @@
  *
  */
 
-#ifndef DUNE_H
-#define DUNE_H
+#ifndef DUNE_MUSIC_H
+#define DUNE_MUSIC_H
 
-#include "dune/archive.h"
-#include "dune/graphics.h"
-#include "dune/sound/music.h"
-#include "dune/video.h"
-
-#include "common/random.h"
-#include "engines/advancedDetector.h"
-#include "engines/engine.h"
-#include "gui/debugger.h"
+#include "audio/mididrv.h"
+#include "dune/dune.h"
 
 namespace Dune {
-class HnmPlayer;
-class MidiMusic;
+class DuneEngine;
 
-enum DuneActions {
-	kDuneActionSkipCutscene,
+enum Musics {
+	ARRAKIS,
+	BAGDAD,
+	CRYOMUS,
+	MORNING,
+	SEKENCE,
+	SIETCHM,
+	WARSONG,
+	WATER,
+	WORMINTR,
+	WORMSUIT
 };
 
-
-class DuneEngine : public Engine {
+class MidiMusic : public MidiDriver_BASE {
 public:
-	DuneEngine(OSystem *syst, const ADGameDescription *desc);
-	~DuneEngine() override;
+	MidiMusic(DuneEngine *vm);
+	~MidiMusic() override;
+	void setVolume(int volume);
+	int getVolume()	const { return _masterVolume; }
 
-	Common::Error run() override;
+	void playMusic(Musics musicId, bool loop);
+	bool isPlaying();
+	void stopMusic();
+	void setLoop(bool loop)		{ _isLooping = loop; }
 
-	bool isCD();
+	// MidiDriver_BASE interface implementation
+	//NOP
+	void send(uint32 b) override{}
+	//NOP
+	void metaEvent(byte type, byte *data, uint16 length) override {}
 
-	int _timerTicks;
-	Graphics _graphics;
-	Common::SeekableReadStream *openMember(const char *filename);
-	OSystem *getSystem() { return _system; }
+protected:
+	void playMusic();
+
+	MidiDriver *_driver;
+
+	void onTimer();
+
+	static void timerCallback(void *refCon) { ((MidiMusic *)refCon)->onTimer(); }
+
+	bool _isUsingAdlib;
+	bool _isUsingNativeMT32;
+
+	bool _isLooping;
+	byte _masterVolume;
 
 private:
-	Common::RandomSource *_rnd;
-	const ADGameDescription *_gameDescription;
-
-	Archive _archive;
-	void dumpResource(const char *filename);
-	HnmPlayer *_video;
-	MidiMusic *_music;
-	void stopMusic();
+	Musics _currentSong;
+	DuneEngine *_vm;
 };
+
 } // End of namespace Dune
 
 #endif

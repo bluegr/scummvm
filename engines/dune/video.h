@@ -36,6 +36,45 @@ class QueuingAudioStream;
 namespace Dune {
 class DuneEngine;
 
+enum HNMVideos {
+	HNM_DFL2,
+	HNM_MNT1,
+	HNM_MNT2,
+	HNM_MNT3,
+	HNM_MNT4,
+	HNM_SIET,
+	HNM_PALACE,
+	HNM_PALACE2,
+	HNM_FORT,
+	HNM_FORT2,
+	HNM_DEAD3,
+	HNM_DEAD,
+	HNM_DEAD2,
+	HNM_VER,
+	HNM_TITLE,
+	HNM_MTG1,
+	HNM_MTG2,
+	HNM_MTG3,
+	HNM_PLANT,
+	HNM_CREDITS,
+	HNM_VIRGIN,
+	HNM_CRYO,
+	HNM_CRYO2,
+	HNM_PRESENT,
+	HNM_IRULAN,
+	HNM_SEQA,
+	HNM_SEQL,
+	HNM_SEQM,
+	HNM_SEQP,
+	HNM_SEQG,
+	HNM_SEQJ,
+	HNM_SEQK,
+	HNM_SEQI,
+	HNM_SEQD,
+	HNM_SEQN,
+	HNM_SEQR
+};
+
 class HnmPlayer {
 private:
 	Common::SeekableReadStream *_reader;

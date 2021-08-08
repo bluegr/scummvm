@@ -56,7 +56,7 @@
 
 #include <cstring>
 
-#include "dune/midiadlib.h"
+#include "dune/sound/midiadlib.h"
 #include "dune/dune.h"
 
 #include "common/debug.h"

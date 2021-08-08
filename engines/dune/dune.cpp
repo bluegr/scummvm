@@ -21,10 +21,7 @@
  */
 
 #include "dune/dune.h"
-
 #include "dune/hsq.h"
-#include "dune/music.h"
-#include "dune/video.h"
 
 #include "common/config-manager.h"
 #include "common/debug-channels.h"
@@ -64,12 +61,12 @@ Common::Error DuneEngine::run() {
 	}
 	_system->getPaletteManager()->setPalette(pal, 0, 255);
 	while (!_video->skipped()) {
-		playMusic(MORNING, false);
+		_music->playMusic(MORNING, false);
 		_video->playVideo(HNM_VIRGIN);
 		if (_video->skipped()) {
 			stopMusic();
 		}
-		playMusic(CRYOMUS, false);
+		_music->playMusic(CRYOMUS, false);
 		_video->playVideo(HNM_CRYO);
 		_video->playVideo(HNM_CRYO2);
 		if (_video->skipped()) {
@@ -106,10 +103,6 @@ void DuneEngine::dumpResource(const char *filename) {
 
 Common::SeekableReadStream *DuneEngine::openMember(const char *filename) {
 	return _archive.openMember(filename);
-}
-
-void DuneEngine::playMusic(Musics musicId, bool loop) {
-	_music->playSong(musicId, loop);
 }
 
 void DuneEngine::stopMusic() {
