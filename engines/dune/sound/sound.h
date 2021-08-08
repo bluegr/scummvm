@@ -38,10 +38,10 @@ namespace Dune {
 class DuneEngine;
 
 enum VOCSounds {
-	VOC_SND5,
-	VOC_SND7,
-	VOC_SND8,
-	VOC_SND9,
+	VOC_SN5,
+	VOC_SN7,
+	VOC_SN8,
+	VOC_SN9,
 };
 
 enum VOCVoices {

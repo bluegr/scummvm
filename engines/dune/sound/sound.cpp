@@ -43,12 +43,18 @@ SoundPlayer::~SoundPlayer() {
 
 void SoundPlayer::playSoundFile(VOCSounds soundId) {
 	const char *sndFilenames[] = {
-		"SND5.VOC",    //  1
-		"SND7.VOC",    //  2
-		"SND8.VOC",    //  3
-		"SND9.VOC"     //  4
+		"SN5.VOC",    //  1
+		"SN7.VOC",    //  2
+		"SN8.VOC",    //  3
+		"SN9.VOC"     //  4
 	};
 
+	const char *filename = sndFilenames[soundId];
+
+	Common::SeekableReadStream *r = _vm->openMember(filename);
+	Audio::SeekableAudioStream *audioStream = Audio::makeVOCStream(r, 1, DisposeAfterUse::YES);
+	SndHandle *handle = getHandle();
+	_mixer->playStream(Audio::Mixer::kSFXSoundType, &handle->handle, audioStream, -1, _vm->_soundVolume);
 }
 
 void SoundPlayer::playVoiceFile(VOCVoices voiceId) {

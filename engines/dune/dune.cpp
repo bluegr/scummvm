@@ -62,8 +62,8 @@ Common::Error DuneEngine::run() {
 	}
 	_system->getPaletteManager()->setPalette(pal, 0, 255);
 
-	//Sound test
-	//_sound->playVoiceFile(VOC_PA001I);
+	////Sound test
+	//_sound->playSoundFile(VOC_SN5);
 	//Common::Event event;
 	//Common::EventManager *eventMan = _system->getEventManager();
 	//while (eventMan->pollEvent(event) || true) {
