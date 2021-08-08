@@ -26,6 +26,7 @@
 #include "dune/archive.h"
 #include "dune/graphics.h"
 #include "dune/sound/music.h"
+#include "dune/sound/sound.h"
 #include "dune/video.h"
 
 #include "common/random.h"
@@ -36,6 +37,7 @@
 namespace Dune {
 class HnmPlayer;
 class MidiMusic;
+class SoundPlayer;
 
 enum DuneActions {
 	kDuneActionSkipCutscene,
@@ -66,6 +68,7 @@ private:
 	void dumpResource(const char *filename);
 	HnmPlayer *_video;
 	MidiMusic *_music;
+	SoundPlayer *_sound;
 	void stopMusic();
 };
 } // End of namespace Dune

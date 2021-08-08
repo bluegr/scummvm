@@ -54,12 +54,20 @@ Common::Error DuneEngine::run() {
 
 	_video = new HnmPlayer(this);
 	_music = new MidiMusic(this);
+	_sound = new SoundPlayer(this, _system->getMixer());
 
 	byte pal[3 * 256] = {0};
 	for (int i = 0; i != 256; ++i) {
 		pal[3 * i + 0] = pal[3 * i + 1] = pal[3 * i + 2] = i;
 	}
 	_system->getPaletteManager()->setPalette(pal, 0, 255);
+
+	//Sound test
+	//_sound->playVoiceFile(VOC_PA001I);
+	//Common::Event event;
+	//Common::EventManager *eventMan = _system->getEventManager();
+	//while (eventMan->pollEvent(event) || true) {
+	//}
 	while (!_video->skipped()) {
 		_music->playMusic(MORNING, false);
 		_video->playVideo(HNM_VIRGIN);
