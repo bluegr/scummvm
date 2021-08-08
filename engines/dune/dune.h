@@ -49,6 +49,8 @@ public:
 
 	Common::Error run() override;
 
+	int _soundVolume;
+	int _speechVolume;
 	bool isCD();
 
 	int _timerTicks;

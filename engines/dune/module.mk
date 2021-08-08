@@ -6,7 +6,7 @@ MODULE_OBJS := \
 	graphics.o \
 	metaengine.o \
 	statics.o \
-	sound/voc.o \
+	sound/sound.o \
 	sound/music.o \
 	sound/midiadlib.o \
 	video.o
