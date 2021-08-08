@@ -69,42 +69,43 @@ HnmPlayer::~HnmPlayer() {
 
 void HnmPlayer::playVideo(HNMVideos videoId) {
 	const char *hnmFilenames[] = {
-		"DFL2.HNM",    //  1
-		"MNT1.HNM",    //  2
-		"MNT2.HNM",    //  3
-		"MNT3.HNM",    //  4
-		"MNT4.HNM",    //  5
-		"SIET.HNM",    //  6
-		"PALACE.HNM",  //  7
+		"AABBBBB.HNM", //  1
+		"DFL2.HNM",    //  2
+		"MNT1.HNM",    //  3
+		"MNT2.HNM",    //  4
+		"MNT3.HNM",    //  5
+		"MNT4.HNM",    //  6
+		"SIET.HNM",    //  7
 		"PALACE.HNM",  //  8
-		"FORT.HNM",    //  9
+		"PALACE.HNM",  //  9
 		"FORT.HNM",    // 10
-		"DEAD3.HNM",   // 11
-		"DEAD.HNM",    // 12
-		"DEAD2.HNM",   // 13
-		"VER.HNM",     // 14
-		"TITLE.HNM",   // 15
-		"MTG1.HNM",    // 16
-		"MTG2.HNM",    // 17
-		"MTG3.HNM",    // 18
-		"PLANT.HNM",   // 19
-		"CREDITS.HNM", // 20
-		"VIRGIN.HNM",  // 21
-		"CRYO.HNM",    // 22
-		"CRYO2.HNM",   // 23
-		"PRESENT.HNM", // 24
-		"IRULAN.HNM",  // 25
-		"SEQA.HNM",    // 26
-		"SEQL.HNM",    // 27
-		"SEQM.HNM",    // 28
-		"SEQP.HNM",    // 29
-		"SEQG.HNM",    // 30
-		"SEQJ.HNM",    // 31
-		"SEQK.HNM",    // 32
-		"SEQI.HNM",    // 33
-		"SEQD.HNM",    // 34
-		"SEQN.HNM",    // 35
-		"SEQR.HNM"     // 36
+		"FORT.HNM",    // 11
+		"DEAD3.HNM",   // 12
+		"DEAD.HNM",    // 13
+		"DEAD2.HNM",   // 14
+		"VER.HNM",     // 15
+		"TITLE.HNM",   // 16
+		"MTG1.HNM",    // 17
+		"MTG2.HNM",    // 18
+		"MTG3.HNM",    // 19
+		"PLANT.HNM",   // 20
+		"CREDITS.HNM", // 21
+		"VIRGIN.HNM",  // 22
+		"CRYO.HNM",    // 23
+		"CRYO2.HNM",   // 24
+		"PRESENT.HNM", // 25
+		"IRULAN.HNM",  // 26
+		"SEQA.HNM",    // 27
+		"SEQL.HNM",    // 28
+		"SEQM.HNM",    // 29
+		"SEQP.HNM",    // 30
+		"SEQG.HNM",    // 31
+		"SEQJ.HNM",    // 32
+		"SEQK.HNM",    // 33
+		"SEQI.HNM",    // 34
+		"SEQD.HNM",    // 35
+		"SEQN.HNM",    // 36
+		"SEQR.HNM"     // 37
 	};
 
 	const char *filename = hnmFilenames[videoId];

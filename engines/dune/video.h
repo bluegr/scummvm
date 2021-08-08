@@ -37,6 +37,7 @@ namespace Dune {
 class DuneEngine;
 
 enum HNMVideos {
+	HNM_AABBBBB,
 	HNM_DFL2,
 	HNM_MNT1,
 	HNM_MNT2,
