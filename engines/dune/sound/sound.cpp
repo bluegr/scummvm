@@ -2369,30 +2369,6 @@ SndHandle *SoundPlayer::getHandle() {
 	return NULL; // for compilers that don't support NORETURN
 }
 
-void SoundPlayer::playSoundBuffer(Audio::SoundHandle *handle, const SoundBuffer &buffer, int volume,
-							sndHandleType handleType, bool loop) {
-
-	Audio::Mixer::SoundType soundType = (handleType == kVoiceHandle) ? Audio::Mixer::kSpeechSoundType : Audio::Mixer::kSFXSoundType;
-
-	if (buffer.stream)
-		_mixer->playStream(soundType, handle, Audio::makeLoopingAudioStream(buffer.stream, loop ? 0 : 1), -1, volume);
-}
-
-void SoundPlayer::playSound(SoundBuffer &buffer, int volume, bool loop, int resId) {
-	// WORKAROUND
-	// Prevent playing same looped sound for several times
-	for (int i = 0; i < SOUND_HANDLES; i++)
-		if (_handles[i].type == kEffectHandle && _handles[i].resId == resId) {
-			return;
-		}
-
-	SndHandle *handle = getHandle();
-
-	handle->type = kEffectHandle;
-	handle->resId = resId;
-	playSoundBuffer(&handle->handle, buffer, 2 * volume, handle->type, loop);
-}
-
 void SoundPlayer::pauseSound() {
 	for (int i = 0; i < SOUND_HANDLES; i++)
 		if (_handles[i].type == kEffectHandle)
@@ -2410,15 +2386,7 @@ void SoundPlayer::stopSound() {
 		if (_handles[i].type == kEffectHandle) {
 			_mixer->stopHandle(_handles[i].handle);
 			_handles[i].type = kFreeHandle;
-			_handles[i].resId = -1;
 		}
-}
-
-void SoundPlayer::playVoice(SoundBuffer &buffer) {
-	SndHandle *handle = getHandle();
-
-	handle->type = kVoiceHandle;
-	playSoundBuffer(&handle->handle, buffer, 255, handle->type, false);
 }
 
 void SoundPlayer::pauseVoice() {

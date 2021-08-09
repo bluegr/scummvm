@@ -26,13 +26,7 @@
 #include "dune/dune.h"
 
 #include "audio/mixer.h"
-#include "audio/timestamp.h"
-#include "common/file.h"
 #include "audio/decoders/voc.h"
-
-namespace Audio {
-class RewindableAudioStream;
-}
 
 namespace Dune {
 class DuneEngine;
@@ -2339,11 +2333,6 @@ enum SOUND_FLAGS {
 	SOUND_LOOP = 1
 };
 
-struct SoundBuffer {
-	Audio::RewindableAudioStream *stream;
-	Audio::Timestamp streamLength;
-};
-
 enum sndHandleType {
 	kFreeHandle,
 	kEffectHandle,
@@ -2353,7 +2342,6 @@ enum sndHandleType {
 struct SndHandle {
 	Audio::SoundHandle handle;
 	sndHandleType type;
-	int resId;
 };
 
 class SoundPlayer {
@@ -2361,13 +2349,11 @@ public:
 	SoundPlayer(DuneEngine *vm, Audio::Mixer *mixer);
 	~SoundPlayer();
 	void playSoundFile(VOCSounds soundId);
-	void playSound(SoundBuffer &buffer, int volume, bool loop, int resId);
 	void pauseSound();
 	void resumeSound();
 	void stopSound();
 
 	void playVoiceFile(VOCVoices voiceId);
-	void playVoice(SoundBuffer &buffer);
 	void pauseVoice();
 	void resumeVoice();
 	void stopVoice();
@@ -2377,9 +2363,6 @@ public:
 	void setVolume();
 
 private:
-	void playSoundBuffer(Audio::SoundHandle *handle, const SoundBuffer &buffer, int volume,
-						 sndHandleType handleType, bool loop);
-
 	SndHandle *getHandle();
 
 	DuneEngine *_vm;
