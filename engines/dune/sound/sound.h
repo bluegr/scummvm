@@ -2331,7 +2331,9 @@ enum VOCVoices {
 	VOC_PZ372I
 };
 
-#define SOUND_HANDLES 10
+// In Dune, there's either a VOC voice or a VOC sound playing, never both.
+// So we only need one sound handle.
+#define SOUND_HANDLES 1
 
 enum SOUND_FLAGS {
 	SOUND_LOOP = 1
