@@ -22,6 +22,7 @@
 
 #include "dune/dune.h"
 #include "dune/hsq.h"
+#include "dune/intro.h"
 
 #include "common/config-manager.h"
 #include "common/debug-channels.h"
@@ -52,41 +53,14 @@ Common::Error DuneEngine::run() {
 		debug("Failed to open DUNE.DAT");
 	}
 
-	_video = new HnmPlayer(this);
-	_music = new MidiMusic(this);
-	_sound = new SoundPlayer(this, _system->getMixer());
-
 	byte pal[3 * 256] = {0};
 	for (int i = 0; i != 256; ++i) {
 		pal[3 * i + 0] = pal[3 * i + 1] = pal[3 * i + 2] = i;
 	}
 	_system->getPaletteManager()->setPalette(pal, 0, 255);
 
-	////Sound test
-	//_sound->playSoundFile(VOC_SN5);
-	//Common::Event event;
-	//Common::EventManager *eventMan = _system->getEventManager();
-	//while (eventMan->pollEvent(event) || true) {
-	//}
-	while (!_video->skipped()) {
-		_music->playMusic(MORNING, false);
-		_video->playVideo(HNM_VIRGIN);
-		if (_video->skipped()) {
-			stopMusic();
-		}
-		_music->playMusic(CRYOMUS, false);
-		_video->playVideo(HNM_CRYO);
-		_video->playVideo(HNM_CRYO2);
-		if (_video->skipped()) {
-			stopMusic();
-		}
-		_video->playVideo(HNM_PRESENT);
-		_video->playVideo(HNM_IRULAN);
-		_video->playVideo(HNM_TITLE);
-		_video->resetSkipped();
-		_video->playVideo(HNM_CREDITS);
-	}
-	_video->resetSkipped();
+	Intro *intro = new Intro(this);
+	intro->runIntro();
 
 	return Common::kNoError;
 }
@@ -113,8 +87,4 @@ Common::SeekableReadStream *DuneEngine::openMember(const char *filename) {
 	return _archive.openMember(filename);
 }
 
-void DuneEngine::stopMusic() {
-	delete _music;
-	_music = new MidiMusic(this);
-}
 } // End of namespace Dune

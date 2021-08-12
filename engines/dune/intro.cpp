@@ -1,3 +1,4 @@
+#include "intro.h"
 /* ScummVM - Graphic Adventure Engine
  *
  * ScummVM is the legal property of its developers, whose names
@@ -20,47 +21,46 @@
  *
  */
 
-#ifndef DUNE_H
-#define DUNE_H
-
-#include "dune/archive.h"
-#include "dune/graphics.h"
-
-#include "common/random.h"
-#include "engines/advancedDetector.h"
-#include "engines/engine.h"
-#include "gui/debugger.h"
+#include "dune/intro.h"
 
 namespace Dune {
 
-enum DuneActions {
-	kDuneActionSkipCutscene,
-};
+void Intro::runIntro() {
+	while (!_video->skipped()) {
+		_music->playMusic(MORNING, false);
+		_video->playVideo(HNM_VIRGIN);
+		if (_video->skipped()) {
+			stopMusic();
+		}
+		_music->playMusic(CRYOMUS, false);
+		_video->playVideo(HNM_CRYO);
+		_video->playVideo(HNM_CRYO2);
+		if (_video->skipped()) {
+			stopMusic();
+		}
+		_video->playVideo(HNM_PRESENT);
+		_video->playVideo(HNM_IRULAN);
+		_video->playVideo(HNM_TITLE);
+		_video->resetSkipped();
+		_video->playVideo(HNM_CREDITS);
+	}
+	_video->resetSkipped();
+}
 
+void Intro::stopMusic() {
+	delete _music;
+	_music = new MidiMusic(_vm);
+}
 
-class DuneEngine : public Engine {
-public:
-	DuneEngine(OSystem *syst, const ADGameDescription *desc);
-	~DuneEngine() override;
+Intro::Intro(DuneEngine *vm) : _vm(vm) {
+	_video = new HnmPlayer(vm);
+	_music = new MidiMusic(vm);
+}
 
-	Common::Error run() override;
+Intro::~Intro() {
+	delete _video;
+	delete _music;
+}
 
-	int _soundVolume;
-	int _speechVolume;
-	bool isCD();
+} //End of namespace Dune
 
-	int _timerTicks;
-	Graphics _graphics;
-	Common::SeekableReadStream *openMember(const char *filename);
-	OSystem *getSystem() { return _system; }
-
-private:
-	Common::RandomSource *_rnd;
-	const ADGameDescription *_gameDescription;
-
-	Archive _archive;
-	void dumpResource(const char *filename);
-};
-} // End of namespace Dune
-
-#endif

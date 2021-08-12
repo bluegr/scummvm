@@ -3,6 +3,7 @@ MODULE := engines/dune
 MODULE_OBJS := \
 	archive.o \
 	dune.o \
+	intro. o \
 	graphics.o \
 	metaengine.o \
 	statics.o \

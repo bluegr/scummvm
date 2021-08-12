@@ -20,47 +20,31 @@
  *
  */
 
-#ifndef DUNE_H
-#define DUNE_H
+#ifndef DUNE_INTRO_H
+#define DUNE_INTRO_H
 
-#include "dune/archive.h"
-#include "dune/graphics.h"
 
-#include "common/random.h"
-#include "engines/advancedDetector.h"
-#include "engines/engine.h"
-#include "gui/debugger.h"
+#include "dune/dune.h"
+#include "dune/sound/music.h"
+#include "dune/video.h"
 
 namespace Dune {
+class DuneEngine;
+class HnmPlayer;
+class MidiMusic;
 
-enum DuneActions {
-	kDuneActionSkipCutscene,
-};
-
-
-class DuneEngine : public Engine {
-public:
-	DuneEngine(OSystem *syst, const ADGameDescription *desc);
-	~DuneEngine() override;
-
-	Common::Error run() override;
-
-	int _soundVolume;
-	int _speechVolume;
-	bool isCD();
-
-	int _timerTicks;
-	Graphics _graphics;
-	Common::SeekableReadStream *openMember(const char *filename);
-	OSystem *getSystem() { return _system; }
-
+class Intro {
 private:
-	Common::RandomSource *_rnd;
-	const ADGameDescription *_gameDescription;
+	DuneEngine *_vm;
+	HnmPlayer *_video;
+	MidiMusic *_music;
+	void stopMusic();
 
-	Archive _archive;
-	void dumpResource(const char *filename);
+public:
+	void runIntro();
+	Intro(DuneEngine *vm);
+	~Intro();
 };
-} // End of namespace Dune
+} //End of namespace Dune
 
 #endif
