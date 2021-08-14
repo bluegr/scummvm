@@ -1,4 +1,3 @@
-#include "intro.h"
 /* ScummVM - Graphic Adventure Engine
  *
  * ScummVM is the legal property of its developers, whose names
