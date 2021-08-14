@@ -4,6 +4,7 @@ MODULE_OBJS := \
 	archive.o \
 	dune.o \
 	intro. o \
+	logic.o \
 	graphics.o \
 	metaengine.o \
 	statics.o \
