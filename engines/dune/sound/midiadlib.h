@@ -124,32 +124,8 @@ private:
 	bool update();
 	void rewind(int subsong);
 
-	float getrefresh() {
-		return (float)200.299;
-	};
-
-	unsigned int getspeed() {
-		return _wSpeed;
-	};
-
 	unsigned int getpatterns() {
 		return _total_tick_count / HERAD_MEASURE_TICKS + (_total_tick_count % HERAD_MEASURE_TICKS ? 1 : 0);
-	};
-
-	unsigned int getpattern() {
-		return (_current_tick_position <= 0 ? 0 : (_current_tick_position - 1) / HERAD_MEASURE_TICKS + 1);
-	};
-
-	unsigned int getrow() {
-		return (_current_tick_position <= 0 ? 0 : (_current_tick_position - 1) % HERAD_MEASURE_TICKS);
-	};
-
-	unsigned int getinstruments() {
-		return _instruments ? _nInstruments : 0;
-	};
-
-	Common::String getinstrument(unsigned int n) {
-		return Common::String();
 	};
 
 	static const uint8_t slot_offset[HERAD_NUM_VOICES];
