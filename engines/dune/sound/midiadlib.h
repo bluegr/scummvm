@@ -169,7 +169,6 @@ private:
 
 	uint8_t _fileCompressionType;    /* File compression type (see HERAD_COMP_*) */
 	bool isAgd;        /* Whether this is HERAD AGD (OPL3) */
-	bool _isHeradV2;         /* Whether this is HERAD version 2 */
 	uint8_t _nTracks; /* Number of tracks */
 	uint8_t _nInstruments;  /* Number of instruments */
 

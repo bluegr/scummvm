@@ -136,7 +136,7 @@ void AdLibMidiDriver::rewind(int subsong) {
 			j += getTicks(i);
 			switch (_tracks[i].data[_tracks[i].pos++] & 0xF0) {
 			case 0x80: // Note Off
-				_tracks[i].pos += (_isHeradV2 ? 1 : 2);
+				_tracks[i].pos += 2; //HeradV1 specific (DUNE uses Herad V1)
 				break;
 			case 0x90: // Note On
 			case 0xA0: // Unused
@@ -165,15 +165,6 @@ void AdLibMidiDriver::rewind(int subsong) {
 		_channels[i].bend = HERAD_BEND_CENTER;
 		_channels[i].slide_dur = 0;
 	}
-	if (_isHeradV2) {
-		if (!_wLoopStart || _wLoopCount)
-			_wLoopStart = 1; // if loop not specified, start from beginning
-		if (!_wLoopEnd || _wLoopCount)
-			_wLoopEnd = getpatterns() + 1; // till the end
-		if (_wLoopCount)
-			_wLoopCount = 0; // repeats forever
-	}
-
 	_opl->init();
 	_opl->write(1, 32);   // Enable Waveform Select
 	_opl->write(0xBD, 0); // Disable Percussion Mode
@@ -272,11 +263,8 @@ void AdLibMidiDriver::load(Common::SeekableReadStream *reader) {
 	}
 	_instruments = new herad_inst[_nInstruments];
 	offset = *(uint16_t *)data;
-	_isHeradV2 = true;
 	for (int i = 0; i < _nInstruments; i++) {
 		memcpy(_instruments[i].data, data + offset + i * HERAD_INST_SIZE, HERAD_INST_SIZE);
-		if (_isHeradV2 && _instruments[i].param.mode == HERAD_INSTMODE_SDB1)
-			_isHeradV2 = false;
 	}
 	delete[] data;
 	rewind(0);
@@ -310,7 +298,8 @@ void AdLibMidiDriver::executeCommand(uint8_t t) {
 		switch (status & 0xF0) {
 		case 0x80: // Note Off
 			note = _tracks[t].data[_tracks[t].pos++];
-			par = (_isHeradV2 ? 0 : _tracks[t].data[_tracks[t].pos++]);
+			//HeradV1 specific (DUNE uses Herad V1)
+			par = (_tracks[t].data[_tracks[t].pos++]);
 			ev_noteOff(t, note, par);
 			break;
 		case 0x90: // Note On
@@ -415,19 +404,9 @@ void AdLibMidiDriver::ev_noteOn(uint8_t ch, uint8_t note, uint8_t vel) {
 		_channels[ch].keyon = false;
 		playNote(ch, _channels[ch].note, HERAD_NOTE_OFF);
 	}
-	if (_isHeradV2 && _instruments[_channels[ch].program].param.mode == HERAD_INSTMODE_KMAP) {
-		// keymap is used
-		int8_t mp = note - (_instruments[_channels[ch].program].keymap.offset + 24);
-		if (mp < 0 || mp >= HERAD_INST_SIZE - 4)
-			return; // if not in range, skip note
-		_channels[ch].playprog = _instruments[_channels[ch].program].keymap.index[mp];
-		changeProgram(ch, _channels[ch].playprog);
-	}
 	_channels[ch].note = note;
 	_channels[ch].keyon = true;
 	_channels[ch].bend = HERAD_BEND_CENTER;
-	if (_isHeradV2 && _instruments[_channels[ch].playprog].param.mode == HERAD_INSTMODE_KMAP)
-		return; // single keymapped instrument can't be keymap (avoid recursion)
 	playNote(ch, note, HERAD_NOTE_ON);
 	macro = _instruments[_channels[ch].playprog].param.mc_mod_out_vel;
 	if (macro != 0)
@@ -456,9 +435,6 @@ void AdLibMidiDriver::ev_programChange(uint8_t ch, uint8_t prog) {
 
 void AdLibMidiDriver::ev_aftertouch(uint8_t ch, uint8_t vel) {
 	int8_t macro;
-
-	if (_isHeradV2) // version 2 ignores this event
-		return;
 	macro = _instruments[_channels[ch].playprog].param.mc_mod_out_at;
 	if (macro != 0)
 		macroModOutput(ch, _channels[ch].playprog, macro, vel);
@@ -570,9 +546,6 @@ void AdLibMidiDriver::setFreq(uint8_t c, uint8_t oct, uint16_t freq, bool on) {
 
 void AdLibMidiDriver::changeProgram(uint8_t c, uint8_t i) {
 	uint8_t reg, val;
-
-	if (_isHeradV2 && _instruments[i].param.mode == HERAD_INSTMODE_KMAP)
-		return;
 
 	/*if (c >= HERAD_NUM_VOICES)
 		enableDualOPL2();*/
@@ -730,10 +703,8 @@ void AdLibMidiDriver::macroFeedback(uint8_t c, uint8_t i, int8_t sens, uint8_t l
 void AdLibMidiDriver::macroTranspose(uint8_t *note, uint8_t i) {
 	uint8_t tran = _instruments[i].param.mc_transpose;
 	uint8_t diff = (tran - 0x31) & 0xFF;
-	if (_isHeradV2 && diff < 0x60)
-		*note = (diff + 0x18) & 0xFF;
-	else
-		*note = (*note + tran) & 0xFF;
+	//HeradV1 specific (DUNE uses Herad V1)
+	*note = (*note + tran) & 0xFF;
 }
 
 void AdLibMidiDriver::macroSlide(uint8_t c) {
@@ -770,7 +741,7 @@ void AdLibMidiDriver::play(bool loop) {
 }
 
 void AdLibMidiDriver::setTimerCallback(void *timerParam, Common::TimerManager::TimerProc timerProc) {
-	//TODO: remove this.
+	//TODO: remove this. We do not use this code.
 	_adlibTimerProc = timerProc;
 	_adlibTimerParam = timerParam;
 }
