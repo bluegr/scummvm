@@ -69,7 +69,7 @@ void MidiMusic::onTimer() {
 }
 
 
-//TODO: Support AGD (which means usage of the OPL3 by the AdLib midi driver), and M32 (MT-32) files variants.
+//TODO: Support AGD, and M32 (MT-32) files variants.
 //TOOD: Fix how it sounds compared to DOSBox
 void MidiMusic::playMusic(Musics musicId, bool loop) {
 	const char *hsqMusicFilenames[] = {

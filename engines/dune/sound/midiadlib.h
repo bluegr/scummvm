@@ -58,6 +58,8 @@
 #include <cstring>
 #include "audio/fmopl.h"
 #include "audio/mididrv.h"
+#include "common/scummsys.h"
+#include "common/endian.h"
 
 #define HERAD_MIN_SIZE 6     /* Minimum file size for compression detection */
 #define HERAD_MAX_SIZE 75775 /* Maximum possible file size: 0xFFFF + 256 * HERAD_INST_SIZE */
@@ -95,8 +97,8 @@ public:
 	// MidiDriver
 	int open() override;
 	void close() override;
-	void send(uint32 b) override;
-	void metaEvent(byte type, byte *data, uint16 length) override;
+	void send(uint32 b) override{};
+	void metaEvent(byte type, byte *data, uint16 length) override{};
 	MidiChannel *allocateChannel() override { return 0; }
 	MidiChannel *getPercussionChannel() override { return 0; }
 	void setTimerCallback(void *timerParam, Common::TimerManager::TimerProc timerProc) override;
@@ -116,11 +118,7 @@ private:
 	int _frameCount = 0;
 	int _frameStop = -1;
 
-	Common::String gettype();
-	bool isSQX(uint8_t *data);
-	uint16_t SQX_decompress(uint8_t *data, int size, uint8_t *out);
 	unsigned char getSampleSize() { return (_nChannels * (_bits / 8)); }
-	void frame();
 	void onTimer();
 	void enableOPL3();
 	void enableDualOPL2();
@@ -186,46 +184,14 @@ private:
 	void adlibWrite(uint8 port, uint8 value);
 	void adlibSetupCard();
 	void adlibSetupChannels(int fl);
-	void adlibResetAmpVibratoRhythm(int am, int vib, int kso);
-	void adlibResetChannels();
-	void adlibSetAmpVibratoRhythm();
-	void adlibSetCSMKeyboardSplit();
-	void adlibSetNoteMul(int mul);
-	void adlibSetWaveformSelect(int fl);
-	void adlibSetPitchBend(int channel, int range);
-	void adlibPlayNote(int channel);
-	uint8 adlibPlayNoteHelper(int channel, int note1, int note2, int oct);
-	void adlibTurnNoteOff(int channel);
-	void adlibTurnNoteOn(int channel, int note);
-	void adlibSetupChannelFromSequence(int channel, const uint8 *src, int fl);
-	void adlibSetupChannel(int channel, const uint16 *src, int fl);
-	void adlibSetNoteVolume(int channel, int volume);
 	void adlibSetChannelVolume(int channel, uint8 volume);
-	void adlibSetupChannelHelper(int channel);
-	void adlibSetChannel0x40(int channel);
-	void adlibSetChannel0xC0(int channel);
-	void adlibSetChannel0x60(int channel);
-	void adlibSetChannel0x80(int channel);
-	void adlibSetChannel0x20(int channel);
-	void adlibSetChannel0xE0(int channel);
+	void adlibSetWaveformSelect(int fl);
 
 	int _midiNumberOfChannels;
 	int _adlibNoteMul;
 	int _adlibWaveformSelect;
-	int _adlibAMDepthEq48;
-	int _adlibVibratoDepthEq14;
 	int _adlibRhythmEnabled;
-	int _adlibKeyboardSplitOn;
-	int _adlibVibratoRhythm;
-	uint8 _midiChannelsFreqTable[9];
-	uint8 _adlibChannelsLevelKeyScalingTable[11];
-	uint8 _adlibSetupChannelSequence1[14 * 18];
-	uint16 _adlibSetupChannelSequence2[14];
-	int16 _midiChannelsNote2Table[9];
-	uint8 _midiChannelsNote1Table[9];
-	uint8 _midiChannelsOctTable[9];
-	uint16 _adlibChannelsVolume[11];
-	uint16 _adlibMetaSequenceData[28];
+	static const uint8 _adlibChannelsMappingTable1[];
 	uint8 _adlibChannelsVolumeTable[11];
 
 	bool _isOpen;
@@ -233,21 +199,6 @@ private:
 	void *_adlibTimerParam;
 
 	static const uint8 _adlibChannelsMappingTable1[];
-	static const uint8 _adlibChannelsNoFeedback[];
-	static const uint8 _adlibChannelsMappingTable2[];
-	static const uint8 _adlibChannelsMappingTable3[];
-	static const uint8 _adlibChannelsKeyScalingTable1[];
-	static const uint8 _adlibChannelsKeyScalingTable2[];
-	static const uint8 _adlibInitSequenceData1[];
-	static const uint8 _adlibInitSequenceData2[];
-	static const uint8 _adlibInitSequenceData3[];
-	static const uint8 _adlibInitSequenceData4[];
-	static const uint8 _adlibInitSequenceData5[];
-	static const uint8 _adlibInitSequenceData6[];
-	static const uint8 _adlibInitSequenceData7[];
-	static const uint8 _adlibInitSequenceData8[];
-	static const int16 _midiChannelsNoteTable[];
-	static const int16 _midiNoteFreqTable[];
 
 	bool _songEnd;
 	bool _isLooping = false;
@@ -350,15 +301,11 @@ private:
 } // End of namespace Dune
 
 inline uint16_t adplug_byteswap(const uint16_t val) {
-	return ((val & 0x00FF) << 8) |
-		   ((val & 0xFF00) >> 8);
+	return SWAP_BYTES_16(val);
 }
 
 inline uint32_t adplug_byteswap(const uint32_t val) {
-	return ((val & 0x000000FF) << 24) |
-		   ((val & 0x0000FF00) << 8) |
-		   ((val & 0x00FF0000) >> 8) |
-		   ((val & 0xFF000000) >> 24);
+	return SWAP_BYTES_32(val);
 }
 
 // TODO: Use ScummVM API instead.
@@ -371,7 +318,7 @@ static inline T load_unaligned_impl(const unsigned char *src, const bool big_end
 	T result;
 	std::memcpy(&result, src, sizeof(T));
 
-#ifdef WORDS_BIGENDIAN
+#ifdef SCUMM_BIG_ENDIAN
 
 	// big-endian CHOST
 	if (!big_endian)

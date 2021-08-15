@@ -63,6 +63,7 @@
 #include "common/endian.h"
 
 namespace Dune {
+
 AdLibMidiDriver::AdLibMidiDriver(DuneEngine *vm) : _vm(vm) {
 	_buf_size = 2048;
 	_bits = 16;
@@ -72,11 +73,6 @@ AdLibMidiDriver::AdLibMidiDriver(DuneEngine *vm) : _vm(vm) {
 	_opl = nullptr;
 	open();
 	adlibSetupCard();
-	for (int i = 0; i < 11; ++i) {
-		_adlibChannelsVolume[i] = 0;
-		adlibSetNoteVolume(i, 0);
-		adlibTurnNoteOff(i);
-	}
 }
 
 AdLibMidiDriver::~AdLibMidiDriver() {
@@ -97,14 +93,20 @@ AdLibMidiDriver::~AdLibMidiDriver() {
 }
 
 const uint8_t AdLibMidiDriver::slot_offset[HERAD_NUM_VOICES] = {
-	0, 1, 2, 8, 9, 10, 16, 17, 18};
+	0, 1, 2, 8, 9, 10, 16, 17, 18
+};
+
 const uint16_t AdLibMidiDriver::FNum[HERAD_NUM_NOTES] = {
-	343, 364, 385, 408, 433, 459, 486, 515, 546, 579, 614, 650};
+	343, 364, 385, 408, 433, 459, 486, 515, 546, 579, 614, 650
+};
+
 const uint8_t AdLibMidiDriver::fine_bend[HERAD_NUM_NOTES + 1] = {
 	19, 21, 21, 23, 25, 26, 27, 29, 31, 33, 35, 36, 37};
+
 const uint8_t AdLibMidiDriver::coarse_bend[10] = {
 	0, 5, 10, 15, 20,
-	0, 6, 12, 18, 24};
+	0, 6, 12, 18, 24
+};
 
 bool AdLibMidiDriver::update() {
 	_wTime = _wTime - 256;
@@ -220,16 +222,6 @@ void AdLibMidiDriver::enableSingleOPL2() {
 	open();
 }
 
-Common::String AdLibMidiDriver::gettype() {
-	char scomp[12 + 1] = "";
-	if (_fileCompressionType > HERAD_COMP_NONE) {
-		debug(scomp, ", %s packed", (_fileCompressionType == HERAD_COMP_HSQ ? "HSQ" : "SQX"));
-	}
-	char type[40 + 1];
-	debug(type, "HERAD System %s (version %d%s)", (isAgd ? "AGD" : "SDB"), (_isHeradV2 ? 2 : 1), scomp);
-	return Common::String(type);
-}
-
 void AdLibMidiDriver::load(Common::SeekableReadStream *reader) {
 	open();
 	_reader = reader;
@@ -237,19 +229,7 @@ void AdLibMidiDriver::load(Common::SeekableReadStream *reader) {
 	// Read entire file into memory
 	uint8_t *data = new uint8_t[size];
 	_reader->read(data, size);
-	// Detect compression
-	if (isSQX(data)) {
-		_fileCompressionType = HERAD_COMP_SQX;
-		uint8_t *out = new uint8_t[HERAD_MAX_SIZE];
-		memset(out, 0, HERAD_MAX_SIZE);
-		size = SQX_decompress(data, size, out);
-		delete[] data;
-		data = new uint8_t[size];
-		memcpy(data, out, size);
-		delete[] out;
-	} else {
-		_fileCompressionType = HERAD_COMP_NONE;
-	}
+	_fileCompressionType = HERAD_COMP_NONE;
 	// Process file header
 	uint16_t offset;
 	if (size < HERAD_HEAD_SIZE) {
@@ -304,272 +284,6 @@ void AdLibMidiDriver::load(Common::SeekableReadStream *reader) {
 	rewind(0);
 }
 
-bool AdLibMidiDriver::isSQX(uint8_t *data) {
-	// data[0] - word OutbufInit
-	// data[1]
-	// data[2] - byte SQX flag #1
-	// data[3] - byte SQX flag #2
-	// data[4] - byte SQX flag #3
-	// data[5] - byte CntOffPart
-	if (data[2] > 2 || data[3] > 2 || data[4] > 2) {
-		return false;
-	}
-	if (data[5] == 0 || data[5] > 15) {
-		return false;
-	}
-	return true;
-}
-
-uint16_t AdLibMidiDriver::SQX_decompress(uint8_t *data, int size, uint8_t *out) {
-	int16_t offset;
-	uint16_t count;
-	uint8_t *src = data;
-	uint8_t *dst = out;
-	bool done = false;
-
-	std::memcpy(dst, src, sizeof(uint16_t));
-	src += 6;
-	uint16_t queue = 1;
-	uint8_t bit, bit_p;
-	while (true) {
-		bit = queue & 1;
-		queue >>= 1;
-		if (queue == 0) {
-			queue = u16_unaligned(src);
-			src += 2;
-			bit_p = bit;
-			bit = queue & 1;
-			queue >>= 1;
-			if (bit_p)
-				queue |= 0x8000;
-		}
-		if (bit == 0) {
-			switch (data[2]) {
-			case 0:
-				*dst++ = *src++;
-				break;
-			case 1:
-				count = 0;
-				bit = queue & 1;
-				queue >>= 1;
-				if (queue == 0) {
-					queue = u16_unaligned(src);
-					src += 2;
-					bit_p = bit;
-					bit = queue & 1;
-					queue >>= 1;
-					if (bit_p)
-						queue |= 0x8000;
-					count = bit;
-					bit = queue & 1;
-					queue >>= 1;
-				} else {
-					count = bit;
-					bit = queue & 1;
-					queue >>= 1;
-					if (queue == 0) {
-						queue = u16_unaligned(src);
-						src += 2;
-						bit_p = bit;
-						bit = queue & 1;
-						queue >>= 1;
-						if (bit_p)
-							queue |= 0x8000;
-					}
-				}
-				count = (count << 1) | bit;
-				offset = *(uint8_t *)src;
-				offset -= 256;
-				src++;
-				count += 2;
-				while (count--) {
-					*dst = *(dst + offset);
-					dst++;
-				}
-				break;
-			case 2:
-				count = u16_unaligned(src);
-				offset = (count >> data[5]) - (1 << (16 - data[5]));
-				count &= (1 << data[5]) - 1;
-				src += 2;
-				if (!count) {
-					count = *(uint8_t *)src;
-					src++;
-				}
-				if (!count) {
-					done = true;
-					break;
-				}
-				count += 2;
-				while (count--) {
-					*dst = *(dst + offset);
-					dst++;
-				}
-				break;
-			}
-			if (done)
-				break;
-			continue;
-		} else {
-			bit = queue & 1;
-			queue >>= 1;
-			if (queue == 0) {
-				queue = u16_unaligned(src);
-				src += 2;
-				bit_p = bit;
-				bit = queue & 1;
-				queue >>= 1;
-				if (bit_p)
-					queue |= 0x8000;
-			}
-			if (bit == 0) {
-				switch (data[3]) {
-				case 0:
-					*dst++ = *src++;
-					break;
-				case 1:
-					count = 0;
-					bit = queue & 1;
-					queue >>= 1;
-					if (queue == 0) {
-						queue = u16_unaligned(src);
-						src += 2;
-						bit_p = bit;
-						bit = queue & 1;
-						queue >>= 1;
-						if (bit_p)
-							queue |= 0x8000;
-						count = bit;
-						bit = queue & 1;
-						queue >>= 1;
-					} else {
-						count = bit;
-						bit = queue & 1;
-						queue >>= 1;
-						if (queue == 0) {
-							queue = u16_unaligned(src);
-							src += 2;
-							bit_p = bit;
-							bit = queue & 1;
-							queue >>= 1;
-							if (bit_p)
-								queue |= 0x8000;
-						}
-					}
-					count = (count << 1) | bit;
-					offset = *(uint8_t *)src;
-					offset -= 256;
-					src++;
-					count += 2;
-					while (count--) {
-						*dst = *(dst + offset);
-						dst++;
-					}
-					break;
-				case 2:
-					count = u16_unaligned(src);
-					offset = (count >> data[5]) - (1 << (16 - data[5]));
-					count &= (1 << data[5]) - 1;
-					src += 2;
-					if (!count) {
-						count = *(uint8_t *)src;
-						src++;
-					}
-					if (!count) {
-						done = true;
-						break;
-					}
-					count += 2;
-					while (count--) {
-						*dst = *(dst + offset);
-						dst++;
-					}
-					break;
-				}
-				if (done)
-					break;
-				continue;
-			} else {
-				switch (data[4]) {
-				case 0:
-					*dst++ = *src++;
-					break;
-				case 1:
-					count = 0;
-					bit = queue & 1;
-					queue >>= 1;
-					if (queue == 0) {
-						queue = u16_unaligned(src);
-						src += 2;
-						bit_p = bit;
-						bit = queue & 1;
-						queue >>= 1;
-						if (bit_p)
-							queue |= 0x8000;
-						count = bit;
-						bit = queue & 1;
-						queue >>= 1;
-					} else {
-						count = bit;
-						bit = queue & 1;
-						queue >>= 1;
-						if (queue == 0) {
-							queue = u16_unaligned(src);
-							src += 2;
-							bit_p = bit;
-							bit = queue & 1;
-							queue >>= 1;
-							if (bit_p)
-								queue |= 0x8000;
-						}
-					}
-					count = (count << 1) | bit;
-					offset = *(uint8_t *)src;
-					offset -= 256;
-					src++;
-					count += 2;
-					while (count--) {
-						*dst = *(dst + offset);
-						dst++;
-					}
-					break;
-				case 2:
-					count = u16_unaligned(src);
-					offset = (count >> data[5]) - (1 << (16 - data[5]));
-					count &= (1 << data[5]) - 1;
-					src += 2;
-					if (!count) {
-						count = *(uint8_t *)src;
-						src++;
-					}
-					if (!count) {
-						done = true;
-						break;
-					}
-					count += 2;
-					while (count--) {
-						*dst = *(dst + offset);
-						dst++;
-					}
-					break;
-				}
-				if (done)
-					break;
-				continue;
-			}
-		}
-	}
-	return dst - out;
-}
-
-void AdLibMidiDriver::frame() {
-	_frameCount++;
-	if (_frameStop > -1 && _frameCount >= _frameStop) {
-		return;
-	}
-	_isPlaying = update();
-}
-
 uint32_t AdLibMidiDriver::getTicks(uint8_t t) {
 	uint32_t result = 0;
 	do {
@@ -578,6 +292,7 @@ uint32_t AdLibMidiDriver::getTicks(uint8_t t) {
 	} while (_tracks[t].data[_tracks[t].pos++] & 0x80 && _tracks[t].pos < _tracks[t].size);
 	return result;
 }
+
 void AdLibMidiDriver::executeCommand(uint8_t t) {
 	uint8_t status, note, par;
 
@@ -627,6 +342,7 @@ void AdLibMidiDriver::executeCommand(uint8_t t) {
 		}
 	}
 }
+
 void AdLibMidiDriver::processEvents() {
 	uint8_t i;
 	_songEnd = true;
@@ -692,6 +408,7 @@ void AdLibMidiDriver::processEvents() {
 		}
 	}
 }
+
 void AdLibMidiDriver::ev_noteOn(uint8_t ch, uint8_t note, uint8_t vel) {
 	int8_t macro;
 
@@ -730,6 +447,7 @@ void AdLibMidiDriver::ev_noteOff(uint8_t ch, uint8_t note, uint8_t vel) {
 	_channels[ch].keyon = false;
 	playNote(ch, note, HERAD_NOTE_OFF);
 }
+
 void AdLibMidiDriver::ev_programChange(uint8_t ch, uint8_t prog) {
 	if (prog >= _nInstruments) // out of index
 		return;
@@ -737,6 +455,7 @@ void AdLibMidiDriver::ev_programChange(uint8_t ch, uint8_t prog) {
 	_channels[ch].playprog = prog;
 	changeProgram(ch, prog);
 }
+
 void AdLibMidiDriver::ev_aftertouch(uint8_t ch, uint8_t vel) {
 	int8_t macro;
 
@@ -752,11 +471,13 @@ void AdLibMidiDriver::ev_aftertouch(uint8_t ch, uint8_t vel) {
 	if (macro != 0)
 		macroFeedback(ch, _channels[ch].playprog, macro, vel);
 }
+
 void AdLibMidiDriver::ev_pitchBend(uint8_t ch, uint8_t bend) {
 	_channels[ch].bend = bend;
 	if (_channels[ch].keyon) // update pitch
 		playNote(ch, _channels[ch].note, HERAD_NOTE_UPDATE);
 }
+
 void AdLibMidiDriver::playNote(uint8_t c, uint8_t note, uint8_t state) {
 	if (_instruments[_channels[c].playprog].param.mc_transpose != 0)
 		macroTranspose(&note, _channels[c].playprog);
@@ -829,6 +550,7 @@ void AdLibMidiDriver::playNote(uint8_t c, uint8_t note, uint8_t state) {
 	}
 	setFreq(c, oct, FNum[key] + detune, state != HERAD_NOTE_OFF);
 }
+
 void AdLibMidiDriver::setFreq(uint8_t c, uint8_t oct, uint16_t freq, bool on) {
 	uint8_t reg, val;
 
@@ -847,6 +569,7 @@ void AdLibMidiDriver::setFreq(uint8_t c, uint8_t oct, uint16_t freq, bool on) {
 	/*if (c >= HERAD_NUM_VOICES)
 		enableSingleOPL2();*/
 }
+
 void AdLibMidiDriver::changeProgram(uint8_t c, uint8_t i) {
 	uint8_t reg, val;
 
@@ -920,32 +643,6 @@ void AdLibMidiDriver::changeProgram(uint8_t c, uint8_t i) {
 	/*if (c >= HERAD_NUM_VOICES)
 		enableSingleOPL2();*/
 }
-void AdLibMidiDriver::send(uint32 b) {
-	int channel = b & 15;
-	int cmd = (b >> 4) & 7;
-	int param1 = (b >> 8) & 255;
-	int param2 = (b >> 16) & 255;
-	switch (cmd) {
-	case 0:
-		adlibTurnNoteOff(channel);
-		break;
-	case 1:
-		handleMidiEvent0x90_NoteOn(channel, param1, param2);
-		break;
-	case 3:
-		break;
-	case 5:
-		adlibSetNoteVolume(channel, param1);
-		_adlibChannelsVolume[channel] = param1;
-		break;
-	case 6:
-		adlibSetPitchBend(channel, param1 | (param2 << 7));
-		break;
-	default:
-		debug("Unhandled cmd %d channel %d (0x%X)", cmd, channel, b);
-		break;
-	}
-}
 
 void AdLibMidiDriver::macroModOutput(uint8_t c, uint8_t i, int8_t sens, uint8_t level) {
 	uint8_t reg, val;
@@ -974,6 +671,7 @@ void AdLibMidiDriver::macroModOutput(uint8_t c, uint8_t i, int8_t sens, uint8_t 
 	/*if (c >= HERAD_NUM_VOICES)
 		enableSingleOPL2();*/
 }
+
 void AdLibMidiDriver::macroCarOutput(uint8_t c, uint8_t i, int8_t sens, uint8_t level) {
 	uint8_t reg, val;
 	uint16_t output;
@@ -1001,6 +699,7 @@ void AdLibMidiDriver::macroCarOutput(uint8_t c, uint8_t i, int8_t sens, uint8_t 
 	/*if (c >= HERAD_NUM_VOICES)
 		enableSingleOPL2();*/
 }
+
 void AdLibMidiDriver::macroFeedback(uint8_t c, uint8_t i, int8_t sens, uint8_t level) {
 	uint8_t reg, val;
 	uint8_t feedback;
@@ -1029,6 +728,7 @@ void AdLibMidiDriver::macroFeedback(uint8_t c, uint8_t i, int8_t sens, uint8_t l
 	/*if (c >= HERAD_NUM_VOICES)
 		enableSingleOPL2();*/
 }
+
 void AdLibMidiDriver::macroTranspose(uint8_t *note, uint8_t i) {
 	uint8_t tran = _instruments[i].param.mc_transpose;
 	uint8_t diff = (tran - 0x31) & 0xFF;
@@ -1037,6 +737,7 @@ void AdLibMidiDriver::macroTranspose(uint8_t *note, uint8_t i) {
 	else
 		*note = (*note + tran) & 0xFF;
 }
+
 void AdLibMidiDriver::macroSlide(uint8_t c) {
 	if (!_channels[c].slide_dur)
 		return;
@@ -1069,90 +770,24 @@ void AdLibMidiDriver::play(bool loop) {
 	_isLooping = loop;
 	_opl->start(new Common::Functor0Mem<void, AdLibMidiDriver>(this, &AdLibMidiDriver::onTimer), 235);
 }
+
 void AdLibMidiDriver::setTimerCallback(void *timerParam, Common::TimerManager::TimerProc timerProc) {
+	//TODO: remove this.
 	_adlibTimerProc = timerProc;
 	_adlibTimerParam = timerParam;
 }
 
 void AdLibMidiDriver::onTimer() {
-	if (_adlibTimerProc)
-		(*_adlibTimerProc)(_adlibTimerParam);
-	frame();
+	if (_frameStop > -1 && _frameCount >= _frameStop) {
+		return;
+	}
+	_isPlaying = update();
+	_frameCount++;
 }
 
 void AdLibMidiDriver::setVolume(uint32 volume) {
 	for (int i = 0; i < _midiNumberOfChannels; ++i)
 		adlibSetChannelVolume(i, volume * 64 / 256 + 64);
-}
-
-void AdLibMidiDriver::metaEvent(byte type, byte *data, uint16 length) {
-	int event = 0;
-	if (length > 4 && READ_BE_UINT32(data) == 0x3F00) {
-		event = data[4];
-		switch (event) {
-		case 1:
-			if (length == 34) {
-				handleSequencerSpecificMetaEvent1(data[5], data + 6);
-				return;
-			}
-			break;
-		case 2:
-			if (length == 6) {
-				handleSequencerSpecificMetaEvent2(data[5]);
-				return;
-			}
-			break;
-		case 3:
-			if (length == 6) {
-				handleSequencerSpecificMetaEvent3(data[5]);
-				return;
-			}
-			break;
-		default:
-			break;
-		}
-	}
-	warning("Unhandled meta event %d len %d", event, length);
-}
-
-void AdLibMidiDriver::handleSequencerSpecificMetaEvent1(int channel, const uint8 *data) {
-	for (int i = 0; i < 28; ++i) {
-		_adlibMetaSequenceData[i] = data[i];
-	}
-	if (_midiNumberOfChannels > channel) {
-		const uint8 *p;
-		if (_adlibRhythmEnabled) {
-			p = &_adlibChannelsKeyScalingTable2[channel * 2];
-		} else {
-			p = &_adlibChannelsKeyScalingTable1[channel * 2];
-		}
-		adlibSetupChannel(p[0], _adlibMetaSequenceData, _adlibMetaSequenceData[26]);
-		if (p[1] != 255) {
-			adlibSetupChannel(p[1], _adlibMetaSequenceData + 13, _adlibMetaSequenceData[27]);
-		}
-	}
-}
-
-void AdLibMidiDriver::handleSequencerSpecificMetaEvent2(uint8 value) {
-	_adlibRhythmEnabled = value;
-	_midiNumberOfChannels = _adlibRhythmEnabled ? 11 : 9;
-	adlibSetAmpVibratoRhythm();
-}
-
-void AdLibMidiDriver::handleSequencerSpecificMetaEvent3(uint8 value) {
-	adlibSetNoteMul(value);
-}
-
-void AdLibMidiDriver::handleMidiEvent0x90_NoteOn(int channel, int param1, int param2) { // note, volume
-	if (param2 == 0) {
-		adlibTurnNoteOff(channel);
-		_adlibChannelsVolume[channel] = param2;
-	} else {
-		adlibSetNoteVolume(channel, param2);
-		_adlibChannelsVolume[channel] = param2;
-		adlibTurnNoteOff(channel);
-		adlibTurnNoteOn(channel, param1);
-	}
 }
 
 void AdLibMidiDriver::adlibWrite(uint8 port, uint8 value) {
@@ -1164,75 +799,6 @@ void AdLibMidiDriver::adlibSetupCard() {
 	adlibSetWaveformSelect(1);
 }
 
-void AdLibMidiDriver::adlibSetupChannels(int fl) {
-	if (fl != 0) {
-		_midiChannelsNote1Table[8] = 24;
-		_midiChannelsNote2Table[8] = 8192;
-		adlibPlayNote(8);
-		_midiChannelsNote1Table[7] = 31;
-		_midiChannelsNote2Table[7] = 8192;
-		adlibPlayNote(7);
-	}
-	_adlibRhythmEnabled = fl;
-	_midiNumberOfChannels = fl ? 11 : 9;
-	_adlibVibratoRhythm = 0;
-	_adlibAMDepthEq48 = 0;
-	_adlibVibratoDepthEq14 = 0;
-	_adlibKeyboardSplitOn = 0;
-	adlibResetChannels();
-	adlibSetAmpVibratoRhythm();
-}
-
-void AdLibMidiDriver::adlibResetAmpVibratoRhythm(int am, int vib, int kso) {
-	_adlibAMDepthEq48 = am;
-	_adlibVibratoDepthEq14 = vib;
-	_adlibKeyboardSplitOn = kso;
-	adlibSetAmpVibratoRhythm();
-	adlibSetCSMKeyboardSplit();
-}
-
-void AdLibMidiDriver::adlibResetChannels() {
-	for (int i = 0; i < 18; ++i) {
-		adlibSetupChannelFromSequence(i, _adlibChannelsNoFeedback[i] ? _adlibInitSequenceData2 : _adlibInitSequenceData1, 0);
-	}
-	if (_adlibRhythmEnabled) {
-		adlibSetupChannelFromSequence(12, _adlibInitSequenceData3, 0);
-		adlibSetupChannelFromSequence(15, _adlibInitSequenceData4, 0);
-		adlibSetupChannelFromSequence(16, _adlibInitSequenceData5, 0);
-		adlibSetupChannelFromSequence(14, _adlibInitSequenceData6, 0);
-		adlibSetupChannelFromSequence(17, _adlibInitSequenceData7, 0);
-		adlibSetupChannelFromSequence(13, _adlibInitSequenceData8, 0);
-	}
-}
-
-void AdLibMidiDriver::adlibSetAmpVibratoRhythm() {
-	uint8 value = 0;
-	if (_adlibAMDepthEq48) {
-		value |= 0x80;
-	}
-	if (_adlibVibratoDepthEq14) {
-		value |= 0x40;
-	}
-	if (_adlibRhythmEnabled) {
-		value |= 0x20;
-	}
-	adlibWrite(0xBD, value | _adlibVibratoRhythm);
-}
-
-void AdLibMidiDriver::adlibSetCSMKeyboardSplit() {
-	uint8 value = _adlibKeyboardSplitOn ? 0x40 : 0;
-	adlibWrite(8, value);
-}
-
-void AdLibMidiDriver::adlibSetNoteMul(int mul) {
-	if (mul > 12) {
-		mul = 12;
-	} else if (mul < 1) {
-		mul = 1;
-	}
-	_adlibNoteMul = mul;
-}
-
 void AdLibMidiDriver::adlibSetWaveformSelect(int fl) {
 	_adlibWaveformSelect = fl ? 0x20 : 0;
 	for (int i = 0; i < 18; ++i) {
@@ -1241,270 +807,12 @@ void AdLibMidiDriver::adlibSetWaveformSelect(int fl) {
 	adlibWrite(1, _adlibWaveformSelect);
 }
 
-void AdLibMidiDriver::adlibSetPitchBend(int channel, int range) {
-	if ((_adlibRhythmEnabled && channel <= 6) || channel < 9) {
-		if (range > 16383) {
-			range = 16383;
-		}
-		_midiChannelsNote2Table[channel] = range;
-		adlibPlayNote(channel);
-	}
-}
-
-void AdLibMidiDriver::adlibPlayNote(int channel) {
-	_midiChannelsFreqTable[channel] = adlibPlayNoteHelper(channel, _midiChannelsNote1Table[channel], _midiChannelsNote2Table[channel], _midiChannelsOctTable[channel]);
-}
-
-uint8 AdLibMidiDriver::adlibPlayNoteHelper(int channel, int note1, int note2, int oct) {
-	int n = ((note2 * _midiChannelsNoteTable[channel]) >> 8) - 8192;
-	if (n != 0) {
-		n >>= 5;
-		n *= _adlibNoteMul;
-	}
-	n += (note1 << 8) + 8;
-	n >>= 4;
-	if (n < 0) {
-		n = 0;
-	} else if (n > 1535) {
-		n = 1535;
-	}
-	int index = (((n >> 4) % 12) << 4) | (n & 0xF);
-	int f = _midiNoteFreqTable[index];
-	int o = (n >> 4) / 12 - 1;
-	if (f < 0) {
-		++o;
-	}
-	if (o < 0) {
-		++o;
-		f >>= 1;
-	}
-	adlibWrite(0xA0 + channel, f & 0xFF);
-	int value = ((f >> 8) & 3) | (o << 2) | oct;
-	adlibWrite(0xB0 + channel, value);
-	return value;
-}
-
-void AdLibMidiDriver::adlibTurnNoteOff(int channel) {
-	if ((_adlibRhythmEnabled && channel <= 6) || channel < 9) {
-		_midiChannelsOctTable[channel] = 0;
-		_midiChannelsFreqTable[channel] &= ~0x20;
-		adlibWrite(0xB0 + channel, _midiChannelsFreqTable[channel]);
-	} else if (_adlibRhythmEnabled && channel <= 10) {
-		_adlibVibratoRhythm &= ~(1 << (4 - (channel - 6)));
-		adlibSetAmpVibratoRhythm();
-	}
-}
-
-void AdLibMidiDriver::adlibTurnNoteOn(int channel, int note) {
-	note -= 12;
-	if (note < 0) {
-		note = 0;
-	}
-	if ((_adlibRhythmEnabled && channel <= 6) || channel < 9) {
-		_midiChannelsNote1Table[channel] = note;
-		_midiChannelsOctTable[channel] = 0x20;
-		adlibPlayNote(channel);
-	} else if (_adlibRhythmEnabled && channel <= 10) {
-		if (channel == 6) {
-			_midiChannelsNote1Table[6] = note;
-			adlibPlayNote(channel);
-		} else if (channel == 8 && _midiChannelsNote1Table[8] == note) {
-			_midiChannelsNote1Table[8] = note;
-			_midiChannelsNote1Table[7] = note + 7;
-			adlibPlayNote(8);
-			adlibPlayNote(7);
-		}
-		_adlibVibratoRhythm = 1 << (4 - (channel - 6));
-		adlibSetAmpVibratoRhythm();
-	}
-}
-
-void AdLibMidiDriver::adlibSetupChannelFromSequence(int channel, const uint8 *src, int fl) {
-	for (int i = 0; i < 13; ++i) {
-		_adlibSetupChannelSequence2[i] = src[i];
-	}
-	adlibSetupChannel(channel, _adlibSetupChannelSequence2, fl);
-}
-
-void AdLibMidiDriver::adlibSetupChannel(int channel, const uint16 *src, int fl) {
-	for (int i = 0; i < 13; ++i) {
-		_adlibSetupChannelSequence1[14 * channel + i] = src[i];
-	}
-	_adlibSetupChannelSequence1[14 * channel + 13] = fl & 3;
-	adlibSetupChannelHelper(channel);
-}
-
-void AdLibMidiDriver::adlibSetNoteVolume(int channel, int volume) {
-	if (_midiNumberOfChannels > channel) {
-		if (volume > 127) {
-			volume = 127;
-		}
-		_adlibChannelsLevelKeyScalingTable[channel] = volume;
-		const uint8 *p;
-		if (_adlibRhythmEnabled) {
-			p = &_adlibChannelsKeyScalingTable2[channel * 2];
-		} else {
-			p = &_adlibChannelsKeyScalingTable1[channel * 2];
-		}
-		adlibSetChannel0x40(p[0]);
-		if (p[1] != 255) {
-			adlibSetChannel0x40(p[1]);
-		}
-	}
-}
-
 void AdLibMidiDriver::adlibSetChannelVolume(int channel, uint8 volume) {
 	if (channel < (_adlibRhythmEnabled ? 11 : 9))
 		_adlibChannelsVolumeTable[channel] = volume;
 }
 
-void AdLibMidiDriver::adlibSetupChannelHelper(int channel) {
-	adlibSetAmpVibratoRhythm();
-	adlibSetCSMKeyboardSplit();
-	adlibSetChannel0x40(channel);
-	adlibSetChannel0xC0(channel);
-	adlibSetChannel0x60(channel);
-	adlibSetChannel0x80(channel);
-	adlibSetChannel0x20(channel);
-	adlibSetChannel0xE0(channel);
-}
-
-void AdLibMidiDriver::adlibSetChannel0x40(int channel) {
-	int index, value, fl;
-
-	if (_adlibRhythmEnabled) {
-		index = _adlibChannelsMappingTable3[channel];
-	} else {
-		index = _adlibChannelsMappingTable2[channel];
-	}
-	value = 63 - (_adlibSetupChannelSequence1[channel * 14 + 8] & 63);
-	fl = 0;
-	if (_adlibRhythmEnabled && index > 6) {
-		fl = -1;
-	}
-	if (_adlibChannelsNoFeedback[channel] || _adlibSetupChannelSequence1[channel * 14 + 12] == 0 || fl != 0) {
-		value = ((_adlibChannelsLevelKeyScalingTable[index] * value) + 64) >> 7;
-	}
-	value = (_adlibChannelsVolumeTable[index] * value * 2) >> 8;
-	if (value > 63) {
-		value = 63;
-	}
-	value = 63 - value;
-	value |= _adlibSetupChannelSequence1[channel * 14] << 6;
-	adlibWrite(0x40 + _adlibChannelsMappingTable1[channel], value);
-}
-
-void AdLibMidiDriver::adlibSetChannel0xC0(int channel) {
-	if (_adlibChannelsNoFeedback[channel] == 0) {
-		const uint8 *p = &_adlibSetupChannelSequence1[channel * 14];
-		uint8 value = p[2] << 1;
-		if (p[12] == 0) {
-			value |= 1;
-		}
-		adlibWrite(0xC0 + _adlibChannelsMappingTable2[channel], value);
-	}
-}
-
-void AdLibMidiDriver::adlibSetChannel0x60(int channel) {
-	const uint8 *p = &_adlibSetupChannelSequence1[channel * 14];
-	uint8 value = (p[3] << 4) | (p[6] & 15);
-	adlibWrite(0x60 + _adlibChannelsMappingTable1[channel], value);
-}
-
-void AdLibMidiDriver::adlibSetChannel0x80(int channel) {
-	const uint8 *p = &_adlibSetupChannelSequence1[channel * 14];
-	uint8 value = (p[4] << 4) | (p[7] & 15);
-	adlibWrite(0x80 + _adlibChannelsMappingTable1[channel], value);
-}
-
-void AdLibMidiDriver::adlibSetChannel0x20(int channel) {
-	const uint8 *p = &_adlibSetupChannelSequence1[channel * 14];
-	uint8 value = p[1] & 15;
-	if (p[9]) {
-		value |= 0x80;
-	}
-	if (p[10]) {
-		value |= 0x40;
-	}
-	if (p[5]) {
-		value |= 0x20;
-	}
-	if (p[11]) {
-		value |= 0x10;
-	}
-	adlibWrite(0x20 + _adlibChannelsMappingTable1[channel], value);
-}
-
-void AdLibMidiDriver::adlibSetChannel0xE0(int channel) {
-	uint8 value = 0;
-	if (_adlibWaveformSelect) {
-		const uint8 *p = &_adlibSetupChannelSequence1[channel * 14];
-		value = p[13] & 3;
-	}
-	adlibWrite(0xE0 + _adlibChannelsMappingTable1[channel], value);
-}
-
 const uint8 AdLibMidiDriver::_adlibChannelsMappingTable1[] = {
 	0, 1, 2, 3, 4, 5, 8, 9, 10, 11, 12, 13, 16, 17, 18, 19, 20, 21};
-
-const uint8 AdLibMidiDriver::_adlibChannelsNoFeedback[] = {
-	0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1};
-
-const uint8 AdLibMidiDriver::_adlibChannelsMappingTable2[] = {
-	0, 1, 2, 0, 1, 2, 3, 4, 5, 3, 4, 5, 6, 7, 8, 6, 7, 8};
-
-const uint8 AdLibMidiDriver::_adlibChannelsMappingTable3[] = {
-	0, 1, 2, 0, 1, 2, 3, 4, 5, 3, 4, 5, 6, 10, 8, 6, 7, 9};
-
-const uint8 AdLibMidiDriver::_adlibChannelsKeyScalingTable1[] = {
-	0, 3, 1, 4, 2, 5, 6, 9, 7, 10, 8, 11, 12, 15, 13, 16, 14, 17};
-
-const uint8 AdLibMidiDriver::_adlibChannelsKeyScalingTable2[] = {
-	0, 3, 1, 4, 2, 5, 6, 9, 7, 10, 8, 11, 12, 15, 16, 255, 14, 255, 17, 255, 13, 255};
-
-const uint8 AdLibMidiDriver::_adlibInitSequenceData1[] = {
-	1, 1, 3, 15, 5, 0, 1, 3, 15, 0, 0, 0, 1, 0};
-
-const uint8 AdLibMidiDriver::_adlibInitSequenceData2[] = {
-	0, 1, 1, 15, 7, 0, 2, 4, 0, 0, 0, 1, 0, 0};
-
-const uint8 AdLibMidiDriver::_adlibInitSequenceData3[] = {
-	0, 0, 0, 10, 4, 0, 8, 12, 11, 0, 0, 0, 1, 0};
-
-const uint8 AdLibMidiDriver::_adlibInitSequenceData4[] = {
-	0, 0, 0, 13, 4, 0, 6, 15, 0, 0, 0, 0, 1, 0};
-
-const uint8 AdLibMidiDriver::_adlibInitSequenceData5[] = {
-	0, 12, 0, 15, 11, 0, 8, 5, 0, 0, 0, 0, 0, 0};
-
-const uint8 AdLibMidiDriver::_adlibInitSequenceData6[] = {
-	0, 4, 0, 15, 11, 0, 7, 5, 0, 0, 0, 0, 0, 0};
-
-const uint8 AdLibMidiDriver::_adlibInitSequenceData7[] = {
-	0, 1, 0, 15, 11, 0, 5, 5, 0, 0, 0, 0, 0, 0};
-
-const uint8 AdLibMidiDriver::_adlibInitSequenceData8[] = {
-	0, 1, 0, 15, 11, 0, 7, 5, 0, 0, 0, 0, 0, 0};
-
-const int16 AdLibMidiDriver::_midiChannelsNoteTable[] = {
-	256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256};
-
-const int16 AdLibMidiDriver::_midiNoteFreqTable[] = {
-	690, 692, 695, 697, 700, 702, 705, 707, 710, 713, 715, 718,
-	720, 723, 726, 728, 731, 733, 736, 739, 741, 744, 747, 749,
-	752, 755, 758, 760, 763, 766, 769, 771, 774, 777, 780, 783,
-	785, 788, 791, 794, 797, 800, 803, 806, 809, 811, 814, 817,
-	820, 823, 826, 829, 832, 835, 838, 841, 844, 847, 850, 854,
-	857, 860, 863, 866, 869, 872, 875, 879, 882, 885, 888, 891,
-	895, 898, 901, 904, 908, 911, 914, 917, 921, 924, 927, 931,
-	934, 937, 941, 944, 948, 951, 955, 958, 961, 965, 968, 972,
-	975, 979, 983, 986, 990, 993, 997, 1000, 1004, 1008, 1011, 1015,
-	1019, 1022, -511, -509, -507, -505, -504, -502, -500, -498, -496, -494,
-	-492, -490, -488, -486, -484, -482, -480, -479, -477, -475, -473, -471,
-	-469, -467, -465, -463, -460, -458, -456, -454, -452, -450, -448, -446,
-	-444, -442, -440, -438, -436, -433, -431, -429, -427, -425, -423, -420,
-	-418, -416, -414, -412, -409, -407, -405, -403, -401, -398, -396, -394,
-	-391, -389, -387, -385, -382, -380, -378, -375, -373, -371, -368, -366,
-	-363, -361, -359, -356, -354, -351, -349, -347, -344, -342, -339, -337};
 
 } // namespace Dune
