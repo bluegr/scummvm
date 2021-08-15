@@ -778,7 +778,7 @@ void AdLibMidiDriver::setVolume(uint32 volume) {
 }
 
 void AdLibMidiDriver::adlibWrite(uint8 port, uint8 value) {
-	//debug("Reg.: 0x%X Value: 0x%X", port, value);
+	debug("Reg.: 0x%X Value: 0x%X", port, value);
 	_opl->writeReg(port, value);
 }
 
