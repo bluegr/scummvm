@@ -1161,21 +1161,6 @@ void AdLibMidiDriver::adlibWrite(uint8 port, uint8 value) {
 }
 
 void AdLibMidiDriver::adlibSetupCard() {
-	for (int i = 1; i <= 0xF5; ++i) {
-		adlibWrite(i, 0);
-	}
-	adlibWrite(4, 6);
-	for (int i = 0; i < 9; ++i) {
-		_midiChannelsNote2Table[i] = 8192;
-		_midiChannelsOctTable[i] = 0;
-		_midiChannelsNote1Table[i] = 0;
-		_midiChannelsFreqTable[i] = 0;
-	}
-	memset(_adlibChannelsLevelKeyScalingTable, 127, 11);
-	memset(_adlibChannelsVolumeTable, 128, 11);
-	adlibSetupChannels(0);
-	adlibResetAmpVibratoRhythm(0, 0, 0);
-	adlibSetNoteMul(1);
 	adlibSetWaveformSelect(1);
 }
 
