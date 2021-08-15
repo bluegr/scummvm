@@ -60,7 +60,6 @@
 #include "dune/dune.h"
 
 #include "common/debug.h"
-#include "common/endian.h"
 
 namespace Dune {
 

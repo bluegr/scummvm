@@ -58,8 +58,6 @@
 #include <cstring>
 #include "audio/fmopl.h"
 #include "audio/mididrv.h"
-#include "common/scummsys.h"
-#include "common/endian.h"
 
 #define HERAD_MIN_SIZE 6     /* Minimum file size for compression detection */
 #define HERAD_MAX_SIZE 75775 /* Maximum possible file size: 0xFFFF + 256 * HERAD_INST_SIZE */
