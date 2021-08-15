@@ -27,16 +27,14 @@ namespace Dune {
 void Intro::runIntro() {
 	while (!_video->skipped()) {
 		_music->playMusic(MORNING, false);
+		_music->setFrameStop(3300);
 		_video->playVideo(HNM_VIRGIN);
-		if (_video->skipped()) {
-			stopMusic();
-		}
+		stopMusic();
+		_music = new MidiMusic(_vm);
 		_music->playMusic(CRYOMUS, false);
 		_video->playVideo(HNM_CRYO);
 		_video->playVideo(HNM_CRYO2);
-		if (_video->skipped()) {
-			stopMusic();
-		}
+		stopMusic();
 		_video->playVideo(HNM_PRESENT);
 		_video->playVideo(HNM_IRULAN);
 		_video->playVideo(HNM_TITLE);
@@ -47,8 +45,8 @@ void Intro::runIntro() {
 }
 
 void Intro::stopMusic() {
+	_music->stopMusic();
 	delete _music;
-	_music = new MidiMusic(_vm);
 }
 
 Intro::Intro(DuneEngine *vm) : _vm(vm) {

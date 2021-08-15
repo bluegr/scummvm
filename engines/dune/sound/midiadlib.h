@@ -103,6 +103,7 @@ public:
 	bool isOpen() const override { return _isOplInitialized; }
 	uint32 getBaseTempo() override { return 1000000 / OPL::OPL::kDefaultCallbackFrequency; }
 	void setVolume(uint32 volume);
+	void setFrameStop(int frameStop) { _frameStop = frameStop; }
 
 private:
 	DuneEngine *_vm;
@@ -112,6 +113,8 @@ private:
 	OPL::OPL  *_opl;
 	unsigned long _buf_size, _frequency;
 	unsigned char _bits, _nChannels;
+	int _frameCount = 0;
+	int _frameStop = -1;
 
 	Common::String gettype();
 	bool isSQX(uint8_t *data);

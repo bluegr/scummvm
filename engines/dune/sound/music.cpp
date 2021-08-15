@@ -27,6 +27,7 @@
 #include "dune/sound/music.h"
 #include "dune/dune.h"
 #include "dune/sound/midiadlib.h"
+#include "audio/mixer.h"
 
 namespace Dune {
 
@@ -102,9 +103,15 @@ void MidiMusic::playMusic() {
 }
 
 void MidiMusic::stopMusic() {
+	setVolume(0);
 	if (_isUsingAdlib) {
-		//TODO: implement it.
+		static_cast<AdLibMidiDriver *>(_driver)->stopAllNotes(true);
 	}
+}
+
+void MidiMusic::setFrameStop(int frameStop) {
+	if (_isUsingAdlib)
+		static_cast<AdLibMidiDriver *>(_driver)->setFrameStop(frameStop);
 }
 
 bool MidiMusic::isPlaying() {

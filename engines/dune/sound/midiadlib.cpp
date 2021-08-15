@@ -563,6 +563,10 @@ uint16_t AdLibMidiDriver::SQX_decompress(uint8_t *data, int size, uint8_t *out) 
 }
 
 void AdLibMidiDriver::frame() {
+	_frameCount++;
+	if (_frameStop > -1 && _frameCount >= _frameStop) {
+		return;
+	}
 	_isPlaying = update();
 }
 
@@ -1152,6 +1156,7 @@ void AdLibMidiDriver::handleMidiEvent0x90_NoteOn(int channel, int param1, int pa
 }
 
 void AdLibMidiDriver::adlibWrite(uint8 port, uint8 value) {
+	debug("Reg.: 0x%X Value: 0x%X", port, value);
 	_opl->writeReg(port, value);
 }
 

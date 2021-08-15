@@ -52,6 +52,7 @@ public:
 	void playMusic(Musics musicId, bool loop);
 	bool isPlaying();
 	void stopMusic();
+	void setFrameStop(int frameStop);
 	void setLoop(bool loop)		{ _isLooping = loop; }
 
 	// MidiDriver_BASE interface implementation
