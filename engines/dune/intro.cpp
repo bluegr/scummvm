@@ -29,12 +29,11 @@ void Intro::runIntro() {
 		_music->playMusic(MORNING, false);
 		_music->setFrameStop(3300);
 		_video->playVideo(HNM_VIRGIN);
-		stopMusic();
-		_music = new MidiMusic(_vm);
+		reinitializeMidiMusic();
 		_music->playMusic(CRYOMUS, false);
 		_video->playVideo(HNM_CRYO);
 		_video->playVideo(HNM_CRYO2);
-		stopMusic();
+		reinitializeMidiMusic();
 		_video->playVideo(HNM_PRESENT);
 		_video->playVideo(HNM_IRULAN);
 		_video->playVideo(HNM_TITLE);
@@ -44,9 +43,10 @@ void Intro::runIntro() {
 	_video->resetSkipped();
 }
 
-void Intro::stopMusic() {
+void Intro::reinitializeMidiMusic() {
 	_music->stopMusic();
 	delete _music;
+	_music = new MidiMusic(_vm);
 }
 
 Intro::Intro(DuneEngine *vm) : _vm(vm) {

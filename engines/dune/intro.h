@@ -38,7 +38,7 @@ private:
 	DuneEngine *_vm;
 	HnmPlayer *_video;
 	MidiMusic *_music;
-	void stopMusic();
+	void reinitializeMidiMusic();
 
 public:
 	void runIntro();
