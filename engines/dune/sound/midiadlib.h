@@ -173,28 +173,20 @@ private:
 	void macroTranspose(uint8_t *note, uint8_t i);
 	void macroSlide(uint8_t c);
 	static void timerCallback(void *refCon) { ((AdLibMidiDriver *)refCon)->onTimer(); }
-
-	void handleMidiEvent0x90_NoteOn(int channel, int param1, int param2);
-	void handleSequencerSpecificMetaEvent1(int channel, const uint8 *data);
-	void handleSequencerSpecificMetaEvent2(uint8 value);
-	void handleSequencerSpecificMetaEvent3(uint8 value);
-
 	void adlibWrite(uint8 port, uint8 value);
-	void adlibSetupChannels(int fl);
 	void adlibSetChannelVolume(int channel, uint8 volume);
 
 	int _midiNumberOfChannels;
-	int _adlibNoteMul;
-	int _adlibWaveformSelect;
-	int _adlibRhythmEnabled;
 	uint8 _adlibChannelsVolumeTable[11];
 
 	bool _isOpen;
+
 	Common::TimerManager::TimerProc _adlibTimerProc;
 	void *_adlibTimerParam;
 
 	bool _songEnd;
 	bool _isLooping = false;
+
 	int16_t _wTime;
 	int32_t _current_tick_position;    /* current tick counter */
 	uint32_t _total_tick_count; /* total ticks in song */
@@ -211,7 +203,6 @@ private:
 	uint16_t _wSpeed;     /* Fixed point value that controls music speed. Value range is 0x0100 - 0x8100 */
 
 	struct herad_trk {
-
 		// stored variables
 		uint16_t size; /* data size */
 		uint8_t *data; /* event data */

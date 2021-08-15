@@ -794,7 +794,6 @@ void AdLibMidiDriver::adlibWrite(uint8 port, uint8 value) {
 }
 
 void AdLibMidiDriver::adlibSetChannelVolume(int channel, uint8 volume) {
-	if (channel < (_adlibRhythmEnabled ? 11 : 9))
-		_adlibChannelsVolumeTable[channel] = volume;
+	_adlibChannelsVolumeTable[channel] = volume;
 }
 } // namespace Dune
