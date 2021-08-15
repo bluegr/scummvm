@@ -180,23 +180,18 @@ private:
 	void handleSequencerSpecificMetaEvent3(uint8 value);
 
 	void adlibWrite(uint8 port, uint8 value);
-	void adlibSetupCard();
 	void adlibSetupChannels(int fl);
 	void adlibSetChannelVolume(int channel, uint8 volume);
-	void adlibSetWaveformSelect(int fl);
 
 	int _midiNumberOfChannels;
 	int _adlibNoteMul;
 	int _adlibWaveformSelect;
 	int _adlibRhythmEnabled;
-	static const uint8 _adlibChannelsMappingTable1[];
 	uint8 _adlibChannelsVolumeTable[11];
 
 	bool _isOpen;
 	Common::TimerManager::TimerProc _adlibTimerProc;
 	void *_adlibTimerParam;
-
-	static const uint8 _adlibChannelsMappingTable1[];
 
 	bool _songEnd;
 	bool _isLooping = false;
@@ -297,5 +292,4 @@ private:
 	herad_trk _loop_data[HERAD_MAX_TRACKS];
 };
 } // End of namespace Dune
-
 #endif

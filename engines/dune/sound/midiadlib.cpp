@@ -71,7 +71,6 @@ AdLibMidiDriver::AdLibMidiDriver(DuneEngine *vm) : _vm(vm) {
 	_reader = nullptr;
 	_opl = nullptr;
 	open();
-	adlibSetupCard();
 }
 
 AdLibMidiDriver::~AdLibMidiDriver() {
@@ -794,24 +793,8 @@ void AdLibMidiDriver::adlibWrite(uint8 port, uint8 value) {
 	_opl->writeReg(port, value);
 }
 
-void AdLibMidiDriver::adlibSetupCard() {
-	adlibSetWaveformSelect(1);
-}
-
-void AdLibMidiDriver::adlibSetWaveformSelect(int fl) {
-	_adlibWaveformSelect = fl ? 0x20 : 0;
-	for (int i = 0; i < 18; ++i) {
-		adlibWrite(0xE0 + _adlibChannelsMappingTable1[i], 0);
-	}
-	adlibWrite(1, _adlibWaveformSelect);
-}
-
 void AdLibMidiDriver::adlibSetChannelVolume(int channel, uint8 volume) {
 	if (channel < (_adlibRhythmEnabled ? 11 : 9))
 		_adlibChannelsVolumeTable[channel] = volume;
 }
-
-const uint8 AdLibMidiDriver::_adlibChannelsMappingTable1[] = {
-	0, 1, 2, 3, 4, 5, 8, 9, 10, 11, 12, 13, 16, 17, 18, 19, 20, 21};
-
 } // namespace Dune
