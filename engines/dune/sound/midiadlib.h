@@ -120,8 +120,6 @@ private:
 	unsigned char getSampleSize() { return (_nChannels * (_bits / 8)); }
 	void onTimer();
 	void enableOPL3();
-	void enableDualOPL2();
-	void enableSingleOPL2();
 	bool update();
 	void rewind(int subsong);
 

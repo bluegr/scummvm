@@ -165,7 +165,6 @@ void AdLibMidiDriver::rewind(int subsong) {
 		_channels[i].bend = HERAD_BEND_CENTER;
 		_channels[i].slide_dur = 0;
 	}
-	_opl->init();
 	oplWrite(1, 32);     // Enable Waveform Select
 	oplWrite(8, 64);     // Enable Note-Sel
 	oplWrite(35, 238);   // Tremolo / Vibrato / Sustain / KSR / Frequency Multiplication Factor
@@ -193,28 +192,6 @@ void AdLibMidiDriver::enableOPL3() {
 	open();
 	oplWrite(5, 1);    // Enable OPL3
 	oplWrite(4, 0); // Disable 4OP Mode
-}
-
-void AdLibMidiDriver::enableDualOPL2() {
-	if (_oplType == OPL::Config::OplType::kDualOpl2 && _opl && _isOplInitialized) {
-		return;
-	}
-	if (_opl) {
-		close();
-	}
-	_oplType = OPL::Config::OplType::kDualOpl2;
-	open();
-}
-
-void AdLibMidiDriver::enableSingleOPL2() {
-	if (_oplType == OPL::Config::OplType::kOpl2 && _opl && _isOplInitialized) {
-		return;
-	}
-	if (_opl) {
-		close();
-	}
-	_oplType = OPL::Config::OplType::kOpl2;
-	open();
 }
 
 void AdLibMidiDriver::load(Common::SeekableReadStream *reader) {
@@ -534,9 +511,11 @@ void AdLibMidiDriver::playNote(uint8_t c, uint8_t note, uint8_t state) {
 void AdLibMidiDriver::setFreq(uint8_t c, uint8_t oct, uint16_t freq, bool on) {
 	uint8_t reg, val;
 
-	if (c >= HERAD_NUM_VOICES)
-		enableDualOPL2();
-
+	if (c >= HERAD_NUM_VOICES) {
+		debug("c >= HERAD_NUM_VOICES");
+		//enableDualOPL2(); Maybe...
+	}
+	
 	reg = 0xA0 + (c % HERAD_NUM_VOICES);
 	val = freq & 0xFF;
 	oplWriteReg(reg, val);
