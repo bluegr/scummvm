@@ -166,9 +166,10 @@ void AdLibMidiDriver::rewind(int subsong) {
 		_channels[i].slide_dur = 0;
 	}
 	_opl->init();
-	oplWrite(1, 32);    // Enable Waveform Select
-	oplWrite(0xBD, 0);  // Disable Percussion Mode
-	oplWrite(8, 64);    // Enable Note-Sel
+	oplWrite(1, 32);     // Enable Waveform Select
+	oplWrite(8, 64);     // Enable Note-Sel
+	oplWrite(35, 238);   // Tremolo / Vibrato / Sustain / KSR / Frequency Multiplication Factor
+	//oplWrite(0xBD, 0); // Disable Percussion Mode - disabled, not used in DOSBox... ?
 	if (isAgd) {
 		enableOPL3();
 	}
