@@ -108,6 +108,7 @@ public:
 private:
 	DuneEngine *_vm;
 	OPL::Config::OplType _oplType = OPL::Config::OplType::kDualOpl2;
+	int _opl_count = 0;
 	bool _isOplInitialized = false;
 	bool _isPlaying;
 	OPL::OPL  *_opl;
@@ -123,6 +124,8 @@ private:
 	void enableSingleOPL2();
 	bool update();
 	void rewind(int subsong);
+
+	void oplWrite(int a, int v);
 
 	unsigned int getpatterns() {
 		return _total_tick_count / HERAD_MEASURE_TICKS + (_total_tick_count % HERAD_MEASURE_TICKS ? 1 : 0);
@@ -149,7 +152,8 @@ private:
 	void macroTranspose(uint8_t *note, uint8_t i);
 	void macroSlide(uint8_t c);
 	static void timerCallback(void *refCon) { ((AdLibMidiDriver *)refCon)->onTimer(); }
-	void adlibWrite(uint8 port, uint8 value);
+	void oplWriteReg(uint8 port, uint8 value);
+	void debugOplWrite(const uint8 &port, const uint8 &value);
 	void adlibSetChannelVolume(int channel, uint8 volume);
 
 	int _midiNumberOfChannels;
