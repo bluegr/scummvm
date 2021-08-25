@@ -22,6 +22,7 @@
 #define AUDIO_SOFTSYNTH_OPL_DBOPL_H
 
 #include "common/scummsys.h"
+#include "common/system.h"
 
 #ifndef DISABLE_DOSBOX_OPL
 
@@ -53,6 +54,9 @@ typedef uint16 Bit16u;
 typedef int32 Bit32s;
 typedef uint32 Bit32u;
 
+//The cache for 2 chips or an opl3
+typedef Bit8u RegisterCache[512];
+
 #define DB_FASTCALL
 #define GCC_UNLIKELY(x) (x)
 #define INLINE inline
@@ -61,6 +65,7 @@ typedef uint32 Bit32u;
 struct Chip;
 struct Operator;
 struct Channel;
+class Capture;
 
 #if (DBOPL_WAVE == WAVE_HANDLER)
 typedef Bits ( DB_FASTCALL *WaveHandler) ( Bitu i, Bitu volume );
@@ -258,8 +263,13 @@ struct Chip {
 	Bit32u ForwardLFO( Bit32u samples );
 	Bit32u ForwardNoise();
 
+	Capture *capture;
+	RegisterCache cache;
+
 	void WriteBD( Bit8u val );
-	void WriteReg(Bit32u reg, Bit8u val );
+	void WriteReg(Bit32u reg, Bit8u val);
+
+	void CacheWrite(Bit32u reg, Bit8u val);
 
 	Bit32u WriteAddr( Bit32u port, Bit8u val );
 
@@ -270,6 +280,7 @@ struct Chip {
 	void Setup( Bit32u r );
 
 	Chip();
+	~Chip();
 };
 
 void InitTables();
