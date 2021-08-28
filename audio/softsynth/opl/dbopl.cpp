@@ -1426,6 +1426,7 @@ void Chip::WriteBD( Bit8u val ) {
 
 void Chip::WriteReg( Bit32u reg, Bit8u val ) {
 	Bitu index;
+	CacheWrite(reg, val);
 	switch ((reg & 0xf0) >> 4) {
 	case 0x00 >> 4:
 		if ( reg == 0x01 ) {
@@ -1487,7 +1488,6 @@ void Chip::WriteReg( Bit32u reg, Bit8u val ) {
 	default:
 		break;
 	}
-	CacheWrite(reg, val);
 }
 
 void Chip::CacheWrite(Bit32u reg, Bit8u val) {
