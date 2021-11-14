@@ -90,7 +90,7 @@ Common::SeekableReadStream *Archive::openMember(const Common::String &name) {
 				assert(size == packedLength);
 
 				byte *unpackedBuf = new byte[unpackedLength];
-				decompressHSQ(&r, packedLength, unpackedBuf, unpackedLength);
+				decompressHSQ(&r, unpackedBuf, unpackedLength);
 
 				return new Common::MemoryReadStream(unpackedBuf, unpackedLength, DisposeAfterUse::YES);
 			}

@@ -425,7 +425,7 @@ void HnmPlayer::decodeAVFrameChunks() {
 			assert(unpackedLength <= MAX_DECODE_BUFFER_SIZE);
 			_decodeBufferSize = unpackedLength;
 
-			decompressHSQ(_reader, packedLength, _decodeBuffer, _decodeBufferSize);
+			decompressHSQ(_reader, _decodeBuffer, _decodeBufferSize);
 			return;
 		}
 		}

@@ -44,7 +44,7 @@ inline byte decompressHSQ_getBit(uint16 &queue, Common::ReadStream *src) {
 #define GETBIT() decompressHSQ_getBit(queue, src)
 
 template<typename T>
-void decompressHSQ(Common::ReadStream *src, int packedLength, T buf, int unpackedLength) {
+void decompressHSQ(Common::ReadStream *src, T buf, int unpackedLength) {
 	uint16 queue = 0;
 	int dst = 0;
 
