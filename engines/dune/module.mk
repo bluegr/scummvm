@@ -11,6 +11,7 @@ MODULE_OBJS := \
 	sound/sound.o \
 	sound/music.o \
 	sound/midiadlib.o \
+	sound/mt32.o \
 	video.o
 
 # This module can be built as a plugin
