@@ -52,7 +52,7 @@ const char *DuneMetaEngine::getName() const {
 }
 
 Common::KeymapArray DuneMetaEngine::initKeymaps(const char *target) const {
-	Common::Keymap *cutscenesKeymap = new Common::Keymap(Common::Keymap::kKeymapTypeGame, cutscenesKeymapId, "Z-Vision - Cutscenes");
+	Common::Keymap *cutscenesKeymap = new Common::Keymap(Common::Keymap::kKeymapTypeGame, cutscenesKeymapId, "Dune - Cutscenes");
 
 	Common::Action *act;
 
