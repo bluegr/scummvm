@@ -65,7 +65,7 @@ MidiMusic::~MidiMusic() {
 }
 
 void MidiMusic::onTimer() {
-	//NOP, fow now...?
+	//NOP, for now...?
 }
 
 
@@ -96,14 +96,12 @@ void MidiMusic::playMusic(Musics musicId, bool loop) {
 }
 
 void MidiMusic::playMusic() {
-	stopMusic();
 	if (_isUsingAdlib) {
 		static_cast<AdLibMidiDriver *>(_driver)-> play(_isLooping);
 	}
 }
 
 void MidiMusic::stopMusic() {
-	setVolume(0);
 	if (_isUsingAdlib) {
 		static_cast<AdLibMidiDriver *>(_driver)->stopAllNotes(true);
 	}

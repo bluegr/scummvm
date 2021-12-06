@@ -42,10 +42,10 @@ enum Musics {
 	WORMSUIT
 };
 
-class MidiMusic : public MidiDriver_BASE {
+class MidiMusic {
 public:
 	MidiMusic(DuneEngine *vm);
-	~MidiMusic() override;
+	~MidiMusic();
 	void setVolume(int volume);
 	int getVolume()	const { return _masterVolume; }
 
@@ -54,12 +54,6 @@ public:
 	void stopMusic();
 	void setFrameStop(int frameStop);
 	void setLoop(bool loop)		{ _isLooping = loop; }
-
-	// MidiDriver_BASE interface implementation
-	//NOP
-	void send(uint32 b) override{}
-	//NOP
-	void metaEvent(byte type, byte *data, uint16 length) override {}
 
 protected:
 	void playMusic();
