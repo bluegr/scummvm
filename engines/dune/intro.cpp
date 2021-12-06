@@ -33,7 +33,6 @@ void Intro::runIntro() {
 		_music->playMusic(CRYOMUS, false);
 		_video->playVideo(HNM_CRYO);
 		_video->playVideo(HNM_CRYO2);
-		reinitializeMidiMusic();
 		_video->playVideo(HNM_PRESENT);
 		_video->playVideo(HNM_IRULAN);
 		_video->playVideo(HNM_TITLE);
