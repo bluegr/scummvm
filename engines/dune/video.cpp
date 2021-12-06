@@ -117,6 +117,11 @@ void HnmPlayer::playVideo(HNMVideos videoId) {
 	if (videoId == HNM_IRULAN) {
 		setSubtitles(Subs::irulan, _vm->openMember("IRUL1.HSQ"));
 	}
+	else {
+		clearSubtitleArea();
+		_subtitleFrames = nullptr;
+	}
+
 
 	setInterlace(videoId >= HNM_IRULAN);
 	start();
@@ -419,7 +424,7 @@ void HnmPlayer::decodeAVFrameChunks() {
 			assert(zero == 0);
 			byte sum = (unpackedLength >> 8) + (unpackedLength & 0xff) + (packedLength >> 8) + (packedLength & 0xff) + checksum;
 
-			assert(sum = 0xab);
+			assert(sum == 0xab);
 #endif
 
 			assert(unpackedLength <= MAX_DECODE_BUFFER_SIZE);
