@@ -150,7 +150,6 @@ private:
 	void macroTranspose(uint8_t *note, uint8_t i);
 	void macroSlide(uint8_t c);
 	void oplWriteReg(uint8 port, uint8 value);
-	void debugOplWrite(const uint8 &port, const uint8 &value);
 	void adlibSetChannelVolume(int channel, uint8 volume);
 
 	int _midiNumberOfChannels;

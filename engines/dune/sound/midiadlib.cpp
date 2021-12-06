@@ -510,11 +510,6 @@ void AdLibMidiDriver::playNote(uint8_t c, uint8_t note, uint8_t state) {
 void AdLibMidiDriver::setFreq(uint8_t c, uint8_t oct, uint16_t freq, bool on) {
 	uint8_t reg, val;
 
-	if (c >= HERAD_NUM_VOICES) {
-		debug("c >= HERAD_NUM_VOICES");
-		//enableDualOPL2(); Maybe...
-	}
-	
 	reg = 0xA0 + (c % HERAD_NUM_VOICES);
 	val = freq & 0xFF;
 	oplWriteReg(reg, val);
@@ -523,20 +518,10 @@ void AdLibMidiDriver::setFreq(uint8_t c, uint8_t oct, uint16_t freq, bool on) {
 		  ((oct & 7) << 2) |
 		  ((on ? 1 : 0) << 5);
 	oplWriteReg(reg, val);
-
-	if (c >= HERAD_NUM_VOICES) {
-		debug("c >= HERAD_NUM_VOICES");
-		//enableSingleOPL2(); Maybe...
-	}
 }
 
 void AdLibMidiDriver::changeProgram(uint8_t c, uint8_t i) {
 	uint8_t reg, val;
-
-	if (c >= HERAD_NUM_VOICES) {
-		debug("c >= HERAD_NUM_VOICES");
-		//enableSingleOPL2(); Maybe...
-	}
 
 	// Amp Mod / Vibrato / EG type / Key Scaling / Multiple
 	reg = 0x20 + slot_offset[c % HERAD_NUM_VOICES];
@@ -598,11 +583,6 @@ void AdLibMidiDriver::changeProgram(uint8_t c, uint8_t i) {
 	reg += 3;
 	val = _instruments[i].param.car_wave & (isAgd ? 7 : 3);
 	oplWriteReg(reg, val);
-
-	if (c >= HERAD_NUM_VOICES) {
-		debug("c >= HERAD_NUM_VOICES");
-		//enableSingleOPL2(); Maybe...
-	}
 }
 
 void AdLibMidiDriver::macroModOutput(uint8_t c, uint8_t i, int8_t sens, uint8_t level) {
@@ -621,20 +601,10 @@ void AdLibMidiDriver::macroModOutput(uint8_t c, uint8_t i, int8_t sens, uint8_t 
 	if (output > 63)
 		output = 63;
 
-	if (c >= HERAD_NUM_VOICES) {
-		debug("c >= HERAD_NUM_VOICES");
-		//enableSingleOPL2(); Maybe...
-	}
-
 	// Key scaling level / Output level
 	reg = 0x40 + slot_offset[c % HERAD_NUM_VOICES];
 	val = (output & 63) | ((_instruments[i].param.mod_ksl & 3) << 6);
 	oplWriteReg(reg, val);
-
-	if (c >= HERAD_NUM_VOICES) {
-		debug("c >= HERAD_NUM_VOICES");
-		//enableSingleOPL2(); Maybe...
-	}
 }
 
 void AdLibMidiDriver::macroCarOutput(uint8_t c, uint8_t i, int8_t sens, uint8_t level) {
@@ -653,20 +623,10 @@ void AdLibMidiDriver::macroCarOutput(uint8_t c, uint8_t i, int8_t sens, uint8_t 
 	if (output > 63)
 		output = 63;
 
-	if (c >= HERAD_NUM_VOICES) {
-		debug("c >= HERAD_NUM_VOICES");
-		//enableSingleOPL2(); Maybe...
-	}
-
 	// Key scaling level / Output level
 	reg = 0x43 + slot_offset[c % HERAD_NUM_VOICES];
 	val = (output & 63) | ((_instruments[i].param.car_ksl & 3) << 6);
 	oplWriteReg(reg, val);
-
-	if (c >= HERAD_NUM_VOICES) {
-		debug("c >= HERAD_NUM_VOICES");
-		//enableSingleOPL2(); Maybe...
-	}
 }
 
 void AdLibMidiDriver::macroFeedback(uint8_t c, uint8_t i, int8_t sens, uint8_t level) {
@@ -685,21 +645,11 @@ void AdLibMidiDriver::macroFeedback(uint8_t c, uint8_t i, int8_t sens, uint8_t l
 	if (feedback > 7)
 		feedback = 7;
 
-	if (c >= HERAD_NUM_VOICES) {
-		debug("c >= HERAD_NUM_VOICES");
-		//enableSingleOPL2(); Maybe...
-	}
-
 	// Panning / Feedback strength / Connection type
 	reg = 0xC0 + (c % HERAD_NUM_VOICES);
 	val = (_instruments[i].param.con > 0 ? 0 : 1) | ((feedback & 7) << 1) |
 		((isAgd ? (_instruments[i].param.pan == 0 || _instruments[i].param.pan > 3 ? 3 : _instruments[i].param.pan) : 0) << 4);
 	oplWriteReg(reg, val);
-
-	if (c >= HERAD_NUM_VOICES) {
-		debug("c >= HERAD_NUM_VOICES");
-		//enableSingleOPL2(); Maybe...
-	}
 }
 
 void AdLibMidiDriver::macroTranspose(uint8_t *note, uint8_t i) {
@@ -756,13 +706,7 @@ void AdLibMidiDriver::setVolume(uint32 volume) {
 }
 
 void AdLibMidiDriver::oplWriteReg(uint8 port, uint8 value) {
-	debugOplWrite(port, value);
 	_opl->writeReg(port, value);
-}
-
-void AdLibMidiDriver::debugOplWrite(const uint8 &port, const uint8 &value) {
-	//debug("%i> Reg.: 0x%X Value: 0x%X (%i)", _opl_count, port, value, value);
-	//_opl_count++;
 }
 
 void AdLibMidiDriver::adlibSetChannelVolume(int channel, uint8 volume) {
