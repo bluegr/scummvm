@@ -99,7 +99,7 @@ public:
 	void metaEvent(byte type, byte *data, uint16 length) override{};
 	MidiChannel *allocateChannel() override { return 0; }
 	MidiChannel *getPercussionChannel() override { return 0; }
-	void setTimerCallback(void *timerParam, Common::TimerManager::TimerProc timerProc) override;
+	void setTimerCallback(void *timerParam, Common::TimerManager::TimerProc timerProc) override {};
 	bool isOpen() const override { return _isOplInitialized; }
 	uint32 getBaseTempo() override { return 1000000 / OPL::OPL::kDefaultCallbackFrequency; }
 	void setVolume(uint32 volume);
@@ -149,7 +149,6 @@ private:
 	void macroFeedback(uint8_t c, uint8_t i, int8_t sens, uint8_t level);
 	void macroTranspose(uint8_t *note, uint8_t i);
 	void macroSlide(uint8_t c);
-	static void timerCallback(void *refCon) { ((AdLibMidiDriver *)refCon)->onTimer(); }
 	void oplWriteReg(uint8 port, uint8 value);
 	void debugOplWrite(const uint8 &port, const uint8 &value);
 	void adlibSetChannelVolume(int channel, uint8 volume);

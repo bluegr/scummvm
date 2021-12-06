@@ -165,17 +165,16 @@ void AdLibMidiDriver::rewind(int subsong) {
 		_channels[i].bend = HERAD_BEND_CENTER;
 		_channels[i].slide_dur = 0;
 	}
-	oplWrite(1, 32);     // Enable Waveform Select
-	oplWrite(8, 64);     // Enable Note-Sel
-	oplWrite(35, 238);   // Tremolo / Vibrato / Sustain / KSR / Frequency Multiplication Factor
-	//oplWrite(0xBD, 0); // Disable Percussion Mode - disabled, not used in DOSBox... ?
+	oplWrite(1, 32);    // Enable Waveform Select
+	oplWrite(8, 64);    // Enable Note-Sel
+	oplWrite(35, 238);  // Tremolo / Vibrato / Sustain / KSR / Frequency Multiplication Factor
+	oplWrite(0xBD, 0);	// Disable Percussion Mode
 	if (isAgd) {
 		enableOPL3();
 	}
 }
 
 void AdLibMidiDriver::oplWrite(int a, int v) {
-	debugOplWrite(a, v);
 	_opl->write(a, v);
 }
 
@@ -743,12 +742,6 @@ void AdLibMidiDriver::play(bool loop) {
 	_opl->start(new Common::Functor0Mem<void, AdLibMidiDriver>(this, &AdLibMidiDriver::onTimer), 235);
 }
 
-void AdLibMidiDriver::setTimerCallback(void *timerParam, Common::TimerManager::TimerProc timerProc) {
-	//TODO: remove this. We do not use this code in 'onTimer'.
-	_adlibTimerProc = timerProc;
-	_adlibTimerParam = timerParam;
-}
-
 void AdLibMidiDriver::onTimer() {
 	if (_frameStop > -1 && _frameCount >= _frameStop) {
 		return;
@@ -768,8 +761,8 @@ void AdLibMidiDriver::oplWriteReg(uint8 port, uint8 value) {
 }
 
 void AdLibMidiDriver::debugOplWrite(const uint8 &port, const uint8 &value) {
-	debug("%i> Reg.: 0x%X Value: 0x%X (%i)", _opl_count, port, value, value);
-	_opl_count++;
+	//debug("%i> Reg.: 0x%X Value: 0x%X (%i)", _opl_count, port, value, value);
+	//_opl_count++;
 }
 
 void AdLibMidiDriver::adlibSetChannelVolume(int channel, uint8 volume) {
