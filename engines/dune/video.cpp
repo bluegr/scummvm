@@ -149,7 +149,7 @@ void HnmPlayer::playVideo(HNMVideos videoId) {
 		nextFrameTime += (1000.0 / 12.0);
 	}
 	if (videoId == HNM_CRYO && !_skipped) {
-		waitAFewMoreFrames(20);
+		waitAFewMoreFrames(50);
 	}
 	if (videoId == HNM_CRYO2 && !_skipped) {
 		waitAFewMoreFrames(70);
