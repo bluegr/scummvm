@@ -37,6 +37,8 @@ void Intro::runIntro() {
 		_video->playVideo(HNM_IRULAN);
 		_video->playVideo(HNM_TITLE);
 		_video->resetSkipped();
+		reinitializeMidiMusic();
+		_music->playMusic(WORMSUIT, false);
 		_video->playVideo(HNM_CREDITS);
 	}
 	_video->resetSkipped();

@@ -689,7 +689,7 @@ int AdLibMidiDriver::open() {
 
 void AdLibMidiDriver::play(bool loop) {
 	_isLooping = loop;
-	_opl->start(new Common::Functor0Mem<void, AdLibMidiDriver>(this, &AdLibMidiDriver::onTimer), 235);
+	_opl->start(new Common::Functor0Mem<void, AdLibMidiDriver>(this, &AdLibMidiDriver::onTimer), 200.299);
 }
 
 void AdLibMidiDriver::onTimer() {
