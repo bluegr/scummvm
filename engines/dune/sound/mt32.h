@@ -23,10 +23,30 @@
 #ifndef DUNE_MT32_H
 #define DUNE_MT32_H
 
-#include "dune/dune.h"
+#include <cstring>
+#include "audio/mididrv.h"
+#include "dune/sound/musicbase.h"
+
 namespace Dune {
 class DuneEngine;
 
+class MT32MidiDriver : public MidiDriver, MusicBase {
+public:
+	Common::SeekableReadStream *_reader;
+	MT32MidiDriver(DuneEngine *vm);
+	~MT32MidiDriver() override;
+	void load(Common::SeekableReadStream *reader);
+	void play(bool loop);
+	bool isPlaying();
+	void setVolume(uint32 volume);
+	void setFrameStop(int frameStop) { _frameStop = frameStop; }
+	void stopMusic() { stopAllNotes(true); }
+
+private:
+	DuneEngine *_vm;
+	int _frameStop = -1;
+	int frameCount = 0;
+};
 } // End of namespace Dune
 
 #endif

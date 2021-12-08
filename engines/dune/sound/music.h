@@ -64,8 +64,8 @@ protected:
 
 	static void timerCallback(void *refCon) { ((MidiMusic *)refCon)->onTimer(); }
 
-	bool _isUsingAdlib;
-	bool _isUsingNativeMT32;
+	bool _adlib;
+	bool _nativeMT32;
 
 	bool _isLooping;
 	byte _masterVolume;

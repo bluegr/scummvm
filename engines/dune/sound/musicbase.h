@@ -24,8 +24,20 @@
 #define DUNE_MUSICBASE_H
 
 #include "dune/dune.h"
+
 namespace Dune {
-class DuneEngine;
+/*
+* A representation of a music file player.
+*/
+class MusicBase {
+public:
+	virtual void load(Common::SeekableReadStream *reader) = 0;
+	virtual void play(bool loop) = 0;
+	virtual bool isPlaying() = 0;
+	virtual void setVolume(uint32 volume) = 0;
+	virtual void setFrameStop(int frameStop) = 0;
+	virtual void stopMusic() = 0;
+};
 
 } // End of namespace Dune
 

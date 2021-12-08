@@ -36,14 +36,14 @@ MidiMusic::MidiMusic(DuneEngine *vm)
 	{
 	_vm = vm;
 	MidiDriver::DeviceHandle dev = MidiDriver::detectDevice(MDT_MIDI | MDT_ADLIB | MDT_PREFER_MT32);
-	_isUsingAdlib = (MidiDriver::getMusicType(dev) == MT_ADLIB);
-	_isUsingNativeMT32 = ((MidiDriver::getMusicType(dev) == MT_MT32) || ConfMan.getBool("native_mt32"));
+	_adlib = (MidiDriver::getMusicType(dev) == MT_ADLIB);
+	_nativeMT32 = ((MidiDriver::getMusicType(dev) == MT_MT32) || ConfMan.getBool("native_mt32"));
 
-	if (_isUsingAdlib) {
+	if (_adlib) {
 		_driver = new AdLibMidiDriver(_vm);
 	} else {
 		_driver = MidiDriver::createMidi(dev);
-		if (_isUsingNativeMT32) {
+		if (_nativeMT32) {
 			_driver->property(MidiDriver::PROP_CHANNEL_MASK, 0x03FE);
 		}
 	}
@@ -53,7 +53,7 @@ MidiMusic::MidiMusic(DuneEngine *vm)
 	assert(ret == 0);
 	_driver->setTimerCallback(this, &timerCallback);
 
-	if (_isUsingNativeMT32)
+	if (_nativeMT32)
 		_driver->sendMT32Reset();
 	else
 		_driver->sendGMReset();
@@ -88,7 +88,7 @@ void MidiMusic::playMusic(Musics musicId, bool loop) {
 	const char *filename = hsqMusicFilenames[musicId];
 	setLoop(loop);
 	Common::SeekableReadStream *r = _vm->openMember(filename);
-	if (_isUsingAdlib) {
+	if (_adlib) {
 		static_cast<AdLibMidiDriver *>(_driver)->load(r);
 	}
 	_currentSong = musicId;
@@ -96,24 +96,24 @@ void MidiMusic::playMusic(Musics musicId, bool loop) {
 }
 
 void MidiMusic::playMusic() {
-	if (_isUsingAdlib) {
-		static_cast<AdLibMidiDriver *>(_driver)-> play(_isLooping);
+	if (_adlib) {
+		static_cast<AdLibMidiDriver *>(_driver)->play(_isLooping);
 	}
 }
 
 void MidiMusic::stopMusic() {
-	if (_isUsingAdlib) {
-		static_cast<AdLibMidiDriver *>(_driver)->stopAllNotes(true);
+	if (_adlib) {
+		static_cast<AdLibMidiDriver *>(_driver)->stopMusic();
 	}
 }
 
 void MidiMusic::setFrameStop(int frameStop) {
-	if (_isUsingAdlib)
+	if (_adlib)
 		static_cast<AdLibMidiDriver *>(_driver)->setFrameStop(frameStop);
 }
 
 bool MidiMusic::isPlaying() {
-	if (_isUsingAdlib) {
+	if (_adlib) {
 		return static_cast<AdLibMidiDriver *>(_driver)->isPlaying();
 	}
 	return false;
@@ -128,7 +128,7 @@ void MidiMusic::setVolume(int volume) {
 
 	_masterVolume = volume;
 
-	if (_isUsingAdlib)
+	if (_adlib)
 		static_cast<AdLibMidiDriver *>(_driver)->setVolume(volume);
 }
 

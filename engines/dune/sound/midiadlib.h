@@ -58,6 +58,7 @@
 #include <cstring>
 #include "audio/fmopl.h"
 #include "audio/mididrv.h"
+#include "dune/sound/musicbase.h"
 
 #define HERAD_MIN_SIZE 6     /* Minimum file size for compression detection */
 #define HERAD_MAX_SIZE 75775 /* Maximum possible file size: 0xFFFF + 256 * HERAD_INST_SIZE */
@@ -84,7 +85,7 @@
 namespace Dune {
 class DuneEngine;
 
-class AdLibMidiDriver : public MidiDriver {
+class AdLibMidiDriver : public MidiDriver, MusicBase {
 public:
 	Common::SeekableReadStream *_reader;
 	AdLibMidiDriver(DuneEngine *vm);
@@ -92,6 +93,9 @@ public:
 	void load(Common::SeekableReadStream *reader);
 	void play(bool loop);
 	bool isPlaying();
+	void setVolume(uint32 volume);
+	void setFrameStop(int frameStop) { _frameStop = frameStop; }
+	void stopMusic() { stopAllNotes(true); }
 	// MidiDriver
 	int open() override;
 	void close() override;
@@ -102,8 +106,6 @@ public:
 	void setTimerCallback(void *timerParam, Common::TimerManager::TimerProc timerProc) override {};
 	bool isOpen() const override { return _isOplInitialized; }
 	uint32 getBaseTempo() override { return 1000000 / OPL::OPL::kDefaultCallbackFrequency; }
-	void setVolume(uint32 volume);
-	void setFrameStop(int frameStop) { _frameStop = frameStop; }
 
 private:
 	DuneEngine *_vm;
