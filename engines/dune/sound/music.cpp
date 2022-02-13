@@ -36,8 +36,8 @@ MidiMusic::MidiMusic(DuneEngine *vm)
 	{
 	_vm = vm;
 	MidiDriver::DeviceHandle dev = MidiDriver::detectDevice(MDT_MIDI | MDT_ADLIB | MDT_PREFER_MT32);
-	_adlib = (MidiDriver::getMusicType(dev) == MT_ADLIB);
-	_nativeMT32 = ((MidiDriver::getMusicType(dev) == MT_MT32) || ConfMan.getBool("native_mt32"));
+	_adlib = false; //(MidiDriver::getMusicType(dev) == MT_ADLIB);
+	_nativeMT32 = true; //((MidiDriver::getMusicType(dev) == MT_MT32) || ConfMan.getBool("native_mt32"));
 
 	if (_adlib) {
 		_driver = new AdLibMidiDriver(_vm);
@@ -70,9 +70,8 @@ void MidiMusic::onTimer() {
 
 
 //TODO: Support AGD, and M32 (MT-32) files variants.
-//TOOD: Fix how it sounds compared to DOSBox
 void MidiMusic::playMusic(Musics musicId, bool loop) {
-	const char *hsqMusicFilenames[] = {
+	const char *musicFilenames[] = {
 		"ARRAKIS.HSQ",  //  1
 		"BAGDAD.HSQ",   //  2
 		"CRYOMUS.HSQ",  //  3 (CD only)
@@ -83,9 +82,35 @@ void MidiMusic::playMusic(Musics musicId, bool loop) {
 		"WATER.HSQ",    //  8
 		"WORMINTR.HSQ", //  9
 		"WORMSUIT.HSQ"  //  10
+		"ARRAKIS.M32",  //  1
+		"BAGDAD.M32",   //  2
+		"CRYOMUS.M32",  //  3 (CD only)
+		"MORNING.M32",  //  4
+		"SEKENCE.M32",  //  5
+		"SIETCHM.M32",  //  6
+		"WARSONG.M32",  //  7
+		"WATER.M32",    //  8
+		"WORMINTR.M32", //  9
+		"WORMSUIT.M32"  //  10
+		"ARRAKIS.AGD",  //  1
+		"BAGDAD.AGD",   //  2
+		"CRYOMUS.AGD",  //  3 (CD only)
+		"MORNING.AGD",  //  4
+		"SEKENCE.AGD",  //  5
+		"SIETCHM.AGD",  //  6
+		"WARSONG.AGD",  //  7
+		"WATER.AGD",    //  8
+		"WORMINTR.AGD", //  9
+		"WORMSUIT.AGD"  //  10
 	};
 
-	const char *filename = hsqMusicFilenames[musicId];
+	int music = 0;
+
+	if (!_adlib) {
+		music = (int)musicId + 10;
+	}
+
+	const char *filename = musicFilenames[musicId];
 	setLoop(loop);
 	Common::SeekableReadStream *r = _vm->openMember(filename);
 	if (_adlib) {

@@ -37,8 +37,8 @@ public:
 	~MT32MidiDriver() override;
 	void load(Common::SeekableReadStream *reader);
 	void play(bool loop);
-	bool isPlaying();
-	void setVolume(uint32 volume);
+	bool isPlaying() { return _isPlaying; };
+	void setVolume(uint32 volume) { _volume = volume;};
 	void setFrameStop(int frameStop) { _frameStop = frameStop; }
 	void stopMusic() { stopAllNotes(true); }
 
@@ -46,6 +46,8 @@ private:
 	DuneEngine *_vm;
 	int _frameStop = -1;
 	int frameCount = 0;
+	uint32 _volume = 0;
+	bool _isPlaying = false;
 };
 } // End of namespace Dune
 
