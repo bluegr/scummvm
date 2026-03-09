@@ -41,11 +41,17 @@ void AudioFile::play(const Common::String &filePath) {
 	Common::SeekableReadStream *talkiesStream = _archive->createReadStreamForMember(Common::Path(filePath));
 	Audio::SeekableAudioStream *audioStream;
 
-	if (filePath.hasSuffixIgnoreCase(".mp3"))
-		audioStream = Audio::makeMP3Stream(talkiesStream, DisposeAfterUse::YES);
-	else if (filePath.hasSuffixIgnoreCase(".wav"))
+	if (filePath.hasSuffixIgnoreCase(".wav"))
 		audioStream = Audio::makeWAVStream(talkiesStream, DisposeAfterUse::YES);
-	else
+	else if (filePath.hasSuffixIgnoreCase(".mp3")) {
+#ifdef USE_MAD
+		audioStream = Audio::makeMP3Stream(talkiesStream, DisposeAfterUse::YES);
+#else
+		warning("MP3 support is not available in this build, cannot play '%s'", filePath.c_str());
+		delete talkiesStream;
+		return;
+#endif
+	} else
 		error("Unsupported audio format: %s", filePath.c_str());
 
 	_mixer->playStream(Audio::Mixer::kSFXSoundType, &_audioHandle, audioStream);
