@@ -36,7 +36,8 @@
 #include "yaga/audiofile.h"
 #include "yaga/console.h"
 #include "yaga/detection.h"
-#include "yaga/scripthandler.h"
+#include "yaga/installer.h"
+//#include "yaga/scripthandler.h"
 #include "yaga/text.h"
 #include "yaga/video.h"
 
@@ -134,8 +135,20 @@ Common::Error YagaEngine::run() {
 	music->play("agi_cleansock.mp3");
 
 	// Test: Read Python scripts from EXE
-	ScriptHandler *handler = new ScriptHandler("PajamaLRS.exe");
-	delete handler;
+	Installer *installer = new Installer();
+	installer->open("PajamaLRS.exe");
+	for (const InstallerEntry &entry : installer->getEntries()) {
+		if (entry.type == kInstallerEntryScript) {
+			Common::String scriptData = installer->extractData(entry);
+			if (!scriptData.empty()) {
+				debug("Script %s:\n%s\n", entry.name.c_str(), scriptData.c_str());
+			}
+		}
+	}
+	delete installer;
+
+	// ScriptHandler *handler = new ScriptHandler(this, "PajamaLRS.exe");
+	// delete handler;
 
 	Graphics::FrameLimiter limiter(g_system, 60);
 	uint elapsedFrames = 0;

@@ -4,6 +4,7 @@ MODULE_OBJS = \
 	animation.o \
 	audiofile.o \
 	console.o \
+	installer.o \
 	metaengine.o \
 	scripthandler.o \
 	text.o \
